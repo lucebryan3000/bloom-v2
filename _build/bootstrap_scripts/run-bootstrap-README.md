@@ -36,7 +36,7 @@ The **Bootstrap Orchestrator v2.0** is a config-driven system for automatically 
 - ✅ **Git Safety Checks** - Prevents running on dirty repos
 - ✅ **Interactive Configuration** - First-run prompts for customization
 - ✅ **JSON Logging** - Machine-parseable output for CI/CD pipelines
-- ✅ **35 Complete Scripts** - All technology layers pre-configured
+- ✅ **43 Complete Scripts** - All technology layers + business logic pre-configured
 
 ---
 
@@ -49,19 +49,22 @@ _build/bootstrap_scripts/
 ├── run-bootstrap.sh              # v2.0 Orchestrator (main entry point)
 ├── lib/
 │   └── common.sh                 # Shared library (42 functions, 705 lines)
-├── tech_stack/                   # 35 bootstrap scripts organized by technology
-│   ├── foundation/               # NextJS, TypeScript, packages
-│   ├── docker/                   # Docker, Compose, pnpm cache
-│   ├── db/                       # Drizzle ORM, migrations
-│   ├── env/                      # Environment validation, Zod
-│   ├── auth/                     # Auth.js authentication
-│   ├── ai/                       # Vercel AI SDK
-│   ├── state/                    # Zustand state management
-│   ├── jobs/                     # PgBoss background jobs
-│   ├── observability/            # Pino logging
-│   ├── ui/                       # Shadcn UI components
-│   ├── testing/                  # Vitest, Playwright
-│   └── quality/                  # ESLint, Prettier, TypeScript strict
+├── tech_stack/                   # 43 bootstrap scripts organized by technology
+│   ├── foundation/               # NextJS, TypeScript, packages (4 scripts)
+│   ├── docker/                   # Docker, Compose, pnpm cache (3 scripts)
+│   ├── db/                       # Drizzle ORM, migrations (4 scripts)
+│   ├── env/                      # Environment validation, Zod (4 scripts)
+│   ├── auth/                     # Auth.js authentication (2 scripts)
+│   ├── ai/                       # Vercel AI SDK (3 scripts)
+│   ├── state/                    # Zustand state management (2 scripts)
+│   ├── jobs/                     # PgBoss background jobs (2 scripts)
+│   ├── observability/            # Pino logging (2 scripts)
+│   ├── intelligence/             # Melissa, ROI, confidence, HITL (4 scripts) NEW
+│   ├── export/                   # PDF, Excel, JSON, Markdown export (5 scripts) NEW
+│   ├── monitoring/               # Health, settings, feature flags (3 scripts) NEW
+│   ├── ui/                       # Shadcn UI components (3 scripts)
+│   ├── testing/                  # Vitest, Playwright (3 scripts)
+│   └── quality/                  # ESLint, Prettier, TypeScript strict (3 scripts)
 ├── example/                      # Configuration templates & examples
 │   ├── bootstrap.conf.example    # Bootstrap orchestrator template
 │   ├── .env.example              # Runtime environment variables template
@@ -188,7 +191,9 @@ clear_script_state "db/drizzle-setup.sh"
 
 ---
 
-## Bootstrap Phases (12 Total)
+## Bootstrap Phases (15 Total)
+
+### Infrastructure & Foundation Layers (Phases 0-8)
 
 | # | Phase ID | Name | Scripts | Technology |
 |---|----------|------|---------|-----------|
@@ -201,9 +206,103 @@ clear_script_state "db/drizzle-setup.sh"
 | 06 | state | State Management | 2 | Zustand store, session state |
 | 07 | jobs | Background Jobs | 2 | PgBoss queue and workers |
 | 08 | observability | Observability | 2 | Pino logger, pretty dev output |
-| 09 | ui | UI Components | 3 | Shadcn UI, react-to-print, component structure |
-| 10 | testing | Testing Infrastructure | 3 | Vitest, Playwright, test directory |
-| 11 | quality | Code Quality | 3 | ESLint, Prettier, TypeScript strict mode |
+
+### Business Logic & Feature Layers (Phases 9-11)
+
+| # | Phase ID | Name | Scripts | Technology |
+|---|----------|------|---------|-----------|
+| 09 | intelligence | AI Intelligence Engine | 4 | Melissa prompts, ROI engine, confidence scoring, HITL review |
+| 10 | export | Export System | 5 | PDF, Excel, JSON, Markdown export with narratives |
+| 11 | monitoring | Monitoring & Operations | 3 | Health endpoints, user settings, feature flags |
+
+### Presentation & Quality Layers (Phases 12-14)
+
+| # | Phase ID | Name | Scripts | Technology |
+|---|----------|------|---------|-----------|
+| 12 | ui | UI Components | 3 | Shadcn UI, react-to-print, component structure |
+| 13 | testing | Testing Infrastructure | 3 | Vitest, Playwright, test directory |
+| 14 | quality | Code Quality | 3 | ESLint, Prettier, TypeScript strict mode |
+
+---
+
+## Business Logic Layers (NEW in v2.0)
+
+The bootstrap system now includes three new **business logic phases** that implement core Bloom2 features:
+
+### Intelligence Phase (4 Scripts)
+Set up AI-driven business case analysis with human-in-the-loop review:
+
+1. **melissa-prompts.sh** - Multi-phase AI assistant with behavioral rules
+   - Creates system persona and phase-based prompts
+   - Implements: discovery, quantification, validation, synthesis phases
+   - Features: metric tagging, contradiction detection, assumption tracking
+
+2. **roi-engine.sh** - Deterministic financial impact calculation
+   - Three-scenario analysis (conservative/base/aggressive)
+   - Calculates: time saved, labor savings, error reduction, ROI%, payback period
+   - Multi-dimensional Improvement Index (financial/operational/human)
+
+3. **confidence-engine.sh** - Data quality and uncertainty scoring
+   - Weighted confidence factors (data quality, precision, agreement, reliability)
+   - Session-level snapshots with readiness assessments
+   - Identifies high-uncertainty metrics and areas for review
+
+4. **hitl-review-queue.sh** - Human-in-the-Loop governance
+   - Review item creation and prioritization
+   - Reviewer actions with audit trails
+   - Confidence adjustments based on human decisions
+
+**Reference:** [tech_stack/intelligence/README.md](tech_stack/intelligence/README.md)
+
+### Export Phase (5 Scripts)
+Professional multi-format export with narrative generation:
+
+1. **export-system.sh** - Core infrastructure and shared utilities
+   - BusinessCase data model definition
+   - Narrative builders (executive summary, current state, value, recommendations)
+   - Shared formatting utilities
+
+2. **pdf-export.sh** - React-based PDF generation
+   - Professional layout with header, sections, charts, footer
+   - Uses react-to-print and jsPDF
+   - Component: `PDFExport` React component
+
+3. **excel-export.sh** - Multi-sheet Excel workbooks
+   - Separate sheets: Summary, ROI Scenarios, Metrics, Assumptions, Risks
+   - Formatted cells with conditional styling
+   - Uses ExcelJS library
+
+4. **json-export.sh** - Complete data export
+   - Full JSON serialization of business case
+   - Includes analysis context and derivatives
+   - Suitable for integration and archival
+
+5. **markdown-export.sh** - GitHub-flavored Markdown
+   - Table of contents with anchors
+   - Emoji indicators for confidence levels
+   - Version-control friendly format
+
+**Reference:** [tech_stack/export/README.md](tech_stack/export/README.md)
+
+### Monitoring Phase (3 Scripts)
+System health, user settings, and feature management:
+
+1. **health-endpoints.sh** - GET /api/monitoring/health and /api/monitoring/metrics
+   - System status (healthy/degraded/unhealthy)
+   - Dependency checks (database, AI service)
+   - Performance metrics (memory, latency, cache hits)
+
+2. **settings-ui.sh** - User preferences management
+   - Export, notification, display, and analysis preferences
+   - Settings API: GET /api/settings, POST /api/settings
+   - Database persistence with defaults
+
+3. **feature-flags.sh** - Controlled feature rollout
+   - Flag evaluation with percentage-based rollout
+   - Explicit user targeting (enabled/disabled lists)
+   - React hook: `useFeatureFlag()` and `<FeatureFlagGuard>`
+
+**Reference:** [tech_stack/monitoring/README.md](tech_stack/monitoring/README.md)
 
 ---
 
@@ -456,10 +555,14 @@ After successful bootstrap:
 ## Version History
 
 - **v2.0** (Current) - Config-driven orchestrator with resume capability, environment overrides, JSON logging
+  - 43 total scripts (35 original + 8 new business logic scripts)
+  - 3 new phases: intelligence, export, monitoring
+  - Critical gap analysis implementation: Melissa prompts, ROI engine, confidence scoring, HITL review, multi-format exports, health monitoring
 - **v1.0** - Legacy phase-based system (reference only)
 
 ---
 
 **Status**: ✅ PRODUCTION READY 🚀
-**Last Updated**: 2025-11-22
-**Commits**: ca98a99, 26b5c9d, d69fe70, 4f8e41a
+**Total Scripts**: 43 (4 new packages added to bootstrap.conf)
+**Last Updated**: 2025-11-23
+**Commits**: 66228e2, ae49ce7 (bootstrap state fixes)
