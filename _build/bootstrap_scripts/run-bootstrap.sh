@@ -19,6 +19,7 @@ readonly VERSION="2.0.0"
 export SCRIPT_DIR
 export BOOTSTRAP_CONF="${SCRIPT_DIR}/bootstrap.conf"
 export BOOTSTRAP_CONF_EXAMPLE="${SCRIPT_DIR}/bootstrap.conf.example"
+export LOG_DIR="${SCRIPT_DIR}/logs"
 
 # Source common library (uses paths defined above)
 source "$SCRIPT_DIR/lib/common.sh"
