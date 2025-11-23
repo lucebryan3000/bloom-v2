@@ -361,7 +361,7 @@ This `architecture-README.md` is now your **build contract**: it defines the sta
 
 ## 7. Bootstrap Configuration Files (Template & Example Organization)
 
-The bootstrap system generates a production-ready Bloom2 installation through 35 sequenced scripts (_build/bootstrap_scripts/tech_stack/). To support this, the following **example files** are provided in `_build/bootstrap_scripts/` for reference and first-run configuration.
+The bootstrap system generates a production-ready Bloom2 installation through 35 sequenced scripts (_build/bootstrap_scripts/tech_stack/). To support this, the following **example files** are provided in `_build/bootstrap_scripts/example/` for reference and first-run configuration.
 
 ### 7.1 Configuration Files Overview
 
@@ -448,12 +448,12 @@ cp bootstrap.conf.example bootstrap.conf
 
 **Purpose:** Runtime configuration for Next.js app, database, AI, auth, and observability.
 
-**Source Template:** `_build/bootstrap_scripts/.env.example`
+**Source Template:** `_build/bootstrap_scripts/example/.env.example`
 
 **Installation Pattern:** Copy to root and customize:
 
 ```bash
-cp _build/bootstrap_scripts/.env.example .env.local
+cp _build/bootstrap_scripts/example/.env.example .env.local
 # Edit .env.local with your actual secrets and local settings
 ```
 
@@ -492,16 +492,16 @@ LOG_FORMAT=pretty
 
 **Purpose:** Prevent committing build artifacts, secrets, and generated files.
 
-**Source Template:** `_build/bootstrap_scripts/.gitignore.example`
+**Source Template:** `_build/bootstrap_scripts/example/.gitignore.example`
 
 **Installation Pattern:**
 
 ```bash
 # Review the example and integrate into existing .gitignore
-cat _build/bootstrap_scripts/.gitignore.example >> .gitignore
+cat _build/bootstrap_scripts/example/.gitignore.example >> .gitignore
 
 # Or use as comprehensive replacement if starting fresh
-cp _build/bootstrap_scripts/.gitignore.example .gitignore
+cp _build/bootstrap_scripts/example/.gitignore.example .gitignore
 ```
 
 **Key Exclusion Categories:**
@@ -525,12 +525,12 @@ cp _build/bootstrap_scripts/.gitignore.example .gitignore
 
 **Purpose:** Tell Claude Code which files/directories to skip during codebase analysis, optimizing context window and reducing noise.
 
-**Source Template:** `_build/bootstrap_scripts/.claudeignore.example`
+**Source Template:** `_build/bootstrap_scripts/example/.claudeignore.example`
 
 **Installation Pattern:**
 
 ```bash
-cp _build/bootstrap_scripts/.claudeignore.example .claudeignore
+cp _build/bootstrap_scripts/example/.claudeignore.example .claudeignore
 # Customize if needed for your workflow
 ```
 
@@ -584,9 +584,9 @@ cp bootstrap.conf.example bootstrap.conf
 cd ../..
 
 # 5. Copy environment templates
-cp _build/bootstrap_scripts/.env.example .env.local
-cp _build/bootstrap_scripts/.gitignore.example .gitignore
-cp _build/bootstrap_scripts/.claudeignore.example .claudeignore
+cp _build/bootstrap_scripts/example/.env.example .env.local
+cp _build/bootstrap_scripts/example/.gitignore.example .gitignore
+cp _build/bootstrap_scripts/example/.claudeignore.example .claudeignore
 
 # 6. Edit .env.local with your secrets
 # ANTHROPIC_API_KEY, DATABASE_URL, AUTH_SECRET, etc.
@@ -601,10 +601,10 @@ pnpm dev
 
 | File | Location | Accuracy | Alignment | Status |
 |------|----------|----------|-----------|--------|
-| `bootstrap.conf.example` | `_build/bootstrap_scripts/` | ✅ Matches orchestrator v2.0 | ✅ All 35 scripts listed correctly | ✅ Tracked, current |
-| `.env.example` | `_build/bootstrap_scripts/` | ✅ Comprehensive coverage | ✅ Maps to @t3-oss/env-nextjs validation | ✅ Reference file |
-| `.gitignore.example` | `_build/bootstrap_scripts/` | ✅ Complete by tech layer | ✅ Covers all build artifacts & secrets | ✅ Reference file |
-| `.claudeignore.example` | `_build/bootstrap_scripts/` | ✅ Optimized exclusions | ✅ Bootstrap logs excluded | ✅ Reference file |
+| `bootstrap.conf.example` | `_build/bootstrap_scripts/example/` | ✅ Matches orchestrator v2.0 | ✅ All 35 scripts listed correctly | ✅ Tracked, current |
+| `.env.example` | `_build/bootstrap_scripts/example/` | ✅ Comprehensive coverage | ✅ Maps to @t3-oss/env-nextjs validation | ✅ Reference file |
+| `.gitignore.example` | `_build/bootstrap_scripts/example/` | ✅ Complete by tech layer | ✅ Covers all build artifacts & secrets | ✅ Reference file |
+| `.claudeignore.example` | `_build/bootstrap_scripts/example/` | ✅ Optimized exclusions | ✅ Bootstrap logs excluded | ✅ Reference file |
 
 ---
 
