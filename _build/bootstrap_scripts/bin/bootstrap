@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+# =============================================================================
+# bin/bootstrap - Main entry point for bootstrap execution
+# =============================================================================
+# Usage: ./bin/bootstrap [options]
+#
+# Options:
+#   -n, --dry-run      Show what would be done without executing
+#   -v, --verbose      Enable verbose output
+#   -f, --force        Ignore previous state, re-run all scripts
+#   -p, --phase NUM    Run only specified phase
+#   -l, --list         List all phases without running
+#   -h, --help         Show this help message
+#
+# Environment Variables:
+#   DRY_RUN=true       Same as --dry-run
+#   VERBOSE=true       Same as --verbose
+#   ALLOW_DIRTY=true   Skip git clean check
+# =============================================================================
+
+set -euo pipefail
+
+# =============================================================================
+# PATH SETUP
+# =============================================================================
+
+# Determine script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Source the common library (loads all modules)
+source "${SCRIPTS_DIR}/lib/common.sh"
+
+# =============================================================================
+# USAGE
+# =============================================================================
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [options]
+
+Bootstrap the project by running all phase scripts in sequence.
+
+Options:
+  -n, --dry-run      Show what would be done without executing
+  -v, --verbose      Enable verbose output
+  -f, --force        Ignore previous state, re-run all scripts
+  -p, --phase NUM    Run only specified phase (e.g., -p 0)
+  -l, --list         List all phases without running
+  -s, --status       Show bootstrap status
+  -h, --help         Show this help message
+
+Environment Variables:
+  DRY_RUN=true       Same as --dry-run
+  VERBOSE=true       Same as --verbose
+  ALLOW_DIRTY=true   Skip git clean check
+  GIT_SAFETY=false   Disable git safety checks
+  STACK_PROFILE      Set stack profile (minimal, api-only, full)
+
+Examples:
+  ./bin/bootstrap                    # Run all phases
+  ./bin/bootstrap --dry-run          # Preview all actions
+  ./bin/bootstrap --phase 0          # Run only phase 0
+  ./bin/bootstrap --list             # List all phases
+  ./bin/bootstrap --status           # Show current status
+EOF
+}
+
+# =============================================================================
+# ARGUMENT PARSING
+# =============================================================================
+
+FORCE=false
+SINGLE_PHASE=""
+LIST_ONLY=false
+SHOW_STATUS=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -n|--dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -f|--force)
+            FORCE=true
+            shift
+            ;;
+        -p|--phase)
+            SINGLE_PHASE="$2"
+            shift 2
+            ;;
+        -l|--list)
+            LIST_ONLY=true
+            shift
+            ;;
+        -s|--status)
+            SHOW_STATUS=true
+            shift
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# =============================================================================
+# MAIN EXECUTION
+# =============================================================================
+
+main() {
+    # Load configuration
+    config_load
+    config_validate
+    config_apply_profile
+
+    # Initialize logging
+    log_init "bootstrap"
+
+    # Set tech stack directory
+    local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
+
+    # Handle special modes
+    if [[ "$LIST_ONLY" == "true" ]]; then
+        phase_list_all
+        exit 0
+    fi
+
+    if [[ "$SHOW_STATUS" == "true" ]]; then
+        state_show_status
+        exit 0
+    fi
+
+    # Banner
+    log_info "=========================================="
+    log_info "  BLOOM2 BOOTSTRAP"
+    log_info "=========================================="
+    log_info "  Mode: ${DRY_RUN:-false} && dry-run || live"
+    log_info "  Profile: ${STACK_PROFILE:-full}"
+    log_info "  Resume: ${BOOTSTRAP_RESUME_MODE:-skip}"
+    log_info "=========================================="
+    echo ""
+
+    # Git safety check
+    git_ensure_clean
+
+    # Single phase or all phases
+    if [[ -n "$SINGLE_PHASE" ]]; then
+        log_info "Running single phase: $SINGLE_PHASE"
+        phase_execute "$SINGLE_PHASE" "$tech_stack_dir" "$FORCE"
+    else
+        log_info "Running all phases..."
+        phase_execute_all "$tech_stack_dir" "$FORCE"
+    fi
+
+    echo ""
+    log_success "=========================================="
+    log_success "  BOOTSTRAP COMPLETE"
+    log_success "=========================================="
+}
+
+main "$@"

@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# =============================================================================
+# bin/status - Show bootstrap status and phase information
+# =============================================================================
+# Usage: ./bin/status [options]
+# =============================================================================
+
+set -euo pipefail
+
+# =============================================================================
+# PATH SETUP
+# =============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+source "${SCRIPTS_DIR}/lib/common.sh"
+
+# =============================================================================
+# USAGE
+# =============================================================================
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [options]
+
+Show bootstrap status and configuration.
+
+Options:
+  -l, --list         List all phases and their scripts
+  -c, --config       Show current configuration values
+  -s, --state        Show script completion state (default)
+  --clear [key]      Clear state for a script (or all if no key)
+  -h, --help         Show this help message
+
+Examples:
+  ./bin/status                      # Show completion status
+  ./bin/status --list               # List all phases
+  ./bin/status --config             # Show configuration
+  ./bin/status --clear              # Clear all state
+  ./bin/status --clear "foundation/init-nextjs.sh"  # Clear specific script
+EOF
+}
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+show_config() {
+    echo ""
+    echo "BOOTSTRAP CONFIGURATION"
+    echo "======================="
+    echo ""
+    echo "Config file: ${BOOTSTRAP_CONF}"
+    echo ""
+    echo "Core Settings:"
+    echo "  APP_NAME:             ${APP_NAME:-<not set>}"
+    echo "  PROJECT_ROOT:         ${PROJECT_ROOT:-<not set>}"
+    echo "  STACK_PROFILE:        ${STACK_PROFILE:-full}"
+    echo ""
+    echo "Execution Settings:"
+    echo "  DRY_RUN:              ${DRY_RUN:-false}"
+    echo "  VERBOSE:              ${VERBOSE:-false}"
+    echo "  LOG_FORMAT:           ${LOG_FORMAT:-plain}"
+    echo "  MAX_CMD_SECONDS:      ${MAX_CMD_SECONDS:-900}"
+    echo "  BOOTSTRAP_RESUME_MODE: ${BOOTSTRAP_RESUME_MODE:-skip}"
+    echo ""
+    echo "Safety Settings:"
+    echo "  GIT_SAFETY:           ${GIT_SAFETY:-true}"
+    echo "  ALLOW_DIRTY:          ${ALLOW_DIRTY:-false}"
+    echo ""
+    echo "Database:"
+    echo "  DB_NAME:              ${DB_NAME:-<not set>}"
+    echo "  DB_USER:              ${DB_USER:-<not set>}"
+    echo "  DB_PASSWORD:          ${DB_PASSWORD:+***hidden***}"
+    echo ""
+    echo "Feature Flags:"
+    echo "  ENABLE_AUTHJS:        ${ENABLE_AUTHJS:-true}"
+    echo "  ENABLE_AI_SDK:        ${ENABLE_AI_SDK:-true}"
+    echo "  ENABLE_PG_BOSS:       ${ENABLE_PG_BOSS:-true}"
+    echo "  ENABLE_PDF_EXPORTS:   ${ENABLE_PDF_EXPORTS:-true}"
+    echo "  ENABLE_SHADCN:        ${ENABLE_SHADCN:-true}"
+    echo ""
+}
+
+# =============================================================================
+# ARGUMENT PARSING
+# =============================================================================
+
+MODE="state"
+CLEAR_KEY=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -l|--list)
+            MODE="list"
+            shift
+            ;;
+        -c|--config)
+            MODE="config"
+            shift
+            ;;
+        -s|--state)
+            MODE="state"
+            shift
+            ;;
+        --clear)
+            MODE="clear"
+            CLEAR_KEY="${2:-}"
+            shift
+            [[ -n "$CLEAR_KEY" ]] && shift
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# =============================================================================
+# MAIN EXECUTION
+# =============================================================================
+
+main() {
+    # Load configuration
+    config_load
+    config_validate
+
+    case "$MODE" in
+        list)
+            phase_list_all
+            ;;
+        config)
+            show_config
+            ;;
+        state)
+            state_show_status
+            ;;
+        clear)
+            if [[ -n "$CLEAR_KEY" ]]; then
+                state_clear "$CLEAR_KEY"
+            else
+                state_clear_all
+            fi
+            ;;
+    esac
+}
+
+main "$@"

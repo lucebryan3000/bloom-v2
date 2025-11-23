@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# =============================================================================
+# bin/compile - Compile/verify the project after bootstrap
+# =============================================================================
+# Usage: ./bin/compile [options]
+#
+# Options:
+#   -n, --dry-run      Show what would be done without executing
+#   -v, --verbose      Enable verbose output
+#   -h, --help         Show this help message
+# =============================================================================
+
+set -euo pipefail
+
+# =============================================================================
+# PATH SETUP
+# =============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+source "${SCRIPTS_DIR}/lib/common.sh"
+
+# =============================================================================
+# USAGE
+# =============================================================================
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [options]
+
+Compile and verify the project after bootstrap.
+
+Options:
+  -n, --dry-run      Show what would be done without executing
+  -v, --verbose      Enable verbose output
+  --skip-lint        Skip linting step
+  --skip-types       Skip TypeScript type checking
+  --skip-build       Skip build step
+  -h, --help         Show this help message
+
+This command runs:
+  1. pnpm install (ensure dependencies)
+  2. pnpm lint (if not skipped)
+  3. pnpm typecheck (if not skipped)
+  4. pnpm build (if not skipped)
+EOF
+}
+
+# =============================================================================
+# ARGUMENT PARSING
+# =============================================================================
+
+SKIP_LINT=false
+SKIP_TYPES=false
+SKIP_BUILD=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -n|--dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        --skip-lint)
+            SKIP_LINT=true
+            shift
+            ;;
+        --skip-types)
+            SKIP_TYPES=true
+            shift
+            ;;
+        --skip-build)
+            SKIP_BUILD=true
+            shift
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# =============================================================================
+# MAIN EXECUTION
+# =============================================================================
+
+main() {
+    # Load configuration
+    config_load
+    config_validate
+
+    # Initialize logging
+    log_init "compile"
+
+    # Change to project root
+    cd "${PROJECT_ROOT}"
+
+    log_info "=========================================="
+    log_info "  COMPILE & VERIFY"
+    log_info "=========================================="
+    log_info "  Project: ${PROJECT_ROOT}"
+    log_info "  Dry Run: ${DRY_RUN:-false}"
+    log_info "=========================================="
+    echo ""
+
+    # Step 1: Install dependencies
+    log_step "Installing dependencies..."
+    run_cmd "pnpm install"
+    log_success "Dependencies installed"
+    echo ""
+
+    # Step 2: Lint (optional)
+    if [[ "$SKIP_LINT" != "true" ]]; then
+        log_step "Running linter..."
+        if run_cmd "pnpm lint"; then
+            log_success "Lint passed"
+        else
+            log_warn "Lint failed (non-fatal)"
+        fi
+        echo ""
+    else
+        log_info "Skipping lint (--skip-lint)"
+    fi
+
+    # Step 3: Type checking (optional)
+    if [[ "$SKIP_TYPES" != "true" ]]; then
+        log_step "Running TypeScript type check..."
+        if run_cmd "pnpm typecheck 2>/dev/null || pnpm tsc --noEmit"; then
+            log_success "Type check passed"
+        else
+            log_warn "Type check failed (non-fatal)"
+        fi
+        echo ""
+    else
+        log_info "Skipping type check (--skip-types)"
+    fi
+
+    # Step 4: Build (optional)
+    if [[ "$SKIP_BUILD" != "true" ]]; then
+        log_step "Building project..."
+        if run_cmd "pnpm build"; then
+            log_success "Build succeeded"
+        else
+            log_error "Build failed"
+            exit 1
+        fi
+        echo ""
+    else
+        log_info "Skipping build (--skip-build)"
+    fi
+
+    log_success "=========================================="
+    log_success "  COMPILE COMPLETE"
+    log_success "=========================================="
+}
+
+main "$@"
