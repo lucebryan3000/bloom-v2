@@ -27,7 +27,10 @@ PROJECT_ROOT="."
 # Logs directory (created if not exists)
 LOGS_DIR="${LOG_DIR}"
 
-# Bootstrap state tracking
+# Bootstrap state tracking (actual runs only - not updated in dry-run mode)
+# Tracks which scripts have completed for resume capability across runs
+# Format: script/name.sh=success:TIMESTAMP
+# Location: PROJECT_ROOT/.bootstrap_state (git-ignored, runtime state only)
 BOOTSTRAP_STATE_FILE="${PROJECT_ROOT}/.bootstrap_state"
 
 # -----------------------------------------------------------------------------
