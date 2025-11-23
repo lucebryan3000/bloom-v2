@@ -8,6 +8,9 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# OS Detection (early, used throughout)
+OS_TYPE="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -27,6 +30,98 @@ VERBOSE="${VERBOSE:-false}"
 # Logging
 LOG_DIR="${LOG_DIR:-./logs}"
 LOG_FILE="${LOG_FILE:-}"
+
+# Path detection for config files (only if not already set by caller)
+if [[ -z "${SCRIPT_DIR:-}" ]]; then
+    # If SCRIPT_DIR not set, derive from this file's location
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+# Ensure SCRIPTS_DIR points to parent of lib directory
+SCRIPTS_DIR="${SCRIPTS_DIR:-${SCRIPT_DIR%/lib}}"
+
+# Only set config paths if BOOTSTRAP_CONF not already defined
+if [[ -z "${BOOTSTRAP_CONF:-}" ]]; then
+    BOOTSTRAP_CONF="${SCRIPTS_DIR}/bootstrap.conf"
+fi
+if [[ -z "${BOOTSTRAP_CONF_EXAMPLE:-}" ]]; then
+    BOOTSTRAP_CONF_EXAMPLE="${SCRIPTS_DIR}/bootstrap.conf.example"
+fi
+
+# =============================================================================
+# CONFIG LOADING & FIRST-RUN BEHAVIOR
+# =============================================================================
+
+# Interactive prompt for config value
+_prompt_config_value() {
+    local var_name="$1"
+    local prompt_text="$2"
+    local default_val="$3"
+    local new_val
+
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    read -rp "${prompt_text} [${default_val}]: " new_val
+    if [[ -n "${new_val}" ]]; then
+        sed -i.bak "s|^${var_name}=.*|${var_name}=\"${new_val}\"|" "${BOOTSTRAP_CONF}"
+        rm -f "${BOOTSTRAP_CONF}.bak"
+    fi
+}
+
+# Initialize config with first-run prompts
+_init_config() {
+    if [[ ! -f "${BOOTSTRAP_CONF}" ]]; then
+        if [[ -f "${BOOTSTRAP_CONF_EXAMPLE}" ]]; then
+            cp "${BOOTSTRAP_CONF_EXAMPLE}" "${BOOTSTRAP_CONF}"
+            log_info "Created bootstrap.conf from bootstrap.conf.example"
+
+            if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+                echo ""
+                log_info "=== First-Run Configuration ==="
+                log_info "Customize your project settings (press Enter to keep defaults):"
+                echo ""
+
+                _prompt_config_value "APP_NAME" "Application name" "bloom2"
+                _prompt_config_value "PROJECT_ROOT" "Project root directory" "."
+                _prompt_config_value "DB_NAME" "Database name" "bloom2_db"
+                _prompt_config_value "DB_USER" "Database user" "bloom2"
+                _prompt_config_value "DB_PASSWORD" "Database password" "change_me"
+
+                echo ""
+                log_info "Configuration saved to bootstrap.conf"
+                echo ""
+            fi
+        else
+            log_error "bootstrap.conf.example not found at ${BOOTSTRAP_CONF_EXAMPLE}"
+            exit 1
+        fi
+    fi
+
+    # shellcheck source=/dev/null
+    . "${BOOTSTRAP_CONF}"
+
+    # Validate critical values in non-interactive mode
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        if [[ "${DB_PASSWORD:-}" == "change_me" ]]; then
+            log_error "DB_PASSWORD is still 'change_me' in NON_INTERACTIVE mode. Update bootstrap.conf."
+            exit 1
+        fi
+    fi
+
+    # Set defaults for optional vars
+    : "${DRY_RUN:=false}"
+    : "${LOG_FORMAT:=plain}"
+    : "${MAX_CMD_SECONDS:=900}"
+    : "${BOOTSTRAP_RESUME_MODE:=skip}"
+    : "${GIT_SAFETY:=true}"
+    : "${ALLOW_DIRTY:=false}"
+    : "${STACK_PROFILE:=full}"
+
+    export DRY_RUN LOG_FORMAT MAX_CMD_SECONDS BOOTSTRAP_RESUME_MODE
+    export GIT_SAFETY ALLOW_DIRTY STACK_PROFILE
+}
 
 # =============================================================================
 # LOGGING FUNCTIONS
@@ -50,8 +145,8 @@ init_logging() {
     log_info "DRY_RUN: $DRY_RUN"
 }
 
-# Log to both stdout and log file
-_log() {
+# Plain text logging
+_log_plain() {
     local level="$1"
     local color="$2"
     local message="$3"
@@ -64,6 +159,29 @@ _log() {
     # File output without color codes
     if [[ -n "$LOG_FILE" && -f "$LOG_FILE" ]]; then
         echo "[${timestamp}] [${level}] ${message}" >> "$LOG_FILE"
+    fi
+}
+
+# JSON logging for CI/machine parsing
+_log_json() {
+    local level="$1"
+    local message="$2"
+    local script_name="${0##*/}"
+
+    printf '{"ts":"%s","level":"%s","script":"%s","msg":"%s"}\n' \
+        "$(date -Iseconds)" "${level}" "${script_name}" "${message}" | tee -a "${LOG_FILE}"
+}
+
+# Unified logging that respects LOG_FORMAT
+_log() {
+    local level="$1"
+    local color="$2"
+    local message="$3"
+
+    if [[ "${LOG_FORMAT:-plain}" == "json" ]]; then
+        _log_json "${level}" "${message}"
+    else
+        _log_plain "${level}" "${color}" "${message}"
     fi
 }
 
@@ -105,14 +223,21 @@ log_dry() {
 # DRY RUN HELPERS
 # =============================================================================
 
-# Execute command or log in dry-run mode
+# Execute command or log in dry-run mode (with optional timeout)
 run_cmd() {
     local cmd="$*"
     if [[ "$DRY_RUN" == "true" ]]; then
         log_dry "$cmd"
         return 0
+    fi
+
+    # Check if timeout should be used
+    local max_seconds="${MAX_CMD_SECONDS:-0}"
+    if [[ "$max_seconds" != "0" ]] && command -v timeout &> /dev/null; then
+        log_debug "RUN (timeout ${max_seconds}s): $cmd"
+        timeout "${max_seconds}" bash -lc "$cmd"
     else
-        log_debug "Executing: $cmd"
+        log_debug "RUN: $cmd"
         eval "$cmd"
     fi
 }
@@ -168,6 +293,16 @@ append_file() {
 
     echo "$content" >> "$file_path"
     log_success "Appended to: $file_path"
+}
+
+# Write file only if it doesn't exist (wrapper for write_file)
+# This is the function that bootstrap scripts call
+write_file_if_missing() {
+    local file_path="$1"
+    local content="$2"
+
+    # Call write_file with force=false (default skip behavior)
+    write_file "$file_path" "$content" "false"
 }
 
 # =============================================================================
@@ -431,6 +566,129 @@ confirm() {
 }
 
 # =============================================================================
+# STATE TRACKING
+# =============================================================================
+
+# Initialize state file for tracking script success
+init_state_file() {
+    BOOTSTRAP_STATE_FILE="${BOOTSTRAP_STATE_FILE:-${PROJECT_ROOT:-.}/.bootstrap_state}"
+    if [[ ! -f "${BOOTSTRAP_STATE_FILE}" ]]; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            log_dry "touch ${BOOTSTRAP_STATE_FILE}"
+        else
+            touch "${BOOTSTRAP_STATE_FILE}"
+        fi
+    fi
+}
+
+# Mark a script as successfully completed
+mark_script_success() {
+    local key="$1"
+    init_state_file
+    if ! grep -q "^${key}=" "${BOOTSTRAP_STATE_FILE}" 2>/dev/null; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            log_dry "echo '${key}=success:$(date -Is)' >> ${BOOTSTRAP_STATE_FILE}"
+        else
+            echo "${key}=success:$(date -Is)" >> "${BOOTSTRAP_STATE_FILE}"
+            log_debug "Marked success: ${key}"
+        fi
+    fi
+}
+
+# Check if a script has already succeeded
+has_script_succeeded() {
+    local key="$1"
+    init_state_file
+    if grep -q "^${key}=success" "${BOOTSTRAP_STATE_FILE}" 2>/dev/null; then
+        return 0
+    fi
+    return 1
+}
+
+# Clear/reset a specific script's state
+clear_script_state() {
+    local key="$1"
+    init_state_file
+    if [[ -f "${BOOTSTRAP_STATE_FILE}" ]]; then
+        sed -i.bak "/^${key}=/d" "${BOOTSTRAP_STATE_FILE}"
+        rm -f "${BOOTSTRAP_STATE_FILE}.bak"
+        log_info "Cleared state for script: ${key}"
+    fi
+}
+
+# =============================================================================
+# STACK PROFILES
+# =============================================================================
+
+# Apply stack profile settings (minimal, api-only, full)
+apply_stack_profile() {
+    local profile="${STACK_PROFILE:-full}"
+
+    case "$profile" in
+        minimal)
+            log_info "Applying minimal stack profile"
+            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-false}"
+            export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
+            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-false}"
+            export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
+            export ENABLE_SHADCN="${ENABLE_SHADCN:-false}"
+            ;;
+        api-only)
+            log_info "Applying api-only stack profile"
+            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-false}"
+            export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
+            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-false}"
+            export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
+            export ENABLE_SHADCN="${ENABLE_SHADCN:-false}"
+            export ENABLE_UI="${ENABLE_UI:-false}"
+            ;;
+        full)
+            log_debug "Using full stack profile (all features enabled)"
+            ;;
+        *)
+            log_warn "Unknown stack profile: $profile, using full"
+            ;;
+    esac
+}
+
+# =============================================================================
+# GIT SAFETY
+# =============================================================================
+
+# Ensure git working directory is clean (if GIT_SAFETY is enabled)
+ensure_git_clean() {
+    local git_safety="${GIT_SAFETY:-false}"
+    local allow_dirty="${ALLOW_DIRTY:-false}"
+
+    if [[ "$git_safety" != "true" ]]; then
+        return 0
+    fi
+
+    if [[ "$allow_dirty" == "true" ]]; then
+        log_debug "Git safety check skipped (ALLOW_DIRTY=true)"
+        return 0
+    fi
+
+    local project_dir="${PROJECT_ROOT:-.}"
+    if [[ ! -d "${project_dir}/.git" ]]; then
+        log_debug "Not a git repository, skipping git safety check"
+        return 0
+    fi
+
+    local status
+    status="$(cd "${project_dir}" && git status --porcelain 2>/dev/null)"
+    if [[ -n "$status" ]]; then
+        log_error "Git working directory is not clean"
+        log_error "Uncommitted changes found. Commit or stash before running bootstrap."
+        log_error "Use ALLOW_DIRTY=true to override this check."
+        exit 1
+    fi
+
+    log_debug "Git working directory is clean"
+    return 0
+}
+
+# =============================================================================
 # ERROR HANDLING
 # =============================================================================
 
@@ -451,6 +709,7 @@ setup_error_trap() {
 # EXPORTS
 # =============================================================================
 
+export OS_TYPE
 export DRY_RUN
 export VERBOSE
 export LOG_FILE
