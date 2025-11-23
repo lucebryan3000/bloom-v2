@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "immutable": [
+    ".claude/agents/**",
+    ".claude/README.md",
+    ".claude/URL-CONVENTION.md",
+    ".claude/config.json"
+  ],
+  "editable": {
+    ".claudeignore": [
+      "append_recommended_patterns",
+      "deduplicate_patterns"
+    ],
+    ".claude/settings.json": [
+      "prune_alwaysInclude",
+      "add_permissions_deny",
+      "tighten_auto_include"
+    ]
+  },
+  "exceptions": [
+    "!.claude/agents/backend-typescript-architect.md"
+  ]
+}

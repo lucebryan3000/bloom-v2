@@ -1,0 +1,204 @@
+---
+name: category-config-checklist
+version: 2025-10-29
+description: >-
+  Quick validation checklist for .category.conf files. Use this to ensure
+  category metadata is accurate, consistent, and properly integrated with
+  the dynamic menu system.
+
+purpose: |
+  Validate .category.conf files for quality, accuracy, and user experience.
+
+checklist:
+  file_location:
+    - [ ] ".category.conf file exists in category directory"
+    - [ ] "File location: scripts/<category>/.category.conf"
+    - [ ] "File is readable and has proper permissions"
+
+  required_fields:
+    - [ ] "CATEGORY_NAME defined"
+    - [ ] "PRIMARY_CATEGORY defined"
+    - [ ] "CATEGORY_DESCRIPTION defined"
+    - [ ] "CATEGORY_ICON defined"
+    - [ ] "CATEGORY_ORDER defined (numeric)"
+    - [ ] "CATEGORY_ENABLED defined (true/false)"
+
+  naming_validation:
+    - [ ] "CATEGORY_NAME is descriptive (3-8 words)"
+    - [ ] "No technical prefixes (OS:, PHASE:, TYPE:)"
+    - [ ] "Name matches directory purpose"
+    - [ ] "Name is clear to end users"
+    - [ ] "No acronyms without explanation"
+
+  description_accuracy:
+    - [ ] "CATEGORY_DESCRIPTION is 2-4 sentences"
+    - [ ] "Description accurately reflects directory content"
+    - [ ] "Key features/capabilities mentioned"
+    - [ ] "Prerequisites noted (if applicable)"
+    - [ ] "No outdated information"
+
+  primary_category_grouping:
+    - [ ] "PRIMARY_CATEGORY is one of: System & Operations, Development & Applications, Network & Media"
+    - [ ] "Category is in appropriate group"
+    - [ ] "Grouping matches category purpose"
+
+  category_details:
+    - [ ] "CATEGORY_DETAILS section exists (if comprehensive info needed)"
+    - [ ] "Subdirectories mentioned actually exist"
+    - [ ] "Utility counts are accurate (if provided)"
+    - [ ] "No references to deleted/moved files"
+    - [ ] "Formatting is clean (bullets, sections)"
+
+  icon_selection:
+    - [ ] "CATEGORY_ICON is a single emoji"
+    - [ ] "Icon is relevant to category purpose"
+    - [ ] "Icon displays correctly in terminal"
+
+  syntax_validation:
+    - [ ] "Bash syntax is correct (no errors when sourced)"
+    - [ ] "All variables use proper quoting"
+    - [ ] "No typos in variable names"
+
+  integration_testing:
+    - [ ] "Category appears in menu after index rebuild"
+    - [ ] "Category name displays correctly (no junk characters)"
+    - [ ] "Category count is accurate"
+    - [ ] "Preview pane shows correct metadata"
+    - [ ] "Selecting category shows correct utilities"
+
+red_flags:
+  critical:
+    - "❌ CATEGORY_NAME contains 'OS:' or similar prefix"
+    - "❌ CATEGORY_DESCRIPTION is generic or placeholder text"
+    - "❌ PRIMARY_CATEGORY is undefined or invalid"
+    - "❌ Syntax errors when sourcing file"
+
+  high:
+    - "⚠️  Description doesn't match actual directory content"
+    - "⚠️  CATEGORY_DETAILS references non-existent directories"
+    - "⚠️  Category appears in wrong PRIMARY_CATEGORY group"
+
+  medium:
+    - "⚠️  CATEGORY_NAME is too generic"
+    - "⚠️  Description is only 1 sentence"
+    - "⚠️  Icon doesn't match category purpose"
+    - "⚠️  CATEGORY_DETAILS is missing"
+
+green_lights:
+  excellent:
+    - "✅ Clear, descriptive CATEGORY_NAME"
+    - "✅ Comprehensive 3-4 sentence CATEGORY_DESCRIPTION"
+    - "✅ CATEGORY_DETAILS accurately documents subdirectories"
+    - "✅ Appropriate PRIMARY_CATEGORY grouping"
+    - "✅ All required fields present and accurate"
+    - "✅ Menu displays correctly, preview pane helpful"
+
+validation_commands:
+  syntax_check:
+    command: "source scripts/<category>/.category.conf && echo $CATEGORY_NAME"
+    expected: "Displays category name without errors"
+
+  discovery_test:
+    command: |
+      find scripts -maxdepth 2 -name ".category.conf" -exec grep -H "^CATEGORY_NAME=" {} \; | grep <category>
+    expected: "Shows category name correctly"
+
+  index_rebuild:
+    command: "rm -f ~/.cache/axon-menu/script-index.txt && ./menu.sh"
+    expected: "Index rebuilds, category appears correctly"
+
+common_fixes:
+  fix_1_rename_category:
+    before: 'CATEGORY_NAME="OS: Linux"'
+    after: 'CATEGORY_NAME="Modern CLI Tools"'
+    reason: "Remove technical prefix, make descriptive"
+
+  fix_2_update_description:
+    before: 'CATEGORY_DESCRIPTION="CLI tools"'
+    after: |
+      CATEGORY_DESCRIPTION="Modern command-line tools: fd, rg, bat, fzf, eza, delta.
+      Rust-powered replacements for traditional Unix commands with enhanced features."
+    reason: "Make comprehensive and specific"
+
+  fix_3_correct_grouping:
+    before: 'PRIMARY_CATEGORY="Development & Applications"  # for gui-apps'
+    after: 'PRIMARY_CATEGORY="System & Operations"'
+    reason: "GUI system tools belong in System & Operations"
+
+  fix_4_update_details:
+    action: "Review actual directory structure with ls -la"
+    steps:
+      - "List subdirectories"
+      - "Count scripts in each"
+      - "Update CATEGORY_DETAILS to match reality"
+      - "Remove references to deleted directories"
+
+quick_reference:
+  good_example: |
+    # Category Configuration - Modern CLI Tools
+    CATEGORY_NAME="Modern CLI Tools"
+    PRIMARY_CATEGORY="Development & Applications"
+    CATEGORY_ICON="🔧"
+    CATEGORY_DESCRIPTION="Modern command-line tools and utilities: fd, rg, bat, fzf, eza, delta, and more. Rust-powered replacements for traditional Unix commands with enhanced features."
+    CATEGORY_ORDER=80
+    CATEGORY_ENABLED=true
+
+    CATEGORY_DETAILS="
+    Modern CLI Tool Categories:
+
+    🔍 File Management (file-mgmt/):
+      • fd - Fast alternative to 'find'
+      • rg (ripgrep) - Fast grep replacement
+      • bat - Cat with syntax highlighting
+
+    💻 Development (development/):
+      • delta - Git diff viewer
+      • gitui - Terminal UI for git
+    "
+
+  bad_example: |
+    # Bad: Technical prefix, generic description, outdated details
+    CATEGORY_NAME="OS: Linux"
+    PRIMARY_CATEGORY="Development & Applications"
+    CATEGORY_ICON="🐧"
+    CATEGORY_DESCRIPTION="Linux utilities"
+    CATEGORY_ORDER=80
+    CATEGORY_ENABLED=true
+
+    CATEGORY_DETAILS="
+    System tools for Linux users.
+    "
+
+when_to_fail:
+  - "CATEGORY_NAME contains technical prefix"
+  - "CATEGORY_DESCRIPTION is 1 word or placeholder"
+  - "Syntax errors when sourcing"
+  - "PRIMARY_CATEGORY is invalid or missing"
+  - "Category doesn't appear in menu after rebuild"
+
+when_to_pass:
+  - "All required fields present"
+  - "Naming is clear and descriptive"
+  - "Description accurately matches content"
+  - "Syntax validation passes"
+  - "Menu displays correctly"
+  - "Preview pane is helpful to users"
+
+related_playbooks:
+  - "category-config-review.yml (comprehensive review workflow)"
+  - "script-review-checklist.yml (script validation)"
+  - "pre-commit-checklist.yml (general validation)"
+
+notes: |
+  - Use this checklist before committing .category.conf changes
+  - Category names are displayed literally - no parsing
+  - Index rebuild required after changes
+  - Preview pane is primary user documentation
+  - Naming consistency improves user experience
+
+version_history:
+  - version: "1.0.0"
+    date: "2025-10-29"
+    changes:
+      - "Initial checklist created"
+      - "Based on category fix findings"

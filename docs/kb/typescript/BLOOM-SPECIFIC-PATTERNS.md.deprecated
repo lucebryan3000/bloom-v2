@@ -1,0 +1,822 @@
+---
+id: typescript-bloom-specific-patterns
+topic: typescript
+file_role: patterns
+profile: full
+difficulty_level: intermediate
+kb_version: 3.1
+prerequisites: ['javascript']
+related_topics: ['javascript', 'nextjs', 'react']
+embedding_keywords: [typescript, patterns, examples, integration]
+last_reviewed: 2025-11-13
+---
+
+# TypeScript for Bloom: Project-Specific Patterns
+
+**For**: Appmelia Bloom (Next.js + Prisma + Zustand + Zod)
+**Last Updated**: November 8, 2025
+
+## Overview
+
+This guide covers TypeScript patterns specific to the Bloom application, including API types, database schema integration, state management, and validation.
+
+---
+
+## Prisma Schema Integration
+
+### Typing Prisma Models
+
+```typescript
+// lib/types/user.ts
+import { User as PrismaUser } from '@prisma/client';
+
+// Exact Prisma type
+export type User = PrismaUser;
+
+// With relations
+export type UserWithSessions = PrismaUser & {
+  sessions: Session[];
+};
+
+// For API responses (exclude sensitive fields)
+export type UserPublic = Omit<User, 'password' | 'passwordHash'>;
+
+// For create/update operations
+export type UserCreateInput = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
+export type UserUpdateInput = Partial<UserCreateInput>;
+```
+
+### Type-Safe Prisma Queries
+
+```typescript
+// lib/db/user.ts
+import prisma from '@/lib/prisma';
+import { User, UserPublic } from '@/lib/types/user';
+
+// Typed query result
+async function getUserById(id: string): Promise<UserPublic | null> {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      createdAt: true,
+      // password is excluded automatically
+    },
+  });
+
+  return user as UserPublic;
+}
+
+// With relations
+async function getUserWithSessions(id: string): Promise<UserWithSessions | null> {
+  return prisma.user.findUnique({
+    where: { id },
+    include: {
+      sessions: true,
+    },
+  });
+}
+
+// Generic query helper
+async function findMany<T extends object>(
+  model: keyof typeof prisma,
+  args: any
+): Promise<T[]> {
+  const client = prisma[model as any];
+  return client.findMany(args) as Promise<T[]>;
+}
+```
+
+---
+
+## API Route Type Safety
+
+### Request/Response Typing
+
+```typescript
+// app/api/sessions/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { Session } from '@/lib/types';
+import { z } from 'zod';
+
+// Request validation schema
+const CreateSessionSchema = z.object({
+  organizationId: z.string().uuid(),
+  workshopType: z.enum(['roi-discovery', 'cost-benefit', 'investment-analysis']),
+});
+
+type CreateSessionRequest = z.infer<typeof CreateSessionSchema>;
+
+// Response types
+type SessionResponse = Session & {
+  expiresAt: Date;
+};
+
+// Type-safe handler
+export async function POST(request: NextRequest): Promise<NextResponse<SessionResponse | { error: string }>> {
+  try {
+    const body = await request.json();
+    const { organizationId, workshopType } = CreateSessionSchema.parse(body);
+
+    const session = await prisma.session.create({
+      data: {
+        organizationId,
+        workshopType,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    return NextResponse.json(session);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request' },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(): Promise<NextResponse<SessionResponse[]>> {
+  const sessions = await prisma.session.findMany({
+    orderBy: { createdAt: 'desc' },
+  });
+  return NextResponse.json(sessions);
+}
+```
+
+---
+
+## Validation with Zod
+
+### Schema Definition
+
+```typescript
+// lib/schemas/index.ts
+import { z } from 'zod';
+
+// Business metrics schema
+export const MetricsSchema = z.object({
+  annualRevenue: z.number().positive('Must be greater than 0'),
+  annualCost: z.number().positive(),
+  implementationCost: z.number().nonnegative(),
+  discountRate: z.number().min(0).max(1),
+});
+
+export type Metrics = z.infer<typeof MetricsSchema>;
+
+// ROI calculation input
+export const ROICalculationSchema = z.object({
+  sessionId: z.string().uuid(),
+  metrics: MetricsSchema,
+  yearsToAnalyze: z.number().int().min(1).max(50),
+});
+
+export type ROICalculation = z.infer<typeof ROICalculationSchema>;
+
+// Coerce types (string to number)
+export const CoercedMetricsSchema = z.object({
+  annualRevenue: z.coerce.number().positive(),
+  annualCost: z.coerce.number().positive(),
+});
+```
+
+### Validation in Components
+
+```typescript
+// app/(workshop)/page.tsx
+import { MetricsSchema, type Metrics } from '@/lib/schemas';
+
+export default function WorkshopPage() {
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  async function handleSubmit(formData: FormData) {
+    try {
+      const data = {
+        annualRevenue: parseFloat(formData.get('revenue') as string),
+        annualCost: parseFloat(formData.get('cost') as string),
+        implementationCost: parseFloat(formData.get('implementation') as string),
+        discountRate: 0.1,
+      };
+
+      const validated = MetricsSchema.parse(data);
+      setMetrics(validated);
+      setErrors({});
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMap = error.flatten().fieldErrors;
+        setErrors(
+          Object.entries(errorMap).reduce(
+            (acc, [key, messages]) => ({
+              ...acc,
+              [key]: messages?.[0] || 'Invalid input',
+            }),
+            {}
+          )
+        );
+      }
+    }
+  }
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      handleSubmit(new FormData(e.currentTarget));
+    }}>
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+---
+
+## State Management with Zustand
+
+### Store Typing
+
+```typescript
+// stores/sessionStore.ts
+import { create } from 'zustand';
+import { Session, Message } from '@/lib/types';
+
+// State interface
+interface SessionState {
+  // State
+  session: Session | null;
+  messages: Message[];
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  initializeSession: (session: Session) => void;
+  addMessage: (message: Message) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  clearSession: () => void;
+}
+
+// Create store with strict typing
+export const useSessionStore = create<SessionState>((set) => ({
+  // Initial state
+  session: null,
+  messages: [],
+  isLoading: false,
+  error: null,
+
+  // Actions
+  initializeSession: (session) => set({ session, messages: [] }),
+
+  addMessage: (message) =>
+    set((state) => ({
+      messages: [...state.messages, message],
+    })),
+
+  setLoading: (loading) => set({ isLoading: loading }),
+
+  setError: (error) => set({ error }),
+
+  clearSession: () =>
+    set({
+      session: null,
+      messages: [],
+      error: null,
+    }),
+}));
+
+// Usage in components
+export function useSession() {
+  return useSessionStore((state) => state.session);
+}
+
+export function useMessages() {
+  return useSessionStore((state) => state.messages);
+}
+```
+
+### Complex State Updates
+
+```typescript
+// Typed reducer pattern
+export const useWorkshopStore = create<WorkshopState>((set) => ({
+  // State
+  metrics: null,
+  roiReport: null,
+
+  // Action with proper typing
+  updateMetrics: (newMetrics: Metrics) =>
+    set((state) => ({
+      metrics: { ...state.metrics, ...newMetrics },
+      // Invalidate report when metrics change
+      roiReport: null,
+    })),
+
+  // Async action (with promise)
+  calculateROI: async (metrics: Metrics): Promise<ROIReport> =>
+    set(async (state) => {
+      const report = await calculateROI(metrics);
+      return { roiReport: report };
+    }),
+}));
+```
+
+---
+
+## Error Handling Patterns
+
+### Custom Error Types
+
+```typescript
+// lib/errors/index.ts
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode: number = 500,
+    public context?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super(message, 'VALIDATION_ERROR', 400, context);
+    this.name = 'ValidationError';
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(resource: string, id: string) {
+    super(`${resource} not found: ${id}`, 'NOT_FOUND', 404);
+    this.name = 'NotFoundError';
+  }
+}
+
+export class AuthenticationError extends AppError {
+  constructor(message = 'Unauthorized') {
+    super(message, 'UNAUTHORIZED', 401);
+    this.name = 'AuthenticationError';
+  }
+}
+```
+
+### Error Handling in Handlers
+
+```typescript
+// lib/handlers/apiHandler.ts
+type ApiHandler<Req, Res> = (
+  req: NextRequest,
+  data: Req
+) => Promise<Res>;
+
+export function withErrorHandling<Req, Res>(
+  handler: ApiHandler<Req, Res>,
+  schema: z.ZodSchema
+) {
+  return async (request: NextRequest): Promise<NextResponse<Res | ApiErrorResponse>> => {
+    try {
+      const body = await request.json();
+      const validated = schema.parse(body);
+      const result = await handler(request, validated);
+      return NextResponse.json(result);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return NextResponse.json(
+          {
+            error: error.message,
+            code: error.code,
+            context: error.context,
+          },
+          { status: error.statusCode }
+        );
+      }
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          {
+            error: 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            context: error.flatten(),
+          },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        {
+          error: 'Internal server error',
+          code: 'INTERNAL_ERROR',
+        },
+        { status: 500 }
+      );
+    }
+  };
+}
+```
+
+---
+
+## Session Management
+
+### Session Types
+
+```typescript
+// lib/types/session.ts
+export interface Workshop Session {
+  id: string;
+  organizationId: string;
+  userId?: string;
+  workshopType: WorkshopType;
+  status: SessionStatus;
+  createdAt: Date;
+  expiresAt: Date;
+  updatedAt: Date;
+}
+
+export type SessionStatus =
+  | 'active'
+  | 'paused'
+  | 'completed'
+  | 'expired';
+
+export type WorkshopType =
+  | 'roi-discovery'
+  | 'cost-benefit'
+  | 'investment-analysis';
+
+// Message in session
+export interface Message {
+  id: string;
+  sessionId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+// Session with messages
+export type SessionWithMessages = WorkshopSession & {
+  messages: Message[];
+};
+```
+
+### Session Service
+
+```typescript
+// lib/services/sessionService.ts
+import { WorkshopSession, SessionStatus } from '@/lib/types/session';
+
+export class SessionService {
+  static async createSession(
+    organizationId: string,
+    workshopType: WorkshopType
+  ): Promise<WorkshopSession> {
+    return prisma.session.create({
+      data: {
+        organizationId,
+        workshopType,
+        status: 'active',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+  }
+
+  static async getSession(
+    id: string
+  ): Promise<WorkshopSession | null> {
+    return prisma.session.findUnique({
+      where: { id },
+    });
+  }
+
+  static async updateSessionStatus(
+    id: string,
+    status: SessionStatus
+  ): Promise<WorkshopSession> {
+    return prisma.session.update({
+      where: { id },
+      data: { status, updatedAt: new Date() },
+    });
+  }
+
+  static async isSessionExpired(session: WorkshopSession): Promise<boolean> {
+    return new Date() > session.expiresAt;
+  }
+}
+```
+
+---
+
+## ROI Calculation Types
+
+### Input/Output Types
+
+```typescript
+// lib/types/roi.ts
+export interface BusinessMetrics {
+  annualRevenue: number;
+  annualCost: number;
+  implementationCost: number;
+  discountRate: number;
+  yearsToAnalyze: number;
+}
+
+export interface ROIReport {
+  sessionId: string;
+  metrics: BusinessMetrics;
+
+  // Calculated values
+  npv: number; // Net Present Value
+  irr: number; // Internal Rate of Return
+  paybackPeriod: number; // years
+  roi: number; // percentage
+  confidenceScore: number; // 0-1
+
+  generatedAt: Date;
+}
+
+export interface ConfidenceFactors {
+  completeness: number;
+  dataQuality: number;
+  historicalAccuracy: number;
+  industryComparison: number;
+}
+
+export type ROIWithConfidence = ROIReport & {
+  confidenceFactors: ConfidenceFactors;
+};
+```
+
+### Calculation Service
+
+```typescript
+// lib/services/roiService.ts
+export class ROICalculator {
+  static calculateNPV(
+    metrics: BusinessMetrics
+  ): number {
+    let npv = -metrics.implementationCost;
+    const annualBenefit = metrics.annualRevenue - metrics.annualCost;
+
+    for (let year = 1; year <= metrics.yearsToAnalyze; year++) {
+      npv += annualBenefit / Math.pow(1 + metrics.discountRate, year);
+    }
+
+    return npv;
+  }
+
+  static calculateROI(
+    metrics: BusinessMetrics
+  ): number {
+    const totalBenefit = (metrics.annualRevenue - metrics.annualCost) * metrics.yearsToAnalyze;
+    const roi = (totalBenefit - metrics.implementationCost) / metrics.implementationCost;
+    return roi * 100; // percentage
+  }
+
+  static calculateConfidence(factors: ConfidenceFactors): number {
+    const weights = {
+      completeness: 0.3,
+      dataQuality: 0.25,
+      historicalAccuracy: 0.2,
+      industryComparison: 0.15,
+    };
+
+    return (
+      factors.completeness * weights.completeness +
+      factors.dataQuality * weights.dataQuality +
+      factors.historicalAccuracy * weights.historicalAccuracy +
+      factors.industryComparison * weights.industryComparison
+    );
+  }
+
+  static generateReport(
+    sessionId: string,
+    metrics: BusinessMetrics
+  ): ROIWithConfidence {
+    return {
+      sessionId,
+      metrics,
+      npv: this.calculateNPV(metrics),
+      irr: this.estimateIRR(metrics),
+      paybackPeriod: this.calculatePaybackPeriod(metrics),
+      roi: this.calculateROI(metrics),
+      confidenceScore: this.calculateConfidence({
+        completeness: 0.8,
+        dataQuality: 0.75,
+        historicalAccuracy: 0.7,
+        industryComparison: 0.65,
+      }),
+      confidenceFactors: {
+        completeness: 0.8,
+        dataQuality: 0.75,
+        historicalAccuracy: 0.7,
+        industryComparison: 0.65,
+      },
+      generatedAt: new Date(),
+    };
+  }
+
+  private static estimateIRR(metrics: BusinessMetrics): number {
+    // Simplified IRR calculation
+    const annualBenefit = metrics.annualRevenue - metrics.annualCost;
+    return (annualBenefit / metrics.implementationCost) / metrics.yearsToAnalyze;
+  }
+
+  private static calculatePaybackPeriod(metrics: BusinessMetrics): number {
+    const annualBenefit = metrics.annualRevenue - metrics.annualCost;
+    return metrics.implementationCost / annualBenefit;
+  }
+}
+```
+
+---
+
+## Export Types
+
+### Report Generation
+
+```typescript
+// lib/types/export.ts
+export type ExportFormat = 'pdf' | 'excel' | 'json';
+
+export interface ExportRequest {
+  sessionId: string;
+  reportId: string;
+  format: ExportFormat;
+  includeCharts: boolean;
+  includeDetailed: boolean;
+}
+
+export interface ExportResponse {
+  success: boolean;
+  downloadUrl?: string;
+  error?: string;
+  timestamp: Date;
+}
+
+// PDF-specific
+export interface PDFReportContent {
+  title: string;
+  sessionId: string;
+  executiveSummary: string;
+  metrics: BusinessMetrics;
+  results: ROIReport;
+  recommendations: string[];
+  generatedDate: Date;
+}
+
+// Excel-specific
+export interface ExcelSheet {
+  name: string;
+  headers: string[];
+  rows: (string | number)[][];
+}
+```
+
+---
+
+## API Client Types
+
+### Typed Fetch Wrapper
+
+```typescript
+// lib/api/client.ts
+export class ApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || '') {
+    this.baseUrl = baseUrl;
+  }
+
+  async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      throw new ApiError(
+        `Request failed: ${response.statusText}`,
+        response.status
+      );
+    }
+
+    return response.json();
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint);
+  }
+
+  async post<T>(endpoint: string, data: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'DELETE',
+    });
+  }
+}
+
+export const apiClient = new ApiClient();
+
+// Usage
+async function fetchSession(id: string): Promise<WorkshopSession> {
+  return apiClient.get(`/api/sessions/${id}`);
+}
+```
+
+---
+
+## Common Bloom Patterns
+
+### Session Recovery
+
+```typescript
+// lib/services/sessionRecovery.ts
+export async function resumeSession(
+  sessionId: string
+): Promise<SessionWithMessages | null> {
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    include: { messages: { orderBy: { timestamp: 'asc' } } },
+  });
+
+  if (!session) {
+    throw new NotFoundError('Session', sessionId);
+  }
+
+  if (await SessionService.isSessionExpired(session)) {
+    await SessionService.updateSessionStatus(sessionId, 'expired');
+    throw new AppError('Session has expired', 'SESSION_EXPIRED', 410);
+  }
+
+  return session;
+}
+```
+
+### Metrics Validation
+
+```typescript
+// lib/validation/metrics.ts
+export function validateMetrics(metrics: Metrics): ValidationError | null {
+  const errors: Record<string, string> = {};
+
+  if (metrics.annualRevenue <= 0) {
+    errors.annualRevenue = 'Must be greater than 0';
+  }
+
+  if (metrics.discountRate < 0 || metrics.discountRate > 1) {
+    errors.discountRate = 'Must be between 0 and 1';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return new ValidationError('Invalid metrics', errors);
+  }
+
+  return null;
+}
+```
+
+---
+
+## Type Safety Checklist for Bloom
+
+- [ ] All Prisma models have corresponding types
+- [ ] API request/response schemas validated with Zod
+- [ ] Zustand stores fully typed with interfaces
+- [ ] Error handling uses custom error classes
+- [ ] Session operations properly typed
+- [ ] ROI calculations return correct types
+- [ ] Exports use discriminated unions for formats
+- [ ] API client methods properly typed
+- [ ] Form data validated on submission
+- [ ] All async operations return Promises with types
+
+---
+
+**Last Updated**: November 8, 2025
+**Status**: Production-Ready

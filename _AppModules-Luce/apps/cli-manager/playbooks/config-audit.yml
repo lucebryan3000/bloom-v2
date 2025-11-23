@@ -1,0 +1,93 @@
+---
+name: config-audit
+description: Audit scripts for configuration management compliance
+version: 1.0.0
+created: 2025-10-27
+---
+
+# Configuration Compliance Audit Playbook
+
+## Purpose
+Run automated audit to detect configuration management violations in Axon Menu scripts.
+
+## Steps
+
+### 1. Pre-Audit Checks
+- Verify validation script exists: `scripts/test/validate_config_usage.sh`
+- Confirm PROJECT_ROOT is set correctly
+- Ensure reports directory exists
+
+### 2. Run Validation Script
+Execute the validation script to scan all scripts:
+```bash
+cd "${PROJECT_ROOT}"
+./scripts/test/validate_config_usage.sh
+```
+
+### 3. Parse Results
+The script generates three reports:
+- `reports/config_audit_summary.txt` - Quick summary with counts
+- `reports/config_violations.txt` - Line-by-line violations
+- `reports/config_audit_detailed.md` - Comprehensive analysis
+
+### 4. Analyze Violations
+
+**Violation Types:**
+- **CRITICAL** - Missing config source (scripts can't access config)
+- **HIGH** - Hard-coded paths (breaks portability)
+- **MEDIUM** - Duplicate variables (causes inconsistency)
+
+### 5. Prioritize Actions
+
+Priority order:
+1. Fix CRITICAL violations first (missing config source)
+2. Fix HIGH violations (hard-coded paths)
+3. Fix MEDIUM violations (duplicate variables)
+
+### 6. Generate Action Plan
+
+For each violation type, identify:
+- Number of scripts affected
+- Common patterns
+- Auto-fixable vs manual review required
+- Estimated effort
+
+### 7. Present Results
+
+**Format:**
+```
+Configuration Compliance Audit Results
+======================================
+
+Total Scripts: N
+Violations: M
+Compliance Rate: X%
+
+CRITICAL Violations: A scripts
+  - Missing config source
+
+HIGH Violations: B scripts
+  - Hard-coded paths detected
+
+MEDIUM Violations: C scripts
+  - Duplicate variables found
+
+Recommended Actions:
+1. [Priority 1] Fix A scripts missing config source
+2. [Priority 2] Replace hard-coded paths in B scripts
+3. [Priority 3] Remove duplicate variables in C scripts
+
+Detailed Report: reports/config_audit_detailed.md
+```
+
+## Success Criteria
+- ✓ Validation script executed successfully
+- ✓ All three reports generated
+- ✓ Violations categorized by severity
+- ✓ Action plan provided with priorities
+- ✓ Detailed remediation steps available
+
+## Notes
+- Run this audit before commits to ensure compliance
+- Audit is read-only and safe to run anytime
+- Zero violations is the goal (100% compliance)

@@ -1,0 +1,33 @@
+# .claudeignore - Exclude large context files from automatic loading
+# These files can still be accessed via slash commands or manual Read tool
+
+# === AGENTS (Excluded from auto-load) ===
+# Load on-demand via /agent-* commands
+# Exception: backend-typescript-architect.md is NOT excluded (used frequently)
+
+agents/cli-manager/
+agents/cli-manager.md
+agents/docs-manager.md
+agents/linux-ubuntu-architect.md
+agents/python-backend-engineer.md
+agents/senior-code-reviewer.md
+agents/spec-analyst.md
+agents/spec-architect.md
+agents/spec-developer.md
+agents/spec-orchestrator.md
+agents/spec-planner.md
+agents/spec-reviewer.md
+agents/spec-tester.md
+agents/spec-validator.md
+agents/ui-engineer.md
+
+# === PROMPTS (Excluded - rarely used) ===
+prompts/comprehensive-test-plan.md
+prompts/refactor-remove-aws-s3.md
+
+# === DOCS (Excluded - reference material) ===
+# Keep these excluded; load via slash commands when needed
+# Uncomment if you want to exclude specific docs
+ docs/api-reference.md
+ docs/melissa-context.md
+ docs/roi-formulas.md

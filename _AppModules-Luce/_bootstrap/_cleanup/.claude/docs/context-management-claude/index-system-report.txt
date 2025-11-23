@@ -1,0 +1,130 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    INDEX SYSTEM COMPREHENSIVE REPORT                         ║
+║              Tier-Aware Documentation Discovery & Context Management        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+📊 REPORT GENERATED: 2025-11-17 16:33:36
+📁 Project Root: /home/luce/apps/bloom
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 TIER 1: ALWAYS PRELOADED (Core Project Context)
+════════════════════════════════════════════════════════════════════════════════
+
+Status: ✓ Loaded on every conversation
+Purpose: Essential project configuration and context initialization
+Context Cost: Baseline (fixed overhead ~1-2KB)
+
+Files:
+  ✓ .claude/docs/context-management-claude/_index-master.md (12K)
+
+════════════════════════════════════════════════════════════════════════════════
+📌 TIER 2: CORE DEVELOPMENT INDEXES (Development Tools & Workflows)
+════════════════════════════════════════════════════════════════════════════════
+
+Status: Load on demand via specific commands
+Purpose: Index files for finding agents, commands, prompts, and local tools
+Context Cost: ~2-4KB when loaded (small metadata catalogs)
+
+Index Files:
+  📄 .claude/docs/context-management-claude/index-agents.md (4.0K)
+     → Indexes: 15 items
+  📄 .claude/docs/context-management-claude/index-gitignore-claude.ignore.md (4.0K)
+     → Indexes: 36 items
+  📄 .claude/docs/context-management-claude/index-prompts.md (4.0K)
+     → Indexes: 1 items
+  📄 .claude/docs/context-management-claude/index-slash-commands.md (4.0K)
+     → Indexes: 26 items
+
+════════════════════════════════════════════════════════════════════════════════
+📚 TIER 3: SPECIALIZED REFERENCE INDEXES (Technical Documentation)
+════════════════════════════════════════════════════════════════════════════════
+
+Status: Load on demand for specific topics
+Purpose: Comprehensive catalogs of technical knowledge, build artifacts, sessions
+Context Cost: ~2-8KB each when loaded
+
+Index Files:
+  📚 index-build-artifacts.md (16K)
+     → Indexes: 8 items
+  📚 index-docs-features.md (16K)
+     → Indexes: 8 items
+  📚 index-docs-operations.md (16K)
+     → Indexes: 35 items
+  📚 index-kb-knowledge-base.md (16K)
+     → Indexes: 31 items
+  📚 index-other.md (4.0K)
+     → Indexes: 2 items
+  📚 index-sessions-logs.md (12K)
+     → Indexes: 10 items
+
+════════════════════════════════════════════════════════════════════════════════
+🌐 TIER 4: PROJECT-WIDE DOCUMENTATION INDEXES (Specialized References)
+════════════════════════════════════════════════════════════════════════════════
+
+Status: Load for specific technical deep-dives
+Purpose: Detailed documentation for KB, features, operations, architecture
+Context Cost: Variable (1-20KB depending on scope)
+
+Index Files Found:
+  🔍 [0;34mℹ[0m Scanning entire project for index files... ()
+     → Indexes: 0 items
+  🔍 _build/_completed/planning-archive-2025-11/Docker Conversion/02_prompt_reindex_cli_migration.md (4.0K)
+     → Indexes: 0 items
+  🔍 .claude/index-gitignore-claude.ignore.md (8.0K)
+     → Indexes: 0 items
+  🔍 docs/archive/optimizations/index.md (12K)
+     → Indexes: 0 items
+  🔍 .gitignore-files-index.md (5.3M)
+     → Indexes: 0 items
+
+════════════════════════════════════════════════════════════════════════════════
+📊 SUMMARY STATISTICS
+════════════════════════════════════════════════════════════════════════════════
+
+Total Index Files Found:     16
+  ├─ Tier 1 (Always loaded):  1 files
+  ├─ Tier 2 (Core development): 4 files (~78 indexed items)
+  ├─ Tier 3 (Specialized):    6 files (~94 indexed items)
+  └─ Tier 4 (Project-wide):   5 files (~0 indexed items)
+
+Total Items Indexed:        ~172+ files across all indexes
+
+════════════════════════════════════════════════════════════════════════════════
+💾 CONTEXT IMPACT ANALYSIS
+════════════════════════════════════════════════════════════════════════════════
+
+Tier 1 Preload Cost:        ~1-2 KB (always in context)
+Tier 2 On-Demand Cost:      ~2-4 KB (when loaded)
+Tier 3 On-Demand Cost:      ~8-20 KB (when loaded)
+Tier 4 On-Demand Cost:      Variable (1-50KB depending on scope)
+
+WITHOUT indexing:
+  ❌ Would preload all ~172+ indexed files
+  ❌ Context bloat: ~140,000+ tokens
+
+WITH smart indexing strategy:
+  ✅ Tier 1 preload: ~1,500 tokens (baseline)
+  ✅ Tier 2-4 on-demand: Loaded as needed
+  ✅ Context savings: 92%+ (140K tokens freed)
+
+════════════════════════════════════════════════════════════════════════════════
+✨ RECOMMENDATIONS
+════════════════════════════════════════════════════════════════════════════════
+
+1. TIER 1: Keep CLAUDE.md and _index-master.md in .claudeignore exceptions
+   → These are always loaded and provide essential context
+
+2. TIER 2: Reference index-agents.md, index-commands.md when seeking tools
+   → Provides discovery without loading full agent definitions
+
+3. TIER 3: Use specialized indexes for technical deep-dives
+   → Load index-kb-knowledge-base.md for framework/library patterns
+   → Load index-build-artifacts.md for design decisions & history
+
+4. TIER 4: Search project indexes for domain-specific documentation
+   → docs/kb/*/INDEX.md for technology patterns
+   → docs/_BloomAppDocs/*/INDEX.md for feature documentation
+
+════════════════════════════════════════════════════════════════════════════════
+Report generated: /tmp/index-system-report-20251117-163336.txt

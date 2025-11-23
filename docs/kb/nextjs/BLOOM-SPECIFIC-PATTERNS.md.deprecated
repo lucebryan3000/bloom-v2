@@ -1,0 +1,1708 @@
+---
+id: nextjs-bloom-specific-patterns
+topic: nextjs
+file_role: patterns
+profile: full
+difficulty_level: intermediate
+kb_version: 3.1
+prerequisites: ['react', 'javascript']
+related_topics: ['react', 'typescript', 'web']
+embedding_keywords: [nextjs, patterns, examples, integration]
+last_reviewed: 2025-11-13
+---
+
+# Next.js Patterns in Appmelia Bloom
+
+**Real-World Next.js Patterns from the Bloom Codebase**
+
+This document shows actual Next.js patterns used in the Appmelia Bloom project, with real code examples from production.
+
+---
+
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+2. [Database Integration (Prisma + SQLite)](#database-integration-prisma--sqlite)
+3. [API Route Patterns](#api-route-patterns)
+4. [Client Components](#client-components)
+5. [State Management (Zustand)](#state-management-zustand)
+6. [File Upload System](#file-upload-system)
+7. [Server-Sent Events (SSE)](#server-sent-events-sse)
+8. [Error Handling](#error-handling)
+9. [Validation with Zod](#validation-with-zod)
+10. [Logging System](#logging-system)
+11. [Health Checks](#health-checks)
+12. [Authentication Patterns](#authentication-patterns)
+13. [Styling with Tailwind + shadcn/ui](#styling-with-tailwind--shadcnui)
+
+---
+
+## Project Overview
+
+**Appmelia Bloom** is a Next.js 16.0.1 application using:
+- **Framework**: Next.js App Router
+- **Database**: SQLite with Prisma ORM (DELETE journal mode for dev stability)
+- **State**: Zustand for client-side state
+- **UI**: Tailwind CSS + shadcn/ui components
+- **Validation**: Zod schemas
+- **AI**: Anthropic Claude via Vercel AI SDK
+- **Logging**: Custom unified logging system with debug package
+
+---
+
+## Database Integration (Prisma + SQLite)
+
+### Prisma Client Setup
+
+**File: `/lib/db/client.ts`**
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+
+/**
+ * Connection pool configuration
+ * These are set via DATABASE_URL query params in production
+ * Example: ?connection_limit=10&pool_timeout=10
+ */
+const POOL_CONFIG = {
+  connection_limit: 10, // Max concurrent connections
+  pool_timeout: 10, // Seconds to wait for connection
+};
+
+/**
+ * Log levels based on environment
+ */
+const LOG_CONFIG: Array<"error" | "warn"> =
+  process.env.NODE_ENV === "development"
+    ? ["error", "warn"]
+    : ["error"];
+
+/**
+ * Global Prisma client instance (singleton pattern)
+ */
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+/**
+ * Create Prisma client with connection pooling
+ */
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: LOG_CONFIG,
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  });
+
+// Prevent multiple instances in development (hot reload)
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+
+/**
+ * Graceful shutdown handler
+ */
+async function shutdown() {
+  console.log('[Database] Disconnecting Prisma client...');
+  await prisma.$disconnect();
+  console.log('[Database] Prisma client disconnected successfully');
+}
+
+// Register shutdown handlers (only in server environment)
+if (typeof process !== 'undefined' && process.on) {
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+  process.on("beforeExit", shutdown);
+}
+
+/**
+ * Health check for database connection
+ */
+export async function checkDatabaseHealth(): Promise<{
+  healthy: boolean;
+  latency?: number;
+  error?: string;
+}> {
+  const start = Date.now();
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+
+    return {
+      healthy: true,
+      latency: Date.now() - start,
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+```
+
+**Key Patterns:**
+- ✅ Singleton pattern prevents multiple instances in dev (hot reload)
+- ✅ Environment-specific logging configuration
+- ✅ Graceful shutdown on process signals
+- ✅ Health check utility for monitoring
+- ✅ Connection pooling configuration via DATABASE_URL
+
+**Environment Variables:**
+```bash
+# .env.local
+DATABASE_URL="file:./bloom.db"
+```
+
+---
+
+## API Route Patterns
+
+### Session Management API
+
+**File: `/app/api/sessions/route.ts`**
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { prisma } from "@/lib/db/client";
+import { SessionIdGenerator } from "@/lib/sessions/id-generator";
+import { logger } from "@/lib/logger";
+import { logValidationError } from "@/lib/logger-helpers";
+
+const createSessionSchema = z.object({
+  userId: z.string().optional(),
+  organizationId: z.string().optional(),
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { userId, organizationId } = createSessionSchema.parse(body);
+
+    // Generate new WS-format session ID
+    const sessionId = await SessionIdGenerator.generate();
+
+    // Create new session
+    const session = await prisma.session.create({
+      data: {
+        id: sessionId,
+        userId: userId || null,
+        organizationId: organizationId || null,
+        status: "active",
+        startedAt: new Date(),
+        transcript: JSON.stringify([]),
+        metadata: JSON.stringify({}),
+      },
+    });
+
+    // Log session creation success
+    logger.logSessionCreated(session.id, session.userId || undefined);
+
+    return NextResponse.json({
+      sessionId: session.id,
+      status: session.status,
+      startedAt: session.startedAt,
+    });
+  } catch (error) {
+    // Handle validation errors
+    if (error instanceof z.ZodError) {
+      logValidationError('sessions:create', error.errors);
+
+      return NextResponse.json(
+        { error: "Invalid request data", details: error.errors },
+        { status: 400 },
+      );
+    }
+
+    // Log internal server error with full context
+    logger.error('Session creation failed', 'api', {
+      endpoint: '/api/sessions',
+      method: 'POST',
+      error: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : 'Unknown',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get("sessionId");
+    const userId = searchParams.get("userId");
+    const status = searchParams.get("status");
+
+    if (sessionId) {
+      // Get specific session
+      const session = await prisma.session.findUnique({
+        where: { id: sessionId },
+        include: {
+          responses: true,
+          roiReport: true,
+        },
+      });
+
+      if (!session) {
+        return NextResponse.json(
+          { error: "Session not found" },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json(session);
+    }
+
+    if (status) {
+      // Get all sessions with specific status
+      const sessions = await prisma.session.findMany({
+        where: {
+          status: status as "active" | "completed" | "abandoned" | "idle",
+        },
+        select: {
+          id: true,
+          startedAt: true,
+          completedAt: true,
+          status: true,
+          metadata: true,
+          responses: {
+            select: {
+              id: true,
+            },
+          },
+        },
+        orderBy: { startedAt: "desc" },
+        take: 50,
+      });
+
+      return NextResponse.json({
+        sessions: sessions.map((session) => ({
+          id: session.id,
+          startedAt: session.startedAt.toISOString(),
+          completedAt: session.completedAt?.toISOString(),
+          status: session.status,
+          responseCount: session.responses.length,
+          metadata: session.metadata,
+        })),
+      });
+    }
+
+    // No filters - return all sessions
+    const sessions = await prisma.session.findMany({
+      select: {
+        id: true,
+        startedAt: true,
+        completedAt: true,
+        status: true,
+        metadata: true,
+        responses: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: { startedAt: "desc" },
+      take: 50,
+    });
+
+    return NextResponse.json({
+      sessions: sessions.map((session) => ({
+        id: session.id,
+        startedAt: session.startedAt.toISOString(),
+        completedAt: session.completedAt?.toISOString(),
+        status: session.status,
+        responseCount: session.responses.length,
+        metadata: session.metadata,
+      })),
+    });
+  } catch (error) {
+    logger.error('Session retrieval failed', 'api', {
+      endpoint: '/api/sessions',
+      method: 'GET',
+      error: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : 'Unknown',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+```
+
+**Key Patterns:**
+- ✅ Zod schema validation for request body
+- ✅ Separate error handling for validation vs server errors
+- ✅ Comprehensive logging with context
+- ✅ Query parameter filtering
+- ✅ Prisma relations with `include`
+- ✅ Pagination with `take`
+- ✅ Proper HTTP status codes (400, 404, 500)
+
+---
+
+### Chat API with Custom Error Classes
+
+**File: `/app/api/melissa/chat/route.ts`**
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { prisma } from "@/lib/db/client";
+import { MelissaAgent } from "@/lib/melissa/agent";
+import { logger } from "@/lib/logger";
+import { logValidationError } from "@/lib/logger-helpers";
+
+const chatRequestSchema = z.object({
+  sessionId: z.string().min(1),
+  message: z.string().min(1),
+});
+
+// Custom error types for better error handling
+class ConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConfigurationError";
+  }
+}
+
+class DatabaseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DatabaseError";
+  }
+}
+
+class AIServiceError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AIServiceError";
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Validate environment configuration
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new ConfigurationError(
+        "AI service not configured. Please contact support.",
+      );
+    }
+
+    // Parse and validate request body
+    const body = await request.json();
+    const { sessionId, message } = chatRequestSchema.parse(body);
+
+    // Get or create session
+    let session;
+    try {
+      session = await prisma.session.findUnique({
+        where: { id: sessionId },
+        include: { responses: true },
+      });
+
+      if (!session) {
+        // Create new session
+        session = await prisma.session.create({
+          data: {
+            id: sessionId,
+            userId: "",
+            organizationId: "",
+            status: "active",
+            startedAt: new Date(),
+            transcript: JSON.stringify([]),
+            metadata: JSON.stringify({}),
+          },
+          include: { responses: true },
+        });
+      }
+
+      if (!session) {
+        throw new DatabaseError("Failed to create or retrieve session");
+      }
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(
+        "Unable to access session data. Please try again.",
+      );
+    }
+
+    // Parse existing conversation state from session
+    const existingTranscript = session.transcript
+      ? JSON.parse(session.transcript as string)
+      : [];
+    const existingMetadata = session.metadata
+      ? JSON.parse(session.metadata as string)
+      : {};
+
+    // Initialize Melissa agent with session state
+    let agent;
+    try {
+      agent = new MelissaAgent({
+        sessionId,
+        userId: session.userId || undefined,
+        organizationId: session.organizationId || undefined,
+        existingState: {
+          transcript: existingTranscript,
+          phase: existingMetadata.phase || "greeting",
+          questionCount: existingMetadata.questionCount || 0,
+          extractedMetrics: existingMetadata.extractedMetrics || {},
+          flags: existingMetadata.flags || {
+            hasGreeted: false,
+            hasProcessName: false,
+            hasTimeInvestment: false,
+            hasTeamSize: false,
+            hasCostFactors: false,
+            hasAutomationEstimate: false,
+            readyForCalculation: false,
+            needsValidation: false,
+            uncertaintyFlags: [],
+          },
+          confidenceScore: existingMetadata.confidenceScore || 0,
+          startedAt: session.startedAt,
+          lastActivityAt: new Date(),
+        },
+      });
+    } catch (error) {
+      throw new AIServiceError(
+        "Failed to initialize AI assistant. Please try again.",
+      );
+    }
+
+    // Handle initialization message
+    if (message === "__INIT__") {
+      const greetingMessage =
+        "Hello! I'm Melissa, your AI business consultant. I'm here to help you discover the ROI potential in your business processes. This will take about 15 minutes.\n\nLet's start: What business process would you like to optimize or automate?";
+
+      await prisma.session.update({
+        where: { id: sessionId },
+        data: {
+          transcript: JSON.stringify([
+            {
+              id: `msg-${Date.now()}-assistant`,
+              role: "assistant",
+              content: greetingMessage,
+              timestamp: new Date(),
+            },
+          ]),
+          metadata: JSON.stringify({
+            phase: "greeting",
+            questionCount: 1,
+            extractedMetrics: {},
+            flags: {
+              hasGreeted: true,
+              hasProcessName: false,
+              hasTimeInvestment: false,
+              hasTeamSize: false,
+              hasCostFactors: false,
+              hasAutomationEstimate: false,
+              readyForCalculation: false,
+              needsValidation: false,
+              uncertaintyFlags: [],
+            },
+            confidenceScore: 0,
+          }),
+        },
+      });
+
+      return NextResponse.json({
+        message: greetingMessage,
+        phase: "greeting",
+        progress: 0,
+        needsUserInput: true,
+      });
+    }
+
+    // Process user message
+    let response;
+    try {
+      response = await agent.processMessage(message);
+    } catch (error) {
+      logger.error('AI message processing failed', 'api', {
+        endpoint: '/api/melissa/chat',
+        sessionId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      throw new AIServiceError(
+        "AI assistant is temporarily unavailable. Please try again in a moment.",
+      );
+    }
+
+    // Save user response to database
+    try {
+      await prisma.response.create({
+        data: {
+          sessionId,
+          questionId: `q-${Date.now()}`,
+          question: "User message",
+          answer: message,
+          confidence: response.confidence || 0,
+        },
+      });
+    } catch (error) {
+      logger.warn('Failed to save response to database', 'database', {
+        sessionId,
+        error: error instanceof Error ? error.message : String(error),
+        note: 'Conversation continues despite save failure',
+      });
+      // Don't throw - conversation can continue even if response isn't saved
+    }
+
+    return NextResponse.json(response);
+  } catch (error) {
+    // Log error with full context
+    logger.error('Melissa chat request failed', 'api', {
+      endpoint: '/api/melissa/chat',
+      error: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : 'Unknown',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Handle validation errors
+    if (error instanceof z.ZodError) {
+      logValidationError('melissa:chat', error.errors);
+
+      return NextResponse.json(
+        {
+          error: "Invalid request data",
+          message: "Please check your input and try again.",
+          details: error.errors,
+          retryable: false,
+        },
+        { status: 400 },
+      );
+    }
+
+    // Handle configuration errors
+    if (error instanceof ConfigurationError) {
+      return NextResponse.json(
+        {
+          error: "Configuration Error",
+          message: error.message,
+          retryable: false,
+        },
+        { status: 503 },
+      );
+    }
+
+    // Handle database errors
+    if (error instanceof DatabaseError) {
+      return NextResponse.json(
+        {
+          error: "Database Error",
+          message: error.message,
+          retryable: true,
+        },
+        { status: 503 },
+      );
+    }
+
+    // Handle AI service errors
+    if (error instanceof AIServiceError) {
+      return NextResponse.json(
+        {
+          error: "AI Service Error",
+          message: error.message,
+          retryable: true,
+        },
+        { status: 503 },
+      );
+    }
+
+    // Handle unknown errors
+    return NextResponse.json(
+      {
+        error: "Unexpected Error",
+        message: "An unexpected error occurred. Please try again.",
+        retryable: true,
+      },
+      { status: 500 },
+    );
+  }
+}
+```
+
+**Key Patterns:**
+- ✅ Custom error classes for different error types
+- ✅ User-friendly error messages (no technical details exposed)
+- ✅ Retryable flag in error responses
+- ✅ Environment variable validation
+- ✅ Graceful degradation (conversation continues even if save fails)
+- ✅ Special message handling (`__INIT__`)
+- ✅ JSON parsing with error handling
+
+---
+
+## Client Components
+
+### Monitoring Tab with SSE
+
+**File: `/components/settings/MonitoringTab.tsx`**
+
+```typescript
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import * as React from "react";
+import { Activity, Database, AlertCircle, CheckCircle, AlertTriangle, RefreshCw, Copy } from "lucide-react";
+import { useMonitoringStore } from "@/stores/monitoringStore";
+import { toast } from "@/lib/hooks/use-toast";
+
+interface MonitoringTabProps {
+  isActive?: boolean;
+}
+
+export function MonitoringTab({ isActive = true }: MonitoringTabProps) {
+  const {
+    currentMetrics,
+    logs,
+    logSummary,
+    isLoadingMetrics,
+    isLoadingLogs,
+    metricsError,
+    logsError,
+    fetchMetrics,
+    fetchLogs,
+    addLogEntry, // For SSE push
+  } = useMonitoringStore();
+
+  const [selectedLevels, setSelectedLevels] = useState<Set<string>>(
+    new Set(["ERROR", "WARNING", "INFO", "DEBUG"])
+  );
+  const [selectedSource, setSelectedSource] = useState<string>("all");
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const logsContainerRef = useRef<HTMLDivElement>(null);
+  const [userHasScrolled, setUserHasScrolled] = useState(false);
+  const [isPageVisible, setIsPageVisible] = useState(true);
+  const [logRefreshInterval, setLogRefreshInterval] = useState<number>(() => {
+    // Load saved interval from localStorage, default to 30 minutes
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("bloom-log-refresh-interval");
+      return saved ? parseInt(saved, 10) : 1800000;
+    }
+    return 1800000;
+  });
+
+  // SSE connection state
+  const [sseConnected, setSseConnected] = useState(false);
+  const esRef = useRef<EventSource | null>(null);
+
+  // Track page visibility using Page Visibility API
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadAllMetrics();
+  }, []);
+
+  // Auto-refresh metrics and logs
+  useEffect(() => {
+    const isVisible = isActive && isPageVisible;
+    const effectiveInterval = isVisible ? logRefreshInterval : 2 * 60 * 60 * 1000; // 2 hours when not visible
+
+    const interval = setInterval(() => {
+      loadAllMetrics();
+      setLastRefresh(new Date());
+    }, effectiveInterval);
+
+    return () => clearInterval(interval);
+  }, [logRefreshInterval, isActive, isPageVisible]);
+
+  // SSE connection for real-time logs
+  useEffect(() => {
+    // Only stream when tab is active, visible, and user hasn't scrolled
+    if (!isActive || !isPageVisible || userHasScrolled) {
+      if (esRef.current) {
+        esRef.current.close();
+        esRef.current = null;
+        setSseConnected(false);
+      }
+      return;
+    }
+
+    // Establish SSE connection
+    const es = new EventSource("/api/system/logs/stream");
+    esRef.current = es;
+
+    es.onopen = () => {
+      console.log("[SSE] Connected to log stream");
+      setSseConnected(true);
+    };
+
+    es.onmessage = (evt) => {
+      try {
+        const entry = JSON.parse(evt.data);
+
+        // Only add if level is selected
+        if (selectedLevels.has(entry.level.toUpperCase())) {
+          addLogEntry(entry);
+        }
+      } catch (e) {
+        console.warn("[SSE] Failed to parse log entry:", evt.data);
+      }
+    };
+
+    es.onerror = () => {
+      console.warn("[SSE] Connection error, will auto-reconnect");
+      setSseConnected(false);
+    };
+
+    return () => {
+      console.log("[SSE] Closing connection");
+      es.close();
+      setSseConnected(false);
+    };
+  }, [isActive, isPageVisible, userHasScrolled, selectedLevels, addLogEntry]);
+
+  // Detect user scroll
+  useEffect(() => {
+    const container = logsContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const isAtTop = container.scrollTop < 10;
+      setUserHasScrolled(!isAtTop);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const loadAllMetrics = async () => {
+    await Promise.all([
+      fetchMetrics(),
+      fetchLogs(100, undefined),
+      // ... other fetches
+    ]);
+    setLastRefresh(new Date());
+  };
+
+  const handleCopyLogs = async () => {
+    try {
+      if (filteredLogs.length === 0) {
+        toast.error("No logs to copy");
+        return;
+      }
+
+      const logsText = filteredLogs
+        .map((log) => {
+          const timestamp = log.timestamp ? new Date(log.timestamp).toLocaleString() : "Unknown";
+          const level = log.level || "UNKNOWN";
+          const source = log.source || "unknown";
+          const message = log.message || "";
+          return `[${timestamp}] [${level}] [${source}] ${message}`;
+        })
+        .join("\n");
+
+      await navigator.clipboard.writeText(logsText);
+      toast.success(`Copied ${filteredLogs.length} log entries to clipboard`);
+    } catch (error) {
+      toast.error(`Failed to copy logs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  // Filter logs based on selected levels and source
+  const filteredLogs = (logs || [])
+    .filter((log) => log && selectedLevels.has(log.level))
+    .filter((log) => {
+      if (selectedSource !== "all") {
+        return log.source === selectedSource;
+      }
+      return true;
+    });
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            System Monitoring
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Last updated: {lastRefresh.toLocaleTimeString()}
+          </p>
+        </div>
+        <button
+          onClick={loadAllMetrics}
+          disabled={isLoadingMetrics || isLoadingLogs}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${(isLoadingMetrics || isLoadingLogs) ? 'animate-spin' : ''}`} />
+          Refresh Now
+        </button>
+      </div>
+
+      {/* Logs Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Recent Logs
+            {!userHasScrolled && isActive && (
+              <span className="ml-2 text-xs">
+                {sseConnected ? (
+                  <span className="text-green-500">● Live</span>
+                ) : (
+                  <span className="text-yellow-500">○ Polling</span>
+                )}
+              </span>
+            )}
+          </h3>
+          <button
+            onClick={handleCopyLogs}
+            disabled={filteredLogs.length === 0}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+          >
+            <Copy className="w-4 h-4" />
+            Copy
+          </button>
+        </div>
+
+        <div
+          ref={logsContainerRef}
+          className="bg-gray-900 rounded-lg p-4 max-h-96 overflow-y-auto font-mono text-sm"
+        >
+          {filteredLogs.map((log, index) => (
+            <div
+              key={index}
+              className={`py-1 ${
+                log.level === "ERROR"
+                  ? "text-red-400"
+                  : log.level === "WARNING"
+                  ? "text-yellow-400"
+                  : log.level === "INFO"
+                  ? "text-blue-400"
+                  : "text-gray-400"
+              }`}
+            >
+              <span className="text-gray-500">
+                [{new Date(log.timestamp).toLocaleTimeString()}]
+              </span>{" "}
+              <span className="font-semibold">[{log.level}]</span>{" "}
+              <span className="text-gray-400">[{log.source}]</span> {log.message}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+**Key Patterns:**
+- ✅ `"use client"` directive for client-side hooks
+- ✅ Server-Sent Events (SSE) for real-time log streaming
+- ✅ Page Visibility API to pause updates when tab is hidden
+- ✅ localStorage for persisting user preferences
+- ✅ useRef for DOM manipulation and EventSource management
+- ✅ Conditional rendering based on loading/error states
+- ✅ Auto-cleanup of intervals and event listeners in useEffect
+- ✅ Smart polling (different intervals based on visibility)
+- ✅ Scroll detection to pause auto-updates
+
+---
+
+## State Management (Zustand)
+
+### Session Store
+
+**File: `/stores/sessionStore.ts`**
+
+```typescript
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { ConversationPhase } from "@/lib/melissa/types";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: Date;
+  metadata?: Record<string, unknown>;
+}
+
+interface SessionStore {
+  // Session Data
+  sessionId: string | null;
+  organizationId: string | null;
+  userId: string | null;
+
+  // Conversation State
+  messages: Message[];
+  currentPhase: ConversationPhase;
+  progress: number;
+
+  // UI State
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  setSessionId: (id: string) => void;
+  addMessage: (message: Message) => void;
+  setPhase: (phase: ConversationPhase) => void;
+  setProgress: (progress: number) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  resetSession: () => void;
+
+  // Resume functionality
+  initializeSession: () => Promise<void>;
+  loadExistingSession: (sessionId: string) => Promise<boolean>;
+  currentSessionId: string | null;
+  loading: boolean;
+}
+
+export const useSessionStore = create<SessionStore>()(
+  persist(
+    (set, get) => ({
+      sessionId: null,
+      organizationId: null,
+      userId: null,
+      messages: [],
+      currentPhase: "greeting",
+      progress: 0,
+      isLoading: false,
+      error: null,
+      currentSessionId: null,
+      loading: false,
+
+      setSessionId: (id: string) => set({ sessionId: id, currentSessionId: id }),
+
+      addMessage: (message: Message) =>
+        set((state) => ({
+          messages: [...state.messages, message],
+        })),
+
+      setPhase: (phase: ConversationPhase) => set({ currentPhase: phase }),
+
+      setProgress: (progress: number) => set({ progress }),
+
+      setLoading: (loading: boolean) => set({ isLoading: loading, loading }),
+
+      setError: (error: string | null) => set({ error }),
+
+      resetSession: () =>
+        set({
+          sessionId: null,
+          organizationId: null,
+          userId: null,
+          messages: [],
+          currentPhase: "greeting",
+          progress: 0,
+          isLoading: false,
+          error: null,
+          currentSessionId: null,
+          loading: false,
+        }),
+
+      // Initialize new session
+      initializeSession: async () => {
+        try {
+          set({ loading: true });
+
+          const response = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              status: 'active',
+              startedAt: new Date().toISOString(),
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to create session');
+          }
+
+          const session = await response.json();
+
+          set({
+            sessionId: session.sessionId,
+            currentSessionId: session.sessionId,
+            messages: [],
+            currentPhase: 'greeting',
+            progress: 0,
+            loading: false,
+          });
+
+          console.log(`✅ New session created: ${session.sessionId}`);
+        } catch (error) {
+          console.error('❌ Failed to initialize session:', error);
+          set({ loading: false });
+          throw error;
+        }
+      },
+
+      // Load existing session
+      loadExistingSession: async (sessionId: string) => {
+        try {
+          set({ loading: true });
+
+          const response = await fetch(`/api/sessions?sessionId=${sessionId}`);
+
+          if (!response.ok) {
+            throw new Error(`Failed to load session: ${response.statusText}`);
+          }
+
+          const session = await response.json();
+
+          // Parse transcript into messages
+          const messages: Message[] = [];
+
+          if (session.transcript) {
+            try {
+              const transcript = JSON.parse(session.transcript);
+
+              if (Array.isArray(transcript.messages)) {
+                messages.push(...transcript.messages.map((msg: any) => ({
+                  id: msg.id || `msg_${Date.now()}_${Math.random()}`,
+                  role: msg.role,
+                  content: msg.content,
+                  timestamp: new Date(msg.timestamp || Date.now()),
+                  metadata: msg.metadata,
+                })));
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse transcript:', parseError);
+            }
+          }
+
+          // Parse metadata for phase and progress
+          let phase: ConversationPhase = 'greeting';
+          let progress = 0;
+
+          if (session.metadata) {
+            try {
+              const metadata = typeof session.metadata === 'string'
+                ? JSON.parse(session.metadata)
+                : session.metadata;
+
+              phase = metadata.phase || 'greeting';
+              progress = metadata.progress || 0;
+            } catch (parseError) {
+              console.warn('Failed to parse metadata:', parseError);
+            }
+          }
+
+          set({
+            sessionId,
+            currentSessionId: sessionId,
+            messages,
+            currentPhase: phase,
+            progress,
+            loading: false,
+          });
+
+          console.log(`✅ Session loaded: ${sessionId} (${messages.length} messages)`);
+          return true;
+
+        } catch (error) {
+          console.error('❌ Failed to load session:', error);
+          set({ loading: false });
+          return false;
+        }
+      },
+    }),
+    {
+      name: "bloom-session",
+      partialize: (state) => ({
+        sessionId: state.sessionId,
+        messages: state.messages,
+        currentPhase: state.currentPhase,
+        progress: state.progress,
+      }),
+    },
+  ),
+);
+```
+
+**Key Patterns:**
+- ✅ Zustand for lightweight state management
+- ✅ `persist` middleware for localStorage persistence
+- ✅ TypeScript interfaces for type safety
+- ✅ Async actions with proper error handling
+- ✅ Selective state persistence with `partialize`
+- ✅ Logging for debugging
+- ✅ JSON parsing with error handling
+- ✅ Proper state reset functionality
+
+---
+
+## File Upload System
+
+### Logo Uploader Component
+
+**File: `/components/branding/LogoUploader.tsx`**
+
+```typescript
+'use client';
+
+import { useState, useCallback } from 'react';
+import { Upload, X } from 'lucide-react';
+
+interface LogoUploaderProps {
+  label: string;
+  currentLogoUrl?: string;
+  onUpload: (file: File) => Promise<string>;
+  onRemove: () => void;
+  maxSizeMB?: number;
+}
+
+export function LogoUploader({
+  label,
+  currentLogoUrl,
+  onUpload,
+  onRemove,
+  maxSizeMB = 5,
+}: LogoUploaderProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const validateFile = (file: File): string | null => {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      return 'Please upload an image file';
+    }
+
+    // Check file size
+    const maxBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxBytes) {
+      return `File size must be less than ${maxSizeMB}MB`;
+    }
+
+    return null;
+  };
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      setError(null);
+
+      const validationError = validateFile(file);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+
+      setIsUploading(true);
+      try {
+        await onUpload(file);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Upload failed');
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [onUpload]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        handleFile(file);
+      }
+    },
+    [handleFile]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleFile(file);
+      }
+    },
+    [handleFile]
+  );
+
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+
+      {currentLogoUrl ? (
+        // Preview with remove option
+        <div className="relative inline-block">
+          <img
+            src={currentLogoUrl}
+            alt={label}
+            className="max-h-24 rounded-lg border-2 border-gray-200 bg-white p-2"
+          />
+          <button
+            onClick={onRemove}
+            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md"
+            title="Remove logo"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        // Upload area
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`
+            border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
+            transition-colors
+            ${isDragging ? 'border-purple-400 bg-purple-50' : 'border-gray-300 hover:border-purple-300'}
+            ${isUploading ? 'opacity-50 pointer-events-none' : ''}
+          `}
+        >
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileInput}
+            className="hidden"
+            id={`logo-upload-${label}`}
+            disabled={isUploading}
+          />
+          <label
+            htmlFor={`logo-upload-${label}`}
+            className="cursor-pointer flex flex-col items-center"
+          >
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-3" />
+                <p className="text-sm text-gray-600">Uploading...</p>
+              </>
+            ) : (
+              <>
+                <Upload className="w-12 h-12 text-gray-400 mb-3" />
+                <p className="text-sm text-gray-600 mb-1">
+                  Drop image here or click to browse
+                </p>
+                <p className="text-xs text-gray-400">
+                  PNG, JPG, SVG up to {maxSizeMB}MB
+                </p>
+              </>
+            )}
+          </label>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-600 flex items-center gap-2">
+          <X className="w-4 h-4" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+```
+
+**Key Patterns:**
+- ✅ Drag and drop file upload
+- ✅ File validation (type and size)
+- ✅ Loading states
+- ✅ Error handling with user feedback
+- ✅ useCallback for performance
+- ✅ Controlled component pattern
+- ✅ Hidden file input with styled label
+- ✅ Conditional rendering (preview vs upload area)
+
+---
+
+## Server-Sent Events (SSE)
+
+### SSE Log Streaming
+
+```typescript
+// Client Side (from MonitoringTab)
+useEffect(() => {
+  if (!isActive || !isPageVisible || userHasScrolled) {
+    if (esRef.current) {
+      esRef.current.close();
+      esRef.current = null;
+      setSseConnected(false);
+    }
+    return;
+  }
+
+  // Establish SSE connection
+  const es = new EventSource("/api/system/logs/stream");
+  esRef.current = es;
+
+  es.onopen = () => {
+    console.log("[SSE] Connected to log stream");
+    setSseConnected(true);
+  };
+
+  es.onmessage = (evt) => {
+    try {
+      const entry = JSON.parse(evt.data);
+      if (selectedLevels.has(entry.level.toUpperCase())) {
+        addLogEntry(entry);
+      }
+    } catch (e) {
+      console.warn("[SSE] Failed to parse log entry:", evt.data);
+    }
+  };
+
+  es.onerror = () => {
+    console.warn("[SSE] Connection error, will auto-reconnect");
+    setSseConnected(false);
+  };
+
+  return () => {
+    console.log("[SSE] Closing connection");
+    es.close();
+    setSseConnected(false);
+  };
+}, [isActive, isPageVisible, userHasScrolled, selectedLevels, addLogEntry]);
+```
+
+```typescript
+// Server Side (API Route)
+// app/api/system/logs/stream/route.ts
+export async function GET(request: NextRequest) {
+  const stream = new ReadableStream({
+    start(controller) {
+      // Set up log watcher
+      const watcher = createLogWatcher((logEntry) => {
+        const data = `data: ${JSON.stringify(logEntry)}\n\n`;
+        controller.enqueue(new TextEncoder().encode(data));
+      });
+
+      // Cleanup on disconnect
+      request.signal.addEventListener('abort', () => {
+        watcher.close();
+        controller.close();
+      });
+    },
+  });
+
+  return new NextResponse(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+```
+
+**Key Patterns:**
+- ✅ EventSource API for SSE
+- ✅ Auto-reconnection on errors
+- ✅ Cleanup with useRef and useEffect
+- ✅ Conditional streaming based on user activity
+- ✅ Server-side stream generation
+- ✅ Proper SSE headers
+
+---
+
+## Error Handling
+
+### Comprehensive Error Handling Pattern
+
+```typescript
+// Custom error classes
+class ConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConfigurationError";
+  }
+}
+
+class DatabaseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DatabaseError";
+  }
+}
+
+// API route with error handling
+export async function POST(request: NextRequest) {
+  try {
+    // Validate environment
+    if (!process.env.REQUIRED_VAR) {
+      throw new ConfigurationError("Service not configured");
+    }
+
+    // Validate request
+    const body = await request.json();
+    const data = schema.parse(body);
+
+    // Database operation
+    try {
+      const result = await prisma.model.create({ data });
+      return NextResponse.json(result);
+    } catch (error) {
+      throw new DatabaseError("Database operation failed");
+    }
+
+  } catch (error) {
+    // Zod validation errors
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    // Configuration errors
+    if (error instanceof ConfigurationError) {
+      return NextResponse.json(
+        { error: error.message, retryable: false },
+        { status: 503 }
+      );
+    }
+
+    // Database errors
+    if (error instanceof DatabaseError) {
+      return NextResponse.json(
+        { error: error.message, retryable: true },
+        { status: 503 }
+      );
+    }
+
+    // Unknown errors
+    return NextResponse.json(
+      { error: "Internal server error", retryable: true },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Key Patterns:**
+- ✅ Custom error classes for different error types
+- ✅ Separate handling for different error types
+- ✅ User-friendly error messages
+- ✅ Proper HTTP status codes
+- ✅ Retryable flag for client-side logic
+- ✅ No sensitive information in errors
+
+---
+
+## Validation with Zod
+
+```typescript
+import { z } from "zod";
+
+// Define schema
+const createSessionSchema = z.object({
+  userId: z.string().optional(),
+  organizationId: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+// Validate in API route
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validated = createSessionSchema.parse(body);
+
+    // Use validated data
+    const session = await prisma.session.create({
+      data: validated,
+    });
+
+    return NextResponse.json(session);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: "Validation failed",
+          details: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Key Patterns:**
+- ✅ Zod for runtime type validation
+- ✅ Type inference from schemas
+- ✅ Detailed validation error messages
+- ✅ Proper error response format
+
+---
+
+## Logging System
+
+```typescript
+// lib/logger.ts
+import { logger } from "@/lib/logger";
+import { logValidationError } from "@/lib/logger-helpers";
+
+// In API routes
+logger.error('Operation failed', 'api', {
+  endpoint: '/api/sessions',
+  method: 'POST',
+  error: error instanceof Error ? error.message : String(error),
+  stack: error instanceof Error ? error.stack : undefined,
+});
+
+// Log session events
+logger.logSessionCreated(sessionId, userId);
+
+// Log validation errors
+if (error instanceof z.ZodError) {
+  logValidationError('sessions:create', error.errors);
+}
+```
+
+---
+
+## Health Checks
+
+```typescript
+// lib/db/client.ts
+export async function checkDatabaseHealth(): Promise<{
+  healthy: boolean;
+  latency?: number;
+  error?: string;
+}> {
+  const start = Date.now();
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+
+    return {
+      healthy: true,
+      latency: Date.now() - start,
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// API route
+export async function GET() {
+  const health = await checkDatabaseHealth();
+  return NextResponse.json(health);
+}
+```
+
+---
+
+## Authentication Patterns
+
+```typescript
+// Middleware for protected routes
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('token');
+
+  if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: '/dashboard/:path*',
+};
+```
+
+```typescript
+// Server-side protection
+import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/auth';
+
+export default async function ProtectedPage() {
+  const session = await getSession();
+
+  if (!session) {
+    redirect('/login');
+  }
+
+  return <div>Protected content</div>;
+}
+```
+
+---
+
+## Styling with Tailwind + shadcn/ui
+
+```tsx
+// Component using Tailwind utilities
+export function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow">
+      {children}
+    </div>
+  );
+}
+
+// Conditional classes
+<button
+  className={`
+    px-4 py-2 rounded-lg font-medium transition-colors
+    ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+    ${variant === 'danger' ? 'bg-red-600 hover:bg-red-700' : ''}
+  `}
+  disabled={isLoading}
+>
+  {isLoading ? 'Loading...' : 'Submit'}
+</button>
+```
+
+---
+
+## Summary
+
+This document shows real patterns from the Bloom codebase:
+
+✅ **Database**: Prisma singleton with health checks
+✅ **API Routes**: Comprehensive error handling with custom error classes
+✅ **Client Components**: SSE streaming, Page Visibility API, localStorage
+✅ **State Management**: Zustand with persistence
+✅ **File Upload**: Drag-and-drop with validation
+✅ **Validation**: Zod schemas with detailed errors
+✅ **Logging**: Unified logging system
+✅ **Performance**: Smart polling, conditional updates
+
+All patterns are production-tested and TypeScript-first.

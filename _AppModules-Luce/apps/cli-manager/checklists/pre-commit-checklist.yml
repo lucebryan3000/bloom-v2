@@ -1,0 +1,123 @@
+---
+name: pre-commit-checklist
+description: Configuration compliance checklist before commits
+version: 1.0.0
+created: 2025-10-27
+---
+
+# Pre-Commit Configuration Compliance Checklist
+
+Run this checklist before committing any `.sh` script changes.
+
+## 🔴 CRITICAL (Must Pass)
+
+- [ ] **Script sources axon-menu.conf**
+  - Config sourcing present after `set -euo pipefail`
+  - Uses correct pattern (SCRIPT_DIR → PROJECT_ROOT → source)
+  - Sourcing happens early in script
+
+- [ ] **Syntax validation passes**
+  ```bash
+  bash -n script.sh
+  ```
+
+- [ ] **No hard-coded project paths**
+  - No `/Users/username/...` paths
+  - No absolute paths to project directories
+
+## 🟡 HIGH PRIORITY (Should Pass)
+
+- [ ] **Uses config variables for paths**
+  - `${REPORTS_DIR}` not `${SCRIPT_DIR}/reports`
+  - `${LOG_DIR}` not `/tmp/logs`
+  - `${TEMP_DIR}` not `/tmp/axon-menu`
+  - `${LIB_DIR}` not `./lib` or `../lib`
+
+- [ ] **Libraries sourced correctly**
+  - `source "${LIB_DIR}/common.sh"` not relative paths
+  - All library sourcing after config sourcing
+
+- [ ] **No duplicate variables**
+  - Script doesn't redefine vars from axon-menu.conf
+  - Local variables marked with `local` keyword
+
+## 🟠 MEDIUM PRIORITY (Nice to Have)
+
+- [ ] **Follows script template**
+  - Proper header with metadata
+  - Standard structure and organization
+
+- [ ] **Documentation complete**
+  - Comments explain complex logic
+  - Function purposes documented
+
+- [ ] **Error handling present**
+  - `set -euo pipefail` at top
+  - Proper error messages
+  - Graceful failure handling
+
+## Configuration Validation
+
+Run the validation script:
+```bash
+./scripts/test/validate_config_usage.sh
+```
+
+Expected result: **ZERO violations** for files being committed
+
+## Quick Validation Commands
+
+```bash
+# 1. Syntax check
+bash -n path/to/script.sh
+
+# 2. Config sourcing check
+grep -n "source.*axon-menu.conf" path/to/script.sh
+
+# 3. Hard-coded path check
+grep -n "/Users/" path/to/script.sh
+grep -n "/tmp/axon-menu" path/to/script.sh
+
+# 4. Full compliance audit
+./scripts/test/validate_config_usage.sh
+```
+
+## Red Flags (DO NOT COMMIT)
+
+❌ Script doesn't source axon-menu.conf
+❌ Hard-coded `/Users/username/` paths
+❌ Syntax errors (`bash -n` fails)
+❌ Missing `set -euo pipefail`
+❌ Redefines variables from config
+
+## Green Lights (OK to Commit)
+
+✅ Sources axon-menu.conf correctly
+✅ Uses config variables for all paths
+✅ Syntax validation passes
+✅ No hard-coded paths
+✅ Libraries sourced with `${LIB_DIR}`
+✅ No duplicate variable definitions
+✅ Validation script shows 0 violations
+
+## If Violations Found
+
+1. **STOP** - Do not commit yet
+2. **Fix violations** using playbooks:
+   - `@cli-manager fix config violations`
+   - Or manually apply fixes
+3. **Re-validate** - Run checks again
+4. **Verify** - Confirm 0 violations
+5. **Commit** - Only when all green
+
+## Notes
+
+- Zero tolerance for configuration violations
+- Fix violations before committing, not after
+- Use validation script as final gatekeeper
+- When in doubt, ask for review
+
+---
+
+**Remember:** axon-menu.conf is the single source of truth.
+Every script must respect this standard.

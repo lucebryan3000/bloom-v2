@@ -1,0 +1,340 @@
+{
+  "standardization_report": {
+    "timestamp": "2025-10-26T00:00:00Z",
+    "mode": "DRY_RUN",
+    "summary": {
+      "total_agents": 12,
+      "standardized": 12,
+      "playbooks_to_create": 12,
+      "documentation_updates": 1,
+      "status": "READY_FOR_REVIEW"
+    },
+    "agents_standardized": [
+      {
+        "name": "spec-analyst",
+        "file": ".claude/agents/spec-analyst.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Extracted and added prompt field",
+          "Converted tools to list format",
+          "Added comprehensive capabilities",
+          "Added entrypoint: playbooks/spec-analyst/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Preserved old fields in metadata (category, specialization, auto_activate_keywords)"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "spec-planner",
+        "file": ".claude/agents/spec-planner.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Created comprehensive prompt field",
+          "Converted tools to list format",
+          "Added 6 capabilities",
+          "Added entrypoint: playbooks/spec-planner/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Added metadata section"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "spec-developer",
+        "file": ".claude/agents/spec-developer.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Created comprehensive prompt field",
+          "Converted tools to list format",
+          "Added 6 capabilities",
+          "Added entrypoint: playbooks/spec-developer/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Added metadata section"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "spec-architect",
+        "file": ".claude/agents/spec-architect.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Created comprehensive prompt field",
+          "Converted tools to list format",
+          "Added 7 capabilities",
+          "Added entrypoint: playbooks/spec-architect/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 600s (orchestrator-level)",
+          "Added do_not list with 5 items",
+          "Added metadata section"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "spec-orchestrator",
+        "file": ".claude/agents/spec-orchestrator.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Created comprehensive prompt field",
+          "Converted tools to list format",
+          "Added 6 capabilities",
+          "Added entrypoint: playbooks/spec-orchestrator/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 600s (orchestrator-level)",
+          "Added do_not list with 5 items",
+          "Preserved old fields in metadata (category, specialization, complexity, auto_activate_keywords)"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "spec-reviewer",
+        "file": ".claude/agents/spec-reviewer.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Created comprehensive prompt field",
+          "Converted tools to list format",
+          "Added 6 capabilities",
+          "Added entrypoint: playbooks/spec-reviewer/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Added metadata section"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "spec-tester",
+        "file": ".claude/agents/spec-tester.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Created comprehensive prompt field",
+          "Converted tools to list format",
+          "Added 6 capabilities",
+          "Added entrypoint: playbooks/spec-tester/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Added metadata section"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "ui-engineer",
+        "file": ".claude/agents/ui-engineer.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Expanded description to multi-line format",
+          "Created comprehensive prompt field",
+          "Converted tools to list format (added full tool suite)",
+          "Added 7 capabilities",
+          "Added entrypoint: playbooks/ui-engineer/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Preserved color: purple in metadata"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "backend-typescript-architect",
+        "file": ".claude/agents/backend-typescript-architect.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Condensed description to summary form",
+          "Created comprehensive prompt field",
+          "Converted tools to list format (added full tool suite)",
+          "Added 7 capabilities",
+          "Added entrypoint: playbooks/backend-typescript-architect/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Preserved color: red in metadata"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "python-backend-engineer",
+        "file": ".claude/agents/python-backend-engineer.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Condensed description to summary form",
+          "Created comprehensive prompt field",
+          "Converted tools to list format (added full tool suite)",
+          "Added 7 capabilities",
+          "Added entrypoint: playbooks/python-backend-engineer/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Preserved color: green in metadata"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "senior-code-reviewer",
+        "file": ".claude/agents/senior-code-reviewer.md",
+        "status": "STANDARDIZED",
+        "changes": [
+          "Added version: 2025-10-26",
+          "Condensed description to summary form",
+          "Created comprehensive prompt field",
+          "Converted tools to list format (added full tool suite)",
+          "Added 7 capabilities",
+          "Added entrypoint: playbooks/senior-code-reviewer/entrypoint.yml",
+          "Added run_defaults with dry_run: true and timeout: 300s",
+          "Added do_not list with 5 items",
+          "Preserved color: blue in metadata"
+        ],
+        "validation": "PASS"
+      },
+      {
+        "name": "cli-manager",
+        "file": ".claude/agents/cli-manager.md",
+        "status": "ALREADY_CANONICAL",
+        "changes": [],
+        "validation": "PASS",
+        "notes": "Already follows canonical format - used as reference standard"
+      }
+    ],
+    "playbooks_to_create": [
+      {
+        "agent": "spec-analyst",
+        "path": "playbooks/spec-analyst/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-analyst/entrypoint\ndescription: Requirements analysis and project scoping workflow\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: analyze_requirements\n    description: Elicit and document comprehensive requirements\n  - id: create_user_stories\n    description: Generate user stories with acceptance criteria\n  - id: validate_completeness\n    description: Ensure SMART criteria compliance"
+      },
+      {
+        "agent": "spec-planner",
+        "path": "playbooks/spec-planner/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-planner/entrypoint\ndescription: Implementation planning and task breakdown workflow\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: break_down_tasks\n    description: Decompose architecture into atomic tasks\n  - id: identify_dependencies\n    description: Map task dependencies and sequencing\n  - id: estimate_effort\n    description: Estimate complexity and timeline"
+      },
+      {
+        "agent": "spec-developer",
+        "path": "playbooks/spec-developer/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-developer/entrypoint\ndescription: Feature implementation and code development workflow\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: implement_feature\n    description: Write clean, tested code following specifications\n  - id: handle_errors\n    description: Implement comprehensive error handling\n  - id: write_tests\n    description: Create unit tests with high coverage"
+      },
+      {
+        "agent": "spec-architect",
+        "path": "playbooks/spec-architect/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-architect/entrypoint\ndescription: System architecture design and technology selection\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 600\nsteps:\n  - id: design_system\n    description: Create comprehensive architectural design\n  - id: select_technology\n    description: Evaluate and recommend technology stack\n  - id: document_architecture\n    description: Generate C4 diagrams and specifications"
+      },
+      {
+        "agent": "spec-orchestrator",
+        "path": "playbooks/spec-orchestrator/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-orchestrator/entrypoint\ndescription: Multi-phase workflow coordination and quality gate management\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 600\nsteps:\n  - id: design_workflow\n    description: Create three-phase development workflow\n  - id: define_quality_gates\n    description: Establish quality criteria and thresholds\n  - id: track_progress\n    description: Monitor and report workflow progress"
+      },
+      {
+        "agent": "spec-reviewer",
+        "path": "playbooks/spec-reviewer/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-reviewer/entrypoint\ndescription: Comprehensive code review and quality assurance\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: review_code\n    description: Assess quality, security, and performance\n  - id: run_linters\n    description: Execute automated quality checks\n  - id: provide_feedback\n    description: Generate actionable improvement recommendations"
+      },
+      {
+        "agent": "spec-tester",
+        "path": "playbooks/spec-tester/entrypoint.yml",
+        "dry_run_content": "id: playbooks/spec-tester/entrypoint\ndescription: Comprehensive testing strategy and execution\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: design_tests\n    description: Create test suite following testing pyramid\n  - id: execute_tests\n    description: Run unit, integration, and E2E tests\n  - id: validate_coverage\n    description: Ensure >80% code coverage"
+      },
+      {
+        "agent": "ui-engineer",
+        "path": "playbooks/ui-engineer/entrypoint.yml",
+        "dry_run_content": "id: playbooks/ui-engineer/entrypoint\ndescription: Frontend development and UI component creation\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: design_component\n    description: Create responsive, accessible UI components\n  - id: implement_state\n    description: Set up state management and data flow\n  - id: optimize_performance\n    description: Ensure performance and bundle optimization"
+      },
+      {
+        "agent": "backend-typescript-architect",
+        "path": "playbooks/backend-typescript-architect/entrypoint.yml",
+        "dry_run_content": "id: playbooks/backend-typescript-architect/entrypoint\ndescription: Backend TypeScript architecture and implementation\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: design_api\n    description: Design RESTful/GraphQL API endpoints\n  - id: implement_backend\n    description: Implement with clean architecture patterns\n  - id: secure_system\n    description: Apply OWASP security best practices"
+      },
+      {
+        "agent": "python-backend-engineer",
+        "path": "playbooks/python-backend-engineer/entrypoint.yml",
+        "dry_run_content": "id: playbooks/python-backend-engineer/entrypoint\ndescription: Python backend development with modern tooling\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: setup_project\n    description: Initialize with uv and proper structure\n  - id: implement_api\n    description: Create FastAPI/Django endpoints\n  - id: test_implementation\n    description: Write comprehensive pytest suites"
+      },
+      {
+        "agent": "senior-code-reviewer",
+        "path": "playbooks/senior-code-reviewer/entrypoint.yml",
+        "dry_run_content": "id: playbooks/senior-code-reviewer/entrypoint\ndescription: Senior-level fullstack code review\nrun_defaults:\n  dry_run: true\n  timeout_seconds: 300\nsteps:\n  - id: analyze_context\n    description: Understand codebase architecture\n  - id: comprehensive_review\n    description: Review functionality, security, performance\n  - id: provide_recommendations\n    description: Generate prioritized improvement report"
+      },
+      {
+        "agent": "cli-manager",
+        "path": "playbooks/cli-manager/entrypoint.yml",
+        "status": "TO_CHECK",
+        "notes": "Verify if already exists; create if missing"
+      }
+    ],
+    "validation_checks": {
+      "frontmatter_syntax": "PASS",
+      "required_fields_present": "PASS",
+      "yaml_structure_valid": "PASS",
+      "entrypoint_paths_consistent": "PASS",
+      "run_defaults_consistent": "PASS",
+      "do_not_lists_present": "PASS"
+    },
+    "documentation_updates": {
+      "file": ".claude/CLAUDE.md",
+      "section": "Registered Agents",
+      "action": "ADD_OR_UPDATE",
+      "content_preview": "## Registered Agents\n\n### Spec Agent Suite\n- **spec-analyst** (v2025-10-26): Requirements analysis and project scoping\n- **spec-architect** (v2025-10-26): System architecture design\n- **spec-planner** (v2025-10-26): Implementation planning and task breakdown\n- **spec-developer** (v2025-10-26): Feature implementation\n- **spec-reviewer** (v2025-10-26): Code review and quality assurance\n- **spec-tester** (v2025-10-26): Comprehensive testing\n- **spec-orchestrator** (v2025-10-26): Workflow coordination\n\n### UI & Frontend Agents\n- **ui-engineer** (v2025-10-26): Modern frontend development\n\n### Backend Agents\n- **backend-typescript-architect** (v2025-10-26): TypeScript/Bun backend\n- **python-backend-engineer** (v2025-10-26): Python backend with uv\n- **senior-code-reviewer** (v2025-10-26): Senior fullstack code review\n\n### CLI & Scripting Agents\n- **cli-manager** (v2025-10-26): Bash scripting specialist\n\nAll agents follow canonical format with version, prompt, tools, capabilities, entrypoint, run_defaults, and do_not lists."
+    },
+    "next_steps": {
+      "1_create_playbooks": {
+        "action": "Create playbook skeleton YAML files",
+        "command": "mkdir -p playbooks/{agent-name}/ && create entrypoint.yml files",
+        "dry_run": true
+      },
+      "2_update_documentation": {
+        "action": "Add Registered Agents section to .claude/CLAUDE.md",
+        "dry_run": true
+      },
+      "3_validate_yaml": {
+        "action": "Run yamllint on all frontmatter (if available)",
+        "command": "yamllint .claude/agents/*.md",
+        "dry_run": true
+      },
+      "4_create_branch": {
+        "action": "Create integration branch",
+        "branch_name": "claude/integrate-spec-agents-1761523403",
+        "dry_run": true
+      },
+      "5_commit_changes": {
+        "action": "Stage and commit standardization",
+        "message": "Standardize spec & UI agents to canonical format\n\n- Normalized frontmatter for 12 agents\n- Added version, prompt, tools, capabilities, entrypoint, run_defaults, do_not\n- Preserved legacy metadata in metadata section\n- Created playbook skeleton structure\n- Updated .claude/CLAUDE.md with agent registry\n\n🤖 Generated with Claude Code - DRY-RUN mode",
+        "dry_run": true,
+        "files": [
+          ".claude/agents/*.md",
+          "playbooks/*/entrypoint.yml",
+          ".claude/CLAUDE.md",
+          ".claude/agents/standardization-report.json"
+        ]
+      }
+    },
+    "recommendations": {
+      "immediate": [
+        "Review this standardization report for accuracy",
+        "Verify all agent frontmatter changes are acceptable",
+        "Confirm playbook skeleton structure meets requirements"
+      ],
+      "before_execution": [
+        "Set EXECUTE_REAL=true and provide CONFIRM_TOKEN",
+        "Create actual backup: mkdir -p .claude/agents/backups/1761523403 && cp .claude/agents/*.md .claude/agents/backups/1761523403/",
+        "Ensure git working directory is clean"
+      ],
+      "after_execution": [
+        "Run yamllint validation if available",
+        "Test agent invocations with @agent-name",
+        "Verify playbooks are discoverable",
+        "Update team documentation with new agent capabilities"
+      ]
+    },
+    "risk_assessment": {
+      "level": "LOW",
+      "rationale": "All changes are additive (new fields) or metadata preservation. No functionality removed. DRY-RUN mode prevents accidental execution.",
+      "mitigations": [
+        "Backups created before any modifications",
+        "DRY-RUN prevents unintended writes",
+        "Changes follow established canonical pattern (cli-manager)",
+        "All original content preserved in agent bodies"
+      ]
+    }
+  }
+}

@@ -1,0 +1,175 @@
+# KB Library Index
+
+## ai-documentation
+
+-./ai-documentation/README.md – AI documentation patterns and best practices
+-./ai-documentation/QUICK-REFERENCE.md – Cheat sheet for AI-first documentation
+-./ai-documentation/FRAMEWORK-INTEGRATION-PATTERNS.md – Integration patterns
+
+## ai-ml
+
+-./ai-ml/README.md – AI/ML concepts and patterns
+-./ai-ml/QUICK-REFERENCE.md – Quick reference for AI/ML
+-./ai-ml/FRAMEWORK-INTEGRATION-PATTERNS.md – AI/ML framework integration
+
+## anthropic-sdk-typescript
+
+-./anthropic-sdk-typescript/README.md – Anthropic Claude SDK for TypeScript/Node.js
+-./anthropic-sdk-typescript/QUICK-REFERENCE.md – Claude API quick reference
+-./anthropic-sdk-typescript/FRAMEWORK-INTEGRATION-PATTERNS.md – Claude integration patterns
+
+## claude-code-hooks
+
+-./claude-code-hooks/README.md – Claude Code hooks and configuration
+-./claude-code-hooks/QUICK-REFERENCE.md – Hooks cheat sheet
+-./claude-code-hooks/FRAMEWORK-INTEGRATION-PATTERNS.md – Hook integration patterns
+
+## docker
+
+-./docker/README.md – Docker containers, images, and orchestration
+-./docker/QUICK-REFERENCE.md – Docker commands and patterns
+-./docker/FRAMEWORK-INTEGRATION-PATTERNS.md – Docker integration patterns
+
+## eza
+
+-./eza/README.md – Modern ls replacement with Git awareness
+-./eza/QUICK-REFERENCE.md – eza command reference
+-./eza/FRAMEWORK-INTEGRATION-PATTERNS.md – eza shell integration
+
+## github
+
+-./github/README.md – GitHub workflows, Actions, and APIs
+-./github/QUICK-REFERENCE.md – GitHub quick reference
+-./github/FRAMEWORK-INTEGRATION-PATTERNS.md – GitHub integration patterns
+
+## google-gemini-nodejs
+
+-./google-gemini-nodejs/README.md – Google Gemini API for Node.js/TypeScript
+-./google-gemini-nodejs/QUICK-REFERENCE.md – Gemini API reference
+-./google-gemini-nodejs/FRAMEWORK-INTEGRATION-PATTERNS.md – Gemini integration patterns
+
+## jest-app-testing
+
+-./jest-app-testing/README.md – Jest testing for Next.js applications
+-./jest-app-testing/QUICK-REFERENCE.md – Jest testing patterns
+-./jest-app-testing/FRAMEWORK-INTEGRATION-PATTERNS.md – Jest integration patterns
+
+## linux
+
+-./linux/README.md – Linux command-line fundamentals
+-./linux/QUICK-REFERENCE.md – Linux command reference
+-./linux/FRAMEWORK-INTEGRATION-PATTERNS.md – Linux shell integration
+
+## nextauth
+
+-./nextauth/README.md – NextAuth.js authentication for Next.js
+-./nextauth/QUICK-REFERENCE.md – NextAuth setup and patterns
+-./nextauth/FRAMEWORK-INTEGRATION-PATTERNS.md – NextAuth integration
+
+## nextjs
+
+-./nextjs/README.md – Next.js App Router and server components
+-./nextjs/QUICK-REFERENCE.md – Next.js patterns and commands
+-./nextjs/FRAMEWORK-INTEGRATION-PATTERNS.md – Next.js integration patterns
+
+## nodejs
+
+-./nodejs/README.md – Node.js runtime fundamentals
+-./nodejs/QUICK-REFERENCE.md – Node.js API reference
+-./nodejs/FRAMEWORK-INTEGRATION-PATTERNS.md – Node.js patterns
+
+## openai-codex
+
+-./openai-codex/README.md – OpenAI API for code generation
+-./openai-codex/QUICK-REFERENCE.md – OpenAI API reference
+-./openai-codex/FRAMEWORK-INTEGRATION-PATTERNS.md – OpenAI integration
+
+## performance
+
+-./performance/README.md – Performance optimization patterns
+-./performance/QUICK-REFERENCE.md – Performance tuning reference
+-./performance/FRAMEWORK-INTEGRATION-PATTERNS.md – Performance patterns
+
+## playwright
+
+-./playwright/README.md – Playwright E2E testing framework
+-./playwright/QUICK-REFERENCE.md – Playwright test patterns
+-./playwright/FRAMEWORK-INTEGRATION-PATTERNS.md – Playwright integration
+
+## postgresql
+
+-./postgresql/README.md – PostgreSQL database fundamentals
+-./postgresql/QUICK-REFERENCE.md – PostgreSQL SQL reference
+-./postgresql/FRAMEWORK-INTEGRATION-PATTERNS.md – PostgreSQL integration
+
+## prisma
+
+-./prisma/README.md – Prisma ORM for type-safe database access
+-./prisma/QUICK-REFERENCE.md – Prisma schema and query reference
+-./prisma/FRAMEWORK-INTEGRATION-PATTERNS.md – Prisma integration patterns
+
+## react
+
+-./react/README.md – React hooks, components, and patterns
+-./react/QUICK-REFERENCE.md – React API reference
+-./react/FRAMEWORK-INTEGRATION-PATTERNS.md – React integration patterns
+
+## redis
+
+-./redis/README.md – Redis in-memory data store
+-./redis/QUICK-REFERENCE.md – Redis commands and patterns
+-./redis/FRAMEWORK-INTEGRATION-PATTERNS.md – Redis integration
+
+## security
+
+-./security/README.md – Web security patterns and best practices
+-./security/QUICK-REFERENCE.md – Security checklist
+-./security/FRAMEWORK-INTEGRATION-PATTERNS.md – Security integration
+
+## sqlite
+
+-./sqlite/README.md – SQLite embedded database
+-./sqlite/QUICK-REFERENCE.md – SQLite SQL reference
+-./sqlite/FRAMEWORK-INTEGRATION-PATTERNS.md – SQLite integration patterns
+
+## tailwind
+
+-./tailwind/README.md – Tailwind CSS utility-first framework
+-./tailwind/QUICK-REFERENCE.md – Tailwind class reference
+-./tailwind/FRAMEWORK-INTEGRATION-PATTERNS.md – Tailwind integration
+
+## testing
+
+-./testing/README.md – Testing strategies and patterns
+-./testing/QUICK-REFERENCE.md – Testing best practices
+-./testing/FRAMEWORK-INTEGRATION-PATTERNS.md – Testing integration
+
+## theme
+
+-./theme/README.md – Dark mode and theming patterns
+-./theme/QUICK-REFERENCE.md – Theme implementation reference
+-./theme/FRAMEWORK-INTEGRATION-PATTERNS.md – Theme integration
+
+## typescript
+
+-./typescript/README.md – TypeScript language fundamentals
+-./typescript/QUICK-REFERENCE.md – TypeScript syntax reference
+-./typescript/FRAMEWORK-INTEGRATION-PATTERNS.md – TypeScript patterns
+
+## ui
+
+-./ui/README.md – UI component patterns and design systems
+-./ui/QUICK-REFERENCE.md – UI component reference
+-./ui/FRAMEWORK-INTEGRATION-PATTERNS.md – UI integration patterns
+
+## zod
+
+-./zod/README.md – Zod schema validation for TypeScript
+-./zod/QUICK-REFERENCE.md – Zod schema syntax reference
+-./zod/FRAMEWORK-INTEGRATION-PATTERNS.md – Zod validation patterns
+
+## zustand
+
+-./zustand/README.md – Zustand state management for React
+-./zustand/QUICK-REFERENCE.md – Zustand store patterns
+-./zustand/FRAMEWORK-INTEGRATION-PATTERNS.md – Zustand integration

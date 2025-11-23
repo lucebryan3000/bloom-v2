@@ -1,0 +1,345 @@
+{
+  "__comment": "====================================================================",
+  "__comment2": "Claude Code Settings Configuration Example",
+  "__comment3": "Copy to settings.json (project) or ~/.claude/settings.json (user)",
+  "__comment4": "Remove __comment fields when creating actual settings.json",
+  "__comment5": "====================================================================",
+
+  "hooks": {
+    "__info": "Event-driven automation - run scripts on Claude Code events",
+    "__docs": "https://docs.claude.com/en/docs/claude-code/hooks-guide.md",
+
+    "file-write": [
+      {
+        "name": "Format Shell Scripts",
+        "description": "Auto-format bash scripts with shfmt (4-space indentation)",
+        "command": [".claude/hooks/format_shell.sh", "{{file_path}}"],
+        "patterns": ["*.sh"],
+        "blocking": false,
+        "__note": "blocking:false means formatting won't prevent file writes"
+      },
+      {
+        "name": "Validate Bash Syntax",
+        "description": "Check syntax before writing shell scripts",
+        "command": [".claude/hooks/validate_syntax.sh", "{{file_path}}"],
+        "patterns": ["*.sh"],
+        "blocking": true,
+        "__note": "blocking:true means syntax errors will prevent writes"
+      },
+      {
+        "name": "Audit Hard-coded Paths",
+        "description": "Warn about hard-coded paths in scripts",
+        "command": [".claude/hooks/audit_paths.sh", "{{file_path}}"],
+        "patterns": ["*.sh"],
+        "blocking": false
+      }
+    ],
+
+    "user-prompt-submit": [
+      {
+        "name": "Log User Prompts",
+        "description": "Track all user prompts for analysis",
+        "command": ["sh", "-c", "echo \"$(date '+%Y-%m-%d %H:%M:%S'): $CLAUDE_PROMPT\" >> .claude/prompt_history.log"],
+        "blocking": false,
+        "__note": "Useful for reviewing conversation history"
+      }
+    ],
+
+    "tool-result": [
+      {
+        "name": "Notify on Completion",
+        "description": "macOS notification when long-running tools complete",
+        "command": ["sh", "-c", "osascript -e 'display notification \"$CLAUDE_TOOL_NAME completed\" with title \"Claude Code\"'"],
+        "blocking": false,
+        "__note": "Only triggers if osascript available (macOS)"
+      }
+    ]
+  },
+
+  "allowedTools": {
+    "__info": "Control which tools Claude can use (security)",
+    "__default": "All tools enabled if not specified",
+    "__example1": "['read', 'write', 'edit', 'bash']",
+    "__example2": "['read', 'grep', 'glob'] - read-only mode",
+    "__recommended": "Leave unset to allow all tools, or restrict for security"
+  },
+
+  "bashSandbox": {
+    "__info": "Sandbox configuration for bash commands",
+
+    "enabled": true,
+    "__enabled_note": "Use sandbox for bash execution (recommended: true)",
+
+    "allowedCommands": {
+      "__info": "Whitelist of allowed bash commands (if specified, only these are allowed)",
+      "__example": "['ls', 'cat', 'grep', 'git', 'npm']",
+      "__recommended": "Leave unset to allow all commands"
+    },
+
+    "blockedCommands": {
+      "__info": "Blacklist of forbidden bash commands",
+      "__example": "['rm', 'sudo', 'dd', 'mkfs']",
+      "__recommended": "Block destructive commands"
+    },
+
+    "timeout": 120000,
+    "__timeout_note": "Bash command timeout in milliseconds (default: 120000 = 2 minutes)"
+  },
+
+  "filePermissions": {
+    "__info": "Control file access permissions",
+
+    "allowedPaths": {
+      "__info": "Paths Claude can access (if specified, restricts to these paths)",
+      "__example": "['./scripts/', './test/', './.claude/']",
+      "__recommended": "Leave unset for full project access"
+    },
+
+    "blockedPaths": {
+      "__info": "Paths Claude cannot access",
+      "__example": "['.git/', 'node_modules/', '.env', '*.key']",
+      "__recommended": "Block sensitive directories and credential files"
+    },
+
+    "maxFileSize": 10485760,
+    "__maxFileSize_note": "Maximum file size in bytes (default: 10MB)"
+  },
+
+  "search": {
+    "__info": "Configure search behavior (Grep, Glob tools)",
+
+    "excludePatterns": [
+      "node_modules/**",
+      ".git/**",
+      "*.log",
+      "*.tmp",
+      ".DS_Store"
+    ],
+    "__excludePatterns_note": "Patterns to exclude from search results",
+
+    "maxResults": 1000,
+    "__maxResults_note": "Maximum search results to return",
+
+    "caseSensitive": false,
+    "__caseSensitive_note": "Default case sensitivity for searches"
+  },
+
+  "completion": {
+    "__info": "AI model completion settings",
+
+    "model": "claude-sonnet-4-5-20250929",
+    "__model_options": "claude-sonnet-4-5, claude-opus-4, claude-haiku-3-5",
+    "__model_note": "AI model to use for completions",
+
+    "temperature": 0.7,
+    "__temperature_note": "Randomness (0.0-1.0). Lower = more deterministic",
+
+    "maxTokens": 8192,
+    "__maxTokens_note": "Maximum tokens in completion",
+
+    "stopSequences": [],
+    "__stopSequences_note": "Sequences that stop generation"
+  },
+
+  "context": {
+    "__info": "Control context and memory behavior",
+
+    "maxContextSize": 200000,
+    "__maxContextSize_note": "Maximum context tokens (Claude 4.5 supports 200k)",
+
+    "includeGitInfo": true,
+    "__includeGitInfo_note": "Include git branch/status in context",
+
+    "includeCwd": true,
+    "__includeCwd_note": "Include current working directory in context",
+
+    "memoryFiles": [
+      "CLAUDE.md",
+      ".claude/CLAUDE.md"
+    ],
+    "__memoryFiles_note": "Files to load as persistent memory"
+  },
+
+  "ui": {
+    "__info": "User interface preferences",
+
+    "statusLine": {
+      "enabled": true,
+      "script": "~/.claude/statusline.sh",
+      "__script_note": "Custom status line script (optional)"
+    },
+
+    "colors": {
+      "enabled": true,
+      "__enabled_note": "Enable colored output"
+    },
+
+    "notifications": {
+      "enabled": true,
+      "onError": true,
+      "onCompletion": false,
+      "__note": "Desktop notifications for events"
+    }
+  },
+
+  "git": {
+    "__info": "Git integration settings",
+
+    "autoCommit": false,
+    "__autoCommit_note": "Automatically commit changes (not recommended)",
+
+    "requireReview": true,
+    "__requireReview_note": "Require user review before commits",
+
+    "excludeBranches": ["main", "master", "production"],
+    "__excludeBranches_note": "Branches where commits are forbidden"
+  },
+
+  "environment": {
+    "__info": "Environment variables for Claude Code sessions",
+    "__format": "KEY: value pairs",
+    "__example": {
+      "PROJECT_NAME": "axon-menu",
+      "NODE_ENV": "development",
+      "CUSTOM_VAR": "value"
+    },
+    "__note": "These are available as $VAR in bash commands"
+  },
+
+  "plugins": {
+    "__info": "Plugin configuration and marketplaces",
+
+    "marketplaces": [
+      {
+        "name": "team-plugins",
+        "url": "https://github.com/yourorg/claude-plugins",
+        "enabled": true
+      }
+    ],
+    "__marketplaces_note": "Plugin marketplace sources",
+
+    "installed": [],
+    "__installed_note": "List of installed plugin IDs",
+
+    "disabled": [],
+    "__disabled_note": "List of disabled plugin IDs"
+  },
+
+  "mcp": {
+    "__info": "Model Context Protocol servers",
+    "__docs": "https://docs.claude.com/en/docs/claude-code/mcp.md",
+
+    "servers": {
+      "__format": "server-name: { command, args, env }",
+      "__example": {
+        "example-server": {
+          "command": "npx",
+          "args": ["-y", "@example/mcp-server"],
+          "env": {
+            "API_KEY": "${API_KEY}"
+          }
+        }
+      }
+    }
+  },
+
+  "security": {
+    "__info": "Security and privacy settings",
+
+    "redactSecrets": true,
+    "__redactSecrets_note": "Automatically redact credentials in output",
+
+    "allowedHosts": [],
+    "__allowedHosts_note": "Allowed hosts for WebFetch (empty = all allowed)",
+
+    "blockedHosts": [
+      "internal.company.com",
+      "localhost"
+    ],
+    "__blockedHosts_note": "Blocked hosts for WebFetch",
+
+    "requireConfirmation": {
+      "bash": false,
+      "write": false,
+      "delete": true,
+      "__note": "Require user confirmation for specific operations"
+    }
+  },
+
+  "performance": {
+    "__info": "Performance optimization settings",
+
+    "caching": {
+      "enabled": true,
+      "ttl": 3600,
+      "__ttl_note": "Cache time-to-live in seconds"
+    },
+
+    "parallelization": {
+      "enabled": true,
+      "maxConcurrent": 4,
+      "__maxConcurrent_note": "Maximum parallel tool executions"
+    }
+  },
+
+  "logging": {
+    "__info": "Logging and debugging configuration",
+
+    "level": "info",
+    "__level_options": "debug, info, warn, error",
+
+    "file": ".claude/logs/claude-code.log",
+    "__file_note": "Log file path (relative to project root)",
+
+    "maxSize": 10485760,
+    "__maxSize_note": "Maximum log file size in bytes (10MB)",
+
+    "maxFiles": 5,
+    "__maxFiles_note": "Number of log files to retain"
+  },
+
+  "__customization_notes": [
+    "====================================================================",
+    "CONFIGURATION PRECEDENCE (highest to lowest):",
+    "1. Enterprise managed settings (/etc/claude-code/managed-settings.json)",
+    "2. Command-line arguments",
+    "3. Project local settings (.claude/settings.local.json)",
+    "4. Project shared settings (.claude/settings.json) <- THIS FILE",
+    "5. User settings (~/.claude/settings.json)",
+    "====================================================================",
+    "",
+    "COMMON CUSTOMIZATIONS:",
+    "",
+    "1. Enable Hooks:",
+    "   - Copy hook examples from .claude/hooks/",
+    "   - Configure in 'hooks' section above",
+    "   - Test with: echo 'test' > test.sh",
+    "",
+    "2. Restrict File Access:",
+    "   - Set filePermissions.blockedPaths",
+    "   - Example: ['.env', '*.key', 'secrets/']",
+    "",
+    "3. Customize Bash Sandbox:",
+    "   - Set bashSandbox.blockedCommands",
+    "   - Example: ['rm', 'sudo', 'dd']",
+    "",
+    "4. Add MCP Servers:",
+    "   - Configure in 'mcp.servers'",
+    "   - See: https://docs.claude.com/en/docs/claude-code/mcp.md",
+    "",
+    "5. Set Project Environment:",
+    "   - Add variables to 'environment'",
+    "   - Available in bash as $VAR_NAME",
+    "",
+    "====================================================================",
+    "",
+    "USAGE:",
+    "1. Copy this file: cp settings.json.example settings.json",
+    "2. Remove all __comment and __note fields",
+    "3. Customize for your needs",
+    "4. Commit settings.json to share with team",
+    "5. Use settings.local.json for personal overrides (not committed)",
+    "",
+    "===================================================================="
+  ]
+}

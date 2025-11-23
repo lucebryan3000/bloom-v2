@@ -1,0 +1,11 @@
+{
+  "command": "kb openai codex",
+  "generated": "2025-11-09T23:01:50Z",
+  "sources": [
+    "https://platform.openai.com/docs/api-reference/completions",
+    "https://platform.openai.com/docs/api-reference/edits"
+  ],
+  "quality_score": "6/10",
+  "total_lines": 2295,
+  "status": "draft"
+}

@@ -1,0 +1,189 @@
+---
+name: config-review
+description: Review a script for configuration management compliance
+version: 1.0.0
+created: 2025-10-27
+---
+
+# Configuration Compliance Review Playbook
+
+## Purpose
+Review a single script for configuration management compliance and provide inline suggestions.
+
+## Review Checklist
+
+### 1. Config Sourcing
+- [ ] Script sources axon-menu.conf
+- [ ] Sourcing happens early (after set -euo pipefail)
+- [ ] Uses correct pattern:
+  ```bash
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+  source "${PROJECT_ROOT}/axon-menu.conf"
+  ```
+
+### 2. Path Variables
+Check for hard-coded paths that should use config variables:
+
+- [ ] No `/Users/username/...` paths
+- [ ] No hard-coded `/tmp/axon-menu` (use `${TEMP_DIR}`)
+- [ ] No `${SCRIPT_DIR}/reports` (use `${REPORTS_DIR}`)
+- [ ] No `${SCRIPT_DIR}/scripts` (use `${SUPPORT_DIR}`)
+- [ ] No relative paths to lib (use `${LIB_DIR}`)
+- [ ] No `$HOME/Library/Logs/axon-menu` (use `${LOG_DIR}`)
+
+### 3. Library Sourcing
+- [ ] Uses `${LIB_DIR}/common.sh` not `./lib/common.sh`
+- [ ] No relative paths to library files
+- [ ] Libraries sourced after config
+
+### 4. Variable Definitions
+- [ ] No redefinition of variables from axon-menu.conf
+- [ ] Local-only variables are clearly marked as `local`
+- [ ] New global variables documented and justified
+
+### 5. Available Variables
+Check if script could use existing config variables:
+- Project paths: `PROJECT_ROOT`, `SUPPORT_DIR`, `LIB_DIR`
+- Output dirs: `REPORTS_DIR`, `LOG_DIR`, `TEMP_DIR`
+- Tools: `DEFAULT_EDITOR`, `HOMEBREW_PREFIX`
+- Flags: `ENABLE_LOGGING`, `VERBOSE`, `ENABLE_COLOR`
+
+## Review Process
+
+### Step 1: Initial Scan
+```bash
+# Syntax check
+bash -n script.sh
+
+# Quick grep for violations
+grep -n "source.*axon-menu.conf" script.sh  # Should find it
+grep -n "/Users/" script.sh                  # Should be empty
+grep -n "/tmp/axon-menu" script.sh          # Should use ${TEMP_DIR}
+```
+
+### Step 2: Detailed Analysis
+Read script line-by-line, noting:
+- Line numbers with issues
+- Specific violations
+- Suggested fixes
+- Severity (CRITICAL/HIGH/MEDIUM)
+
+### Step 3: Generate Recommendations
+
+Format:
+```
+Configuration Review: scripts/path/to/script.sh
+================================================
+
+Overall Status: ❌ NON-COMPLIANT / ✅ COMPLIANT
+
+Issues Found: N
+
+[CRITICAL] Line 15: Missing config source
+  Impact: Cannot access any config variables
+  Fix: Add config sourcing after line 8 (set -euo pipefail)
+
+[HIGH] Line 42: Hard-coded path "/tmp/axon-menu"
+  Impact: Breaks if TEMP_DIR changes
+  Fix: Replace with ${TEMP_DIR}
+
+[MEDIUM] Line 67: Redefines REPORTS_DIR
+  Impact: Inconsistent with global config
+  Fix: Remove definition, use from config
+
+Recommendations:
+1. Add config sourcing (required)
+2. Replace 3 hard-coded paths with variables
+3. Remove 1 duplicate variable definition
+
+After fixes, script will be fully compliant.
+```
+
+### Step 4: Provide Fix Examples
+
+For each issue, show before/after:
+
+```bash
+# Issue: Hard-coded REPORTS_DIR
+# Line 42
+
+# BEFORE:
+REPORTS_DIR="/Users/luce/axon-menu/reports"
+output_file="${REPORTS_DIR}/report.txt"
+
+# AFTER:
+# (Config already sourced, variable available)
+output_file="${REPORTS_DIR}/report.txt"
+```
+
+## Review Output Template
+
+```markdown
+# Configuration Compliance Review
+
+**Script:** `path/to/script.sh`
+**Reviewed:** 2025-10-27
+**Status:** [COMPLIANT / NON-COMPLIANT / PARTIALLY COMPLIANT]
+
+## Summary
+- Total Issues: N
+- Critical: A
+- High: B
+- Medium: C
+
+## Detailed Findings
+
+### Issue 1: [Severity] Brief Description
+- **Line:** 42
+- **Current Code:** `REPORTS_DIR="/tmp/reports"`
+- **Problem:** Hard-coded path instead of config variable
+- **Fix:** Use `${REPORTS_DIR}` from axon-menu.conf
+- **Impact:** Breaks portability, inconsistent with other scripts
+
+### Issue 2: ...
+
+## Required Actions
+
+1. [Priority 1] Add config sourcing (CRITICAL)
+2. [Priority 2] Replace hard-coded paths (HIGH)
+3. [Priority 3] Remove duplicate variables (MEDIUM)
+
+## After Fix Validation
+
+Run these commands to verify:
+```bash
+bash -n script.sh                    # Syntax check
+./scripts/test/validate_config_usage.sh  # Full audit
+```
+
+## Notes
+- Script otherwise follows Axon Menu standards
+- Good error handling present
+- Consider adding more comments for complex sections
+```
+
+## Quick Reference: Common Variables
+
+| Hard-Coded Path | Config Variable |
+|----------------|----------------|
+| `/tmp/axon-menu` | `${TEMP_DIR}` |
+| `$HOME/Library/Logs/axon-menu` | `${LOG_DIR}` |
+| `${SCRIPT_DIR}/reports` | `${REPORTS_DIR}` |
+| `${SCRIPT_DIR}/scripts` | `${SUPPORT_DIR}` |
+| `${SCRIPT_DIR}/scripts/lib` | `${LIB_DIR}` |
+| `${SCRIPT_DIR}/config` | `${CONFIG_DIR}` |
+| `./lib/common.sh` | `${LIB_DIR}/common.sh` |
+
+## Success Criteria
+- ✓ All violations identified with line numbers
+- ✓ Severity assigned to each issue
+- ✓ Specific fixes provided for each issue
+- ✓ Before/after examples included
+- ✓ Validation steps documented
+
+## Notes
+- Be thorough but concise
+- Focus on actionable feedback
+- Explain WHY each fix matters
+- Provide copy-paste ready fix examples

@@ -1,0 +1,11 @@
+{
+  "command": "kb sqlite",
+  "generated": "2025-11-09T23:31:02Z",
+  "sources": [
+    "https://www.sqlite.org/docs.html",
+    "https://www.prisma.io/docs/orm/overview/databases/sqlite"
+  ],
+  "quality_score": "6/10",
+  "total_lines": 2007,
+  "status": "draft"
+}

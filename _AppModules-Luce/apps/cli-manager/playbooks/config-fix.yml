@@ -1,0 +1,182 @@
+---
+name: config-fix
+description: Auto-fix configuration management violations (safe, conservative fixes)
+version: 1.0.0
+created: 2025-10-27
+---
+
+# Configuration Violation Auto-Fix Playbook
+
+## Purpose
+Automatically fix safe, obvious configuration management violations in Axon Menu scripts.
+
+## Safety Rules
+- **ONLY** fix low-risk, straightforward violations
+- **NEVER** modify core logic or complex patterns
+- **ALWAYS** create backup before modifying
+- **VALIDATE** after each fix (bash -n)
+- **RE-AUDIT** after fixes to verify
+
+## Auto-Fixable Patterns
+
+### Pattern 1: Missing Config Source
+**Detection:** Script doesn't source axon-menu.conf
+**Fix:** Add config sourcing after `set -euo pipefail`
+
+```bash
+# Add these lines:
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "${PROJECT_ROOT}/axon-menu.conf"
+```
+
+**Risk Level:** LOW (standard pattern, no logic change)
+
+### Pattern 2: Hard-Coded TEMP_DIR
+**Detection:** `/tmp/axon-menu` instead of `${TEMP_DIR}`
+**Fix:** Replace with variable
+
+```bash
+# BEFORE:
+TEMP="/tmp/axon-menu"
+
+# AFTER:
+# (Just use the variable from config)
+mkdir -p "${TEMP_DIR}"
+```
+
+**Risk Level:** LOW (direct substitution)
+
+### Pattern 3: Hard-Coded REPORTS_DIR
+**Detection:** `${SCRIPT_DIR}/reports` instead of `${REPORTS_DIR}`
+**Fix:** Replace with variable
+
+```bash
+# BEFORE:
+REPORT_FILE="${SCRIPT_DIR}/reports/output.txt"
+
+# AFTER:
+REPORT_FILE="${REPORTS_DIR}/output.txt"
+```
+
+**Risk Level:** LOW (direct substitution)
+
+### Pattern 4: Hard-Coded LIB_DIR
+**Detection:** Relative path to lib directory
+**Fix:** Use LIB_DIR variable
+
+```bash
+# BEFORE:
+source "./scripts/lib/common.sh"
+source "$(dirname "$0")/../lib/common.sh"
+
+# AFTER:
+source "${LIB_DIR}/common.sh"
+```
+
+**Risk Level:** LOW (standard pattern)
+
+## NOT Auto-Fixable (Require Manual Review)
+
+- Custom directory structures
+- Complex path calculations
+- Variables with non-standard names
+- Scripts with unusual execution contexts
+- Anything involving sudo or system operations
+
+## Fix Workflow
+
+### Step 1: Identify Target Scripts
+```bash
+# Parse violations file
+grep "MISSING" reports/config_violations.txt
+grep "HARD-CODED" reports/config_violations.txt
+```
+
+### Step 2: For Each Script
+
+1. **Read script** - Understand context
+2. **Identify pattern** - Match to auto-fix patterns
+3. **Create backup** - Copy script to `.bak`
+4. **Apply fix** - Use Edit tool for targeted replacement
+5. **Validate syntax** - Run `bash -n script.sh`
+6. **Test if possible** - Run script in dry-run mode
+7. **Log change** - Record what was fixed
+
+### Step 3: Batch Fix Process
+
+For multiple scripts with same violation:
+```
+1. Confirm all match same pattern
+2. Apply fix to first script
+3. Validate thoroughly
+4. If successful, apply to remaining scripts
+5. Final validation of all
+```
+
+### Step 4: Post-Fix Verification
+```bash
+# Re-run audit to verify fixes
+./scripts/test/validate_config_usage.sh
+
+# Check specific files
+bash -n scripts/path/to/fixed_script.sh
+```
+
+## Example Fix Session
+
+```
+Script: scripts/network/check_connectivity.sh
+Violation: Missing config source (CRITICAL)
+
+Fix Applied:
+  Added config sourcing after line 8 (set -euo pipefail)
+
+Validation:
+  ✓ Syntax check passed (bash -n)
+  ✓ Script still executable
+  ✓ No regressions in functionality
+
+Result:
+  Violation cleared - script now compliant
+```
+
+## Output Format
+
+After fixing, report:
+```
+Configuration Fixes Applied
+===========================
+
+Scripts Fixed: N
+Violations Resolved: M
+
+Details:
+  - Added config source: A scripts
+  - Replaced hard-coded paths: B scripts
+  - Fixed lib references: C scripts
+
+All fixes validated successfully.
+Re-run audit: ./scripts/test/validate_config_usage.sh
+```
+
+## Success Criteria
+- ✓ Only safe, obvious patterns fixed
+- ✓ All syntax validated (bash -n passes)
+- ✓ Backups created before modifications
+- ✓ Changes logged and documented
+- ✓ Re-audit shows reduced violations
+
+## Failure Handling
+If ANY fix fails validation:
+1. Restore from backup
+2. Log the failure
+3. Mark script for manual review
+4. Continue with other scripts
+5. Report failures at end
+
+## Notes
+- Conservative approach: When in doubt, skip and mark for manual review
+- Always prefer explicit, readable fixes over clever one-liners
+- Document each fix with comment explaining change
+- Test incrementally, don't batch-fix without validation

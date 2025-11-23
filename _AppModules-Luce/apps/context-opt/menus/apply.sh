@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+menu_apply(){ ui_clear; ui_header "Apply"; ui_info "Type a number to run; any other key returns."; echo "  1) Apply .claudeignore edits (apply.ignores)"; echo "  2) Apply settings edits      (apply.settings)"; printf "\nSelect: "; read -r c||true; case "$c" in 1) action_apply_ignores ;; 2) action_apply_settings ;; *) return ;; esac; }
+action_apply_ignores(){ ui_header "Apply — .claudeignore"; dispatch_action ".claudeignore" "append_recommended_patterns"; ui_pause; dispatch_action ".claudeignore" "deduplicate_patterns"; }
+action_apply_settings(){ ui_header "Apply — .claude/settings.json"; dispatch_action ".claude/settings.json" "prune_alwaysInclude"; ui_pause; dispatch_action ".claude/settings.json" "add_permissions_deny" "Read(./node_modules/**)" "Read(./.next/**)" "Read(./logs/**)" "Read(./public/export/**)" "Read(./docs/archive/**)" "Read(./_build/**)"; ui_pause; dispatch_action ".claude/settings.json" "tighten_auto_include"; }
