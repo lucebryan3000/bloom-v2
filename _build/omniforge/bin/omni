@@ -130,6 +130,8 @@ done
 # =============================================================================
 
 main() {
+    local exit_code=0
+
     # Load configuration
     config_load
     config_validate
@@ -156,10 +158,21 @@ main() {
     log_info "=========================================="
     log_info "  OMNIFORGE - The Factory That Builds Universes"
     log_info "=========================================="
+    log_info "  App: ${APP_NAME:-bloom2}"
     log_info "  Mode: ${DRY_RUN:-false} && dry-run || live"
     log_info "  Profile: ${STACK_PROFILE:-full}"
     log_info "  Resume: ${BOOTSTRAP_RESUME_MODE:-skip}"
     log_info "=========================================="
+    echo ""
+
+    # Initialize execution statistics
+    phase_stats_init
+
+    # Run preflight checks (validates all prerequisites upfront)
+    if ! phase_preflight_check "$tech_stack_dir"; then
+        log_error "Preflight check failed. Please fix the issues above."
+        exit 1
+    fi
     echo ""
 
     # Git safety check
@@ -168,16 +181,38 @@ main() {
     # Single phase or all phases
     if [[ -n "$SINGLE_PHASE" ]]; then
         log_info "Running single phase: $SINGLE_PHASE"
-        phase_execute "$SINGLE_PHASE" "$tech_stack_dir" "$FORCE"
+        if phase_execute "$SINGLE_PHASE" "$tech_stack_dir" "$FORCE"; then
+            phase_stats_record "$SINGLE_PHASE" "completed"
+        else
+            phase_stats_record "$SINGLE_PHASE" "failed"
+            exit_code=1
+        fi
     else
         log_info "Running all phases..."
-        phase_execute_all "$tech_stack_dir" "$FORCE"
+        if phase_execute_all "$tech_stack_dir" "$FORCE"; then
+            # Count completed phases for stats
+            local phases
+            local OLD_IFS="$IFS"
+            IFS=' '
+            read -ra phases <<< "$(phase_discover)"
+            IFS="$OLD_IFS"
+            for p in "${phases[@]}"; do
+                if phase_is_enabled "$p"; then
+                    phase_stats_record "$p" "completed"
+                else
+                    phase_stats_record "$p" "skipped"
+                fi
+            done
+        else
+            exit_code=1
+            phase_stats_record "unknown" "failed"
+        fi
     fi
 
-    echo ""
-    log_success "=========================================="
-    log_success "  OMNIFORGE COMPLETE"
-    log_success "=========================================="
+    # Show execution recap and next steps
+    phase_show_recap
+
+    exit $exit_code
 }
 
 main "$@"

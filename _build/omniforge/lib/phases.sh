@@ -352,3 +352,327 @@ phase_list_all() {
         echo ""
     done
 }
+
+# =============================================================================
+# DEPENDENCY CHECKING
+# =============================================================================
+
+# Check phase dependencies
+# Format: "git:https://git-scm.com,node:https://nodejs.org,pnpm:https://pnpm.io"
+# Usage: check_phase_deps "git:url,node:url" "strict"
+check_phase_deps() {
+    local deps_string="$1"
+    local prereq_mode="${2:-warn}"
+    local all_ok=true
+
+    [[ -z "$deps_string" ]] && return 0
+
+    local OLD_IFS="$IFS"
+    IFS=','
+    for dep in $deps_string; do
+        local cmd="${dep%%:*}"
+        local hint="${dep#*:}"
+
+        # Skip empty or builtin
+        [[ -z "$cmd" || "$hint" == "builtin" ]] && continue
+
+        if ! command -v "$cmd" &>/dev/null; then
+            if [[ "$prereq_mode" == "strict" ]]; then
+                log_error "Required: $cmd - Install from $hint"
+                all_ok=false
+            else
+                log_warn "Optional: $cmd not found - Install from $hint"
+            fi
+        else
+            log_debug "Found dependency: $cmd"
+        fi
+    done
+    IFS="$OLD_IFS"
+
+    $all_ok
+}
+
+# =============================================================================
+# PREFLIGHT CHECKS
+# =============================================================================
+
+# Run all preflight checks before any phase execution
+# Usage: phase_preflight_check "/path/to/tech_stack"
+phase_preflight_check() {
+    local tech_stack_dir="$1"
+    local errors=0
+    local warnings=0
+
+    log_info "=========================================="
+    log_info "  PREFLIGHT CHECK"
+    log_info "=========================================="
+    echo ""
+
+    # 1. Check all phase dependencies upfront
+    log_step "Checking dependencies for all phases..."
+    local phases
+    local OLD_IFS="$IFS"
+    IFS=' '
+    read -ra phases <<< "$(phase_discover)"
+    IFS="$OLD_IFS"
+
+    for phase_num in "${phases[@]}"; do
+        if ! phase_is_enabled "$phase_num"; then
+            continue
+        fi
+
+        local deps prereq
+        deps=$(phase_get_config_field "$phase_num" "deps") || true
+        prereq=$(phase_get_config_field "$phase_num" "prereq") || true
+        prereq="${prereq:-warn}"
+
+        if [[ -n "$deps" ]]; then
+            local phase_name
+            phase_name=$(phase_get_name "$phase_num")
+            log_debug "Checking Phase $phase_num ($phase_name) dependencies..."
+
+            if ! check_phase_deps "$deps" "$prereq"; then
+                if [[ "$prereq" == "strict" ]]; then
+                    errors=$((errors + 1))
+                else
+                    warnings=$((warnings + 1))
+                fi
+            fi
+        fi
+    done
+
+    # 2. Check all scripts exist
+    log_step "Verifying all scripts exist..."
+    local missing_scripts=0
+
+    for phase_num in "${phases[@]}"; do
+        if ! phase_is_enabled "$phase_num"; then
+            continue
+        fi
+
+        local scripts
+        scripts=$(phase_get_scripts "$phase_num") || true
+
+        while IFS= read -r script_rel; do
+            [[ -z "$script_rel" ]] && continue
+            script_rel="${script_rel#"${script_rel%%[![:space:]]*}"}"
+            script_rel="${script_rel%"${script_rel##*[![:space:]]}"}"
+            [[ -z "$script_rel" ]] && continue
+
+            local full_path="${tech_stack_dir}/${script_rel}"
+            if [[ ! -f "$full_path" ]]; then
+                log_warn "Missing script: $script_rel"
+                missing_scripts=$((missing_scripts + 1))
+            fi
+        done <<< "$scripts"
+    done
+
+    if [[ $missing_scripts -gt 0 ]]; then
+        log_warn "$missing_scripts script(s) not found - will be skipped"
+        warnings=$((warnings + missing_scripts))
+    fi
+
+    # 3. Check disk space (basic check)
+    log_step "Checking system resources..."
+    local available_space
+    available_space=$(df -P "${PROJECT_ROOT:-.}" 2>/dev/null | awk 'NR==2 {print $4}')
+    if [[ -n "$available_space" && "$available_space" -lt 1048576 ]]; then
+        log_warn "Low disk space: less than 1GB available"
+        warnings=$((warnings + 1))
+    fi
+
+    # 4. Check PROJECT_ROOT is writable
+    if [[ ! -w "${PROJECT_ROOT:-.}" ]]; then
+        log_error "PROJECT_ROOT is not writable: ${PROJECT_ROOT:-.}"
+        errors=$((errors + 1))
+    fi
+
+    # Summary
+    echo ""
+    log_info "=========================================="
+    if [[ $errors -gt 0 ]]; then
+        log_error "Preflight check FAILED: $errors error(s), $warnings warning(s)"
+        log_error "Fix the errors above before proceeding."
+        return 1
+    elif [[ $warnings -gt 0 ]]; then
+        log_warn "Preflight check passed with $warnings warning(s)"
+        log_info "Proceeding despite warnings..."
+        return 0
+    else
+        log_success "Preflight check PASSED"
+        return 0
+    fi
+}
+
+# =============================================================================
+# EXECUTION RECAP
+# =============================================================================
+
+# Track execution statistics
+declare -g _PHASE_STATS_STARTED=0
+declare -g _PHASE_STATS_COMPLETED=0
+declare -g _PHASE_STATS_SKIPPED=0
+declare -g _PHASE_STATS_FAILED=0
+declare -g _PHASE_STATS_START_TIME=""
+declare -g _PHASE_STATS_PHASES_RUN=""
+
+# Initialize execution stats
+phase_stats_init() {
+    _PHASE_STATS_STARTED=0
+    _PHASE_STATS_COMPLETED=0
+    _PHASE_STATS_SKIPPED=0
+    _PHASE_STATS_FAILED=0
+    _PHASE_STATS_START_TIME=$(date +%s)
+    _PHASE_STATS_PHASES_RUN=""
+}
+
+# Record phase completion
+phase_stats_record() {
+    local phase_num="$1"
+    local status="$2"  # completed, skipped, failed
+
+    case "$status" in
+        completed)
+            _PHASE_STATS_COMPLETED=$((_PHASE_STATS_COMPLETED + 1))
+            ;;
+        skipped)
+            _PHASE_STATS_SKIPPED=$((_PHASE_STATS_SKIPPED + 1))
+            ;;
+        failed)
+            _PHASE_STATS_FAILED=$((_PHASE_STATS_FAILED + 1))
+            ;;
+    esac
+    _PHASE_STATS_PHASES_RUN="${_PHASE_STATS_PHASES_RUN} $phase_num:$status"
+}
+
+# Show execution recap and next steps
+phase_show_recap() {
+    local end_time
+    end_time=$(date +%s)
+    local duration=$((end_time - _PHASE_STATS_START_TIME))
+    local minutes=$((duration / 60))
+    local seconds=$((duration % 60))
+
+    echo ""
+    echo ""
+    log_info "=========================================="
+    log_info "  OMNIFORGE EXECUTION RECAP"
+    log_info "=========================================="
+    echo ""
+
+    # Statistics
+    echo "Duration: ${minutes}m ${seconds}s"
+    echo "Phases completed: $_PHASE_STATS_COMPLETED"
+    echo "Phases skipped: $_PHASE_STATS_SKIPPED"
+    [[ $_PHASE_STATS_FAILED -gt 0 ]] && echo "Phases failed: $_PHASE_STATS_FAILED"
+    echo ""
+
+    # Next steps based on what was installed
+    log_info "=========================================="
+    log_info "  NEXT STEPS"
+    log_info "=========================================="
+    echo ""
+
+    if [[ $_PHASE_STATS_FAILED -eq 0 ]]; then
+        echo "1. Review generated files and customize as needed"
+        echo ""
+        echo "2. Set up environment variables:"
+        echo "   cp .env.example .env.local"
+        echo "   # Edit .env.local with your secrets"
+        echo ""
+        echo "3. Start the database:"
+        echo "   docker compose up -d"
+        echo ""
+        echo "4. Run database migrations:"
+        echo "   pnpm db:migrate"
+        echo ""
+        echo "5. Start development server:"
+        echo "   pnpm dev"
+        echo ""
+        echo "6. Verify the build:"
+        echo "   omni forge"
+        echo ""
+
+        log_info "=========================================="
+        log_info "  CONFIGURATION CHECKLIST"
+        log_info "=========================================="
+        echo ""
+        echo "[ ] Update .env.local with your API keys"
+        echo "[ ] Update database credentials in docker-compose.yml"
+        echo "[ ] Configure authentication providers in auth.config.ts"
+        echo "[ ] Review and customize the schema in src/db/schema/"
+        echo "[ ] Set up your preferred IDE extensions"
+        echo ""
+    else
+        log_warn "Some phases failed. Please review the errors above."
+        echo ""
+        echo "To retry failed phases:"
+        echo "   omni --init  # Will skip already completed scripts"
+        echo ""
+        echo "To force re-run all phases:"
+        echo "   omni --init --force"
+        echo ""
+        echo "To clear state and start fresh:"
+        echo "   omni status --clear"
+        echo "   omni --init"
+        echo ""
+    fi
+
+    log_success "=========================================="
+    log_success "  OmniForge complete. Happy building!"
+    log_success "=========================================="
+}
+
+# =============================================================================
+# PARALLEL EXECUTION (for independent scripts)
+# =============================================================================
+
+# Check if two scripts can run in parallel (no dependencies)
+# For now, scripts within same subdirectory are considered dependent
+phase_can_parallelize() {
+    local script1="$1"
+    local script2="$2"
+
+    local dir1="${script1%/*}"
+    local dir2="${script2%/*}"
+
+    # Different directories = can parallelize
+    [[ "$dir1" != "$dir2" ]]
+}
+
+# Execute scripts in parallel where possible
+# Usage: phase_execute_parallel "script1 script2 script3" "/path/to/tech_stack"
+phase_execute_parallel() {
+    local scripts_string="$1"
+    local tech_stack_dir="$2"
+    local force="$3"
+
+    # For now, just run sequentially
+    # Parallel execution requires more sophisticated dependency analysis
+    local script
+    for script in $scripts_string; do
+        [[ -z "$script" ]] && continue
+
+        local full_path="${tech_stack_dir}/${script}"
+
+        if [[ "$force" != "true" && "${BOOTSTRAP_RESUME_MODE:-skip}" == "skip" ]]; then
+            if state_has_succeeded "$script"; then
+                log_skip "$script (already completed)"
+                continue
+            fi
+        fi
+
+        if [[ ! -f "$full_path" ]]; then
+            log_warn "Script not found, skipping: $script"
+            continue
+        fi
+
+        if phase_run_script "$full_path"; then
+            state_mark_success "$script"
+        else
+            return 1
+        fi
+    done
+
+    return 0
+}
