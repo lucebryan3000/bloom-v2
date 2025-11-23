@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/phases.sh - Phase discovery and execution
+# lib/phases.sh - Phase Discovery & Execution
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for discovering and executing phases from bootstrap.conf.
 # Reads PHASE_METADATA_N variables dynamically. No execution on source.
-# Requires: lib/logging.sh, lib/state.sh, lib/validation.sh to be loaded first
+#
+# Exports:
+#   phase_discover, phase_execute, phase_execute_all, phase_list_all,
+#   phase_get_name, phase_is_enabled
+#
+# Dependencies:
+#   lib/logging.sh, lib/state.sh, lib/validation.sh
 # =============================================================================
 
 # Guard against double-sourcing

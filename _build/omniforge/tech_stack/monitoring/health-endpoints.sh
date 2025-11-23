@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: monitoring/health-endpoints.sh
+# tech_stack/monitoring/health-endpoints.sh - Health Check Endpoints
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up monitoring and health check endpoints
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.13 - Monitoring & Observability
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

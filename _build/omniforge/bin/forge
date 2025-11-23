@@ -2,12 +2,24 @@
 # =============================================================================
 # bin/forge - OmniForge Build & Verify
 # =============================================================================
-# Usage: ./bin/forge [options]
+# Part of OmniForge - The Factory That Builds Universes
+#
+# Usage: omni forge [options]
 #
 # Options:
 #   -n, --dry-run      Show what would be done without executing
 #   -v, --verbose      Enable verbose output
+#   --skip-lint        Skip linting step
+#   --skip-types       Skip TypeScript type checking
+#   --skip-build       Skip build step
 #   -h, --help         Show this help message
+#
+# Environment Variables:
+#   DRY_RUN=true       Same as --dry-run
+#   VERBOSE=true       Same as --verbose
+#
+# Dependencies:
+#   lib/common.sh      (loads all library modules)
 # =============================================================================
 
 set -euo pipefail

@@ -2,7 +2,9 @@
 # =============================================================================
 # bin/omni - OmniForge Main Entry Point
 # =============================================================================
-# Usage: ./bin/omni [options]
+# Part of OmniForge - The Factory That Builds Universes
+#
+# Usage: omni [options]
 #
 # Options:
 #   -n, --dry-run      Show what would be done without executing
@@ -10,12 +12,18 @@
 #   -f, --force        Ignore previous state, re-run all scripts
 #   -p, --phase NUM    Run only specified phase
 #   -l, --list         List all phases without running
+#   -s, --status       Show current status
 #   -h, --help         Show this help message
 #
 # Environment Variables:
 #   DRY_RUN=true       Same as --dry-run
 #   VERBOSE=true       Same as --verbose
 #   ALLOW_DIRTY=true   Skip git clean check
+#   GIT_SAFETY=false   Disable git safety checks
+#   STACK_PROFILE      Set stack profile (minimal, api-only, full)
+#
+# Dependencies:
+#   lib/common.sh      (loads all library modules)
 # =============================================================================
 
 set -euo pipefail

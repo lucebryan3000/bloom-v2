@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: export/pdf-export.sh
+# tech_stack/export/pdf-export.sh - PDF Export Formatter
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up PDF export formatter
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.12 - PDF Export
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

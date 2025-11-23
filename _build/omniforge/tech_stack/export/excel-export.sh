@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# =============================================================================
+# tech_stack/export/excel-export.sh - Excel Export Formatter
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
+# Purpose: Set up Excel export formatter
+# Phase: 4 (Extensions & Quality)
+# Reference: PRD Section 6.12 - Excel Export
+#
+# Dependencies:
+#   lib/common.sh
+# =============================================================================
+
 set -euo pipefail
 IFS=$'\n\t'
 

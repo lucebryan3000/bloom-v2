@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: export/markdown-export.sh
+# tech_stack/export/markdown-export.sh - Markdown Export Formatter
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up Markdown export formatter
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.12 - Markdown Export
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

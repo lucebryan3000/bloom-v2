@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/state.sh - Bootstrap state tracking
+# lib/state.sh - State Tracking
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for tracking script completion state. No execution on source.
-# Requires: lib/logging.sh to be loaded first
+#
+# Exports:
+#   state_init, state_mark_success, state_has_succeeded, state_clear,
+#   state_clear_all, state_show_status
+#
+# Dependencies:
+#   lib/logging.sh
 # =============================================================================
 
 # Guard against double-sourcing

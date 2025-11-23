@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: monitoring/settings-ui.sh
+# tech_stack/monitoring/settings-ui.sh - User Settings & Preferences UI
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up user settings and preferences UI
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.13 - Settings & User Preferences
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

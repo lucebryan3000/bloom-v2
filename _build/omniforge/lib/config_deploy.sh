@@ -2,13 +2,16 @@
 # =============================================================================
 # lib/config_deploy.sh - Configuration Deployment & Template Management
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Handles the copying of .example templates to live configuration files,
 # performing variable substitution, and updating .gitignore.
 #
+# Exports:
+#   configure_file_from_template
+#
 # Dependencies:
-#   - lib/logging.sh (for log_* functions)
-#   - lib/utils.sh   (for ensure_dir)
-#   - lib/config_bootstrap.sh  (for variables like APP_NAME, DB_USER)
+#   lib/logging.sh, lib/utils.sh, lib/config_bootstrap.sh
 # =============================================================================
 
 # Guard against double-sourcing

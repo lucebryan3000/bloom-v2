@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: monitoring/feature-flags.sh
+# tech_stack/monitoring/feature-flags.sh - Feature Flag System
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up feature flag system for controlled rollout and A/B testing
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.13 - Feature Flags & Experimentation
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

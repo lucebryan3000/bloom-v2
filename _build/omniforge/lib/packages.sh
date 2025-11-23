@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/packages.sh - Package management and PKG_* expansion
+# lib/packages.sh - Package Management & PKG_* Expansion
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for package.json operations and PKG_* variable expansion.
 # No execution on source.
-# Requires: lib/logging.sh to be loaded first
+#
+# Exports:
+#   pkg_expand, pkg_is_enabled, pkg_has_dependency, pkg_add_dependency,
+#   pkg_add_script, pkg_update_field
+#
+# Dependencies:
+#   lib/logging.sh
 # =============================================================================
 
 # Guard against double-sourcing

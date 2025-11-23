@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: export/export-system.sh
+# tech_stack/export/export-system.sh - Export System Infrastructure
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up export system infrastructure (PDF, Excel, JSON, Markdown)
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.12 - Export System
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

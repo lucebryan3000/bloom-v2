@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: intelligence/hitl-review-queue.sh
+# tech_stack/intelligence/hitl-review-queue.sh - HITL Review Queue
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up Human-in-the-Loop review queue and governance
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.8 - Human-in-the-Loop (HITL) Governance
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

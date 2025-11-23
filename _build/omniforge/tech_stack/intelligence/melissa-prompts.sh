@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: intelligence/melissa-prompts.sh
+# tech_stack/intelligence/melissa-prompts.sh - Melissa.ai Prompt System
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up Melissa.ai prompt system (phase-driven prompts)
-# Implements: Appendix X - Melissa.ai Persona & Behavior Specification
+# Phase: 4 (Extensions & Quality)
+# Reference: Appendix X - Melissa.ai Persona & Behavior Specification
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

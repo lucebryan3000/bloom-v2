@@ -2,7 +2,23 @@
 # =============================================================================
 # bin/status - OmniForge Status & Phase Information
 # =============================================================================
-# Usage: ./bin/status [options]
+# Part of OmniForge - The Factory That Builds Universes
+#
+# Usage: omni status [options]
+#
+# Options:
+#   -l, --list         List all phases and their scripts
+#   -c, --config       Show current configuration values
+#   -s, --state        Show script completion state (default)
+#   --clear [key]      Clear state for a script (or all if no key)
+#   -h, --help         Show this help message
+#
+# Environment Variables:
+#   VERBOSE=true       Enable verbose output
+#   LOG_FORMAT=json    Output in JSON format
+#
+# Dependencies:
+#   lib/common.sh      (loads all library modules)
 # =============================================================================
 
 set -euo pipefail

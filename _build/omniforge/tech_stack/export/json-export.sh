@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# =============================================================================
+# tech_stack/export/json-export.sh - JSON Export Formatter
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
+# Purpose: Set up JSON export formatter
+# Phase: 4 (Extensions & Quality)
+# Reference: PRD Section 6.12 - JSON Export
+#
+# Dependencies:
+#   lib/common.sh
+# =============================================================================
+
 set -euo pipefail
 IFS=$'\n\t'
 

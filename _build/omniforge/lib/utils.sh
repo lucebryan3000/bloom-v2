@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/utils.sh - General utility functions
+# lib/utils.sh - General Utility Functions
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for file operations, command execution. No execution on source.
-# Requires: lib/logging.sh to be loaded first
+#
+# Exports:
+#   run_cmd, ensure_dir, write_file, add_gitkeep, confirm,
+#   get_script_dir, get_project_root
+#
+# Dependencies:
+#   lib/logging.sh
 # =============================================================================
 
 # Guard against double-sourcing

@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/validation.sh - Validation helper functions
+# lib/validation.sh - Validation Helper Functions
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for validating commands, files, versions. No execution on source.
-# Requires: lib/logging.sh to be loaded first
+#
+# Exports:
+#   require_cmd, require_node_version, require_pnpm, require_docker,
+#   require_file, require_project_root
+#
+# Dependencies:
+#   lib/logging.sh
 # =============================================================================
 
 # Guard against double-sourcing

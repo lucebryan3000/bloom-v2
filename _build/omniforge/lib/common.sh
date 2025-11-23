@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/common.sh - Master loader for all library modules
+# lib/common.sh - Master Loader for All Library Modules
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # This file sources all modular library files in the correct order.
 # Usage: source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
 #
-# After sourcing, all library functions are available:
+# Exports (after sourcing):
 #   - Logging:    log_info, log_warn, log_error, log_debug, log_step, etc.
 #   - Config:     config_load, config_validate, config_apply_profile
 #   - Phases:     phase_discover, phase_execute, phase_execute_all
@@ -14,6 +16,9 @@
 #   - Git:        git_ensure_clean, git_is_repo, git_current_branch
 #   - Validation: require_cmd, require_node_version, require_pnpm
 #   - Utils:      run_cmd, ensure_dir, write_file, confirm
+#
+# Dependencies:
+#   All lib/*.sh files (sourced in dependency order)
 # =============================================================================
 
 # Guard against double-sourcing

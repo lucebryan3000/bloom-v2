@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: intelligence/confidence-engine.sh
+# tech_stack/intelligence/confidence-engine.sh - Confidence & Uncertainty Engine
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up confidence scoring and uncertainty quantification
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.6 - Confidence & Uncertainty Engine
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

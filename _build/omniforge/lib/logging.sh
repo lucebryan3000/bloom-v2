@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/logging.sh - Logging functions
+# lib/logging.sh - Logging Functions
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for logging. No execution on source.
-# Usage: source this file, then call log_info, log_warn, etc.
+#
+# Exports:
+#   log_info, log_warn, log_error, log_debug, log_step, log_success,
+#   log_skip, log_dry, log_detail, log_init
+#
+# Dependencies:
+#   None (base module)
 # =============================================================================
 
 # Guard against double-sourcing

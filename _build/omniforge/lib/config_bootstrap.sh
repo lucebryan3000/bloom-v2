@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/config_bootstrap.sh - Configuration loading and validation
+# lib/config_bootstrap.sh - Configuration Loading & Validation
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for loading bootstrap.conf. No execution on source.
-# Requires: lib/logging.sh to be loaded first
+#
+# Exports:
+#   config_load, config_validate, config_apply_profile
+#
+# Dependencies:
+#   lib/logging.sh
 # =============================================================================
 
 # Guard against double-sourcing

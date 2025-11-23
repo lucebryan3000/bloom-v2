@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Script: intelligence/roi-engine.sh
+# tech_stack/intelligence/roi-engine.sh - ROI Calculation Engine
+# =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Purpose: Set up ROI calculation engine
+# Phase: 4 (Extensions & Quality)
 # Reference: PRD Section 6.5 - ROI Engine (Value Computation)
+#
+# Dependencies:
+#   lib/common.sh
 # =============================================================================
 
 set -euo pipefail

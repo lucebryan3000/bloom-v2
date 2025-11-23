@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/git.sh - Git safety checks
+# lib/git.sh - Git Safety Checks
 # =============================================================================
+# Part of OmniForge - The Factory That Builds Universes
+#
 # Pure functions for git operations. No execution on source.
-# Requires: lib/logging.sh to be loaded first
+#
+# Exports:
+#   git_ensure_clean, git_is_repo, git_current_branch
+#
+# Dependencies:
+#   lib/logging.sh
 # =============================================================================
 
 # Guard against double-sourcing
