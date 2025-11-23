@@ -103,8 +103,8 @@ temp/
 tmp/
 .tmp/
 
-# Bootstrap script logs
-_build/bootstrap_scripts/logs/
+# OmniForge script logs
+_build/omniforge/logs/
 
 # ==============================================================================
 # 7. DOCKER & INFRASTRUCTURE

@@ -20,8 +20,9 @@ _LIB_CONFIG_DEPLOY_LOADED=1
 # =============================================================================
 
 # Directory containing the source .example files
-# Assumes structure: _build/bootstrap_scripts/config_examples/
-CONFIG_TEMPLATES_DIR="${PROJECT_ROOT}/_build/bootstrap_scripts/config_examples"
+# Assumes structure: _build/omniforge/example-files/ and _build/omniforge/settings-files/
+CONFIG_TEMPLATES_DIR="${PROJECT_ROOT}/_build/omniforge/example-files"
+CONFIG_SETTINGS_DIR="${PROJECT_ROOT}/_build/omniforge/settings-files"
 
 # Detect OS for sed compatibility (macOS requires empty string arg for -i)
 if [[ "$(uname)" == "Darwin" ]]; then

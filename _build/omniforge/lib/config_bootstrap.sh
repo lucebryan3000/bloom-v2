@@ -127,9 +127,9 @@ config_validate() {
         return 1
     fi
 
-    # Resolve PROJECT_ROOT if relative (. means relative to bootstrap_scripts parent)
+    # Resolve PROJECT_ROOT if relative (. means relative to omniforge parent)
     if [[ "${PROJECT_ROOT}" == "." ]]; then
-        # Assumes we're in _build/bootstrap_scripts, so ../.. is project root
+        # Assumes we're in _build/omniforge, so ../.. is project root
         local script_parent
         script_parent="$(dirname "${BOOTSTRAP_CONF}")"
         PROJECT_ROOT="$(cd "${script_parent}/../.." 2>/dev/null && pwd)"

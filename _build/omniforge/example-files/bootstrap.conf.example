@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Bootstrap Configuration Template
+# OmniForge Configuration Template
 # =============================================================================
 # This is a template. Copy to ../bootstrap.conf to customize your setup.
 # All scripts read from bootstrap.conf - NEVER hardcode values in scripts.
 #
-# Location: _build/bootstrap_scripts/example/bootstrap.conf.example
+# Location: _build/omniforge/example-files/bootstrap.conf.example
 # Usage:    cp bootstrap.conf.example ../bootstrap.conf
 #           Edit ../bootstrap.conf as needed
-#           ./run-bootstrap.sh --all
+#           omni --init
 #
-# For other configuration templates, see: ./example/ directory
+# For other configuration templates, see: ./example-files/ and ./settings-files/
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -20,10 +20,10 @@
 APP_NAME="myapp"
 PROJECT_ROOT="."
 
-# Script locations (self-contained in _build/bootstrap_scripts)
-# These are set by run-bootstrap.sh before sourcing this config
-# SCRIPT_DIR - Directory where run-bootstrap.sh is located (_build/bootstrap_scripts)
-# LOG_DIR - Set to ${SCRIPT_DIR}/logs in run-bootstrap.sh
+# Script locations (self-contained in _build/omniforge)
+# These are set by omni.sh before sourcing this config
+# SCRIPT_DIR - Directory where omni.sh is located (_build/omniforge)
+# LOG_DIR - Set to ${SCRIPT_DIR}/logs by OmniForge
 # Logs directory is set dynamically by the bootstrap scripts
 # See lib/logging.sh for log directory configuration
 

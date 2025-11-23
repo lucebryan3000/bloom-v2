@@ -141,7 +141,7 @@ get_script_dir() {
     cd "$(dirname "${BASH_SOURCE[1]}")" && pwd
 }
 
-# Get project root (assumes scripts are in _build/bootstrap_scripts/)
+# Get project root (assumes scripts are in _build/omniforge/)
 # Usage: PROJECT_ROOT="$(get_project_root)"
 get_project_root() {
     local script_dir
