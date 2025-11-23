@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# bin/status - Show bootstrap status and phase information
+# bin/status - OmniForge Status & Phase Information
 # =============================================================================
 # Usage: ./bin/status [options]
 # =============================================================================
 
 set -euo pipefail
+
+readonly CODENAME="OmniForge"
 
 # =============================================================================
 # PATH SETUP
@@ -22,9 +24,11 @@ source "${SCRIPTS_DIR}/lib/common.sh"
 
 usage() {
     cat << EOF
-Usage: $(basename "$0") [options]
+${CODENAME} Status - Show Status & Configuration
 
-Show bootstrap status and configuration.
+Usage: omni status [options]
+
+Show OmniForge status and configuration.
 
 Options:
   -l, --list         List all phases and their scripts
@@ -34,11 +38,11 @@ Options:
   -h, --help         Show this help message
 
 Examples:
-  ./bin/status                      # Show completion status
-  ./bin/status --list               # List all phases
-  ./bin/status --config             # Show configuration
-  ./bin/status --clear              # Clear all state
-  ./bin/status --clear "foundation/init-nextjs.sh"  # Clear specific script
+  omni status                       # Show completion status
+  omni status --list                # List all phases
+  omni status --config              # Show configuration
+  omni status --clear               # Clear all state
+  omni status --clear "foundation/init-nextjs.sh"  # Clear specific script
 EOF
 }
 
@@ -48,7 +52,7 @@ EOF
 
 show_config() {
     echo ""
-    echo "BOOTSTRAP CONFIGURATION"
+    echo "OMNIFORGE CONFIGURATION"
     echo "======================="
     echo ""
     echo "Config file: ${BOOTSTRAP_CONF}"

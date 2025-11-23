@@ -1,4 +1,4 @@
-# Bloom2 Bootstrap Orchestrator v3.0
+# OmniForge v3.0 - The Factory That Builds Universes
 
 **Current Status**: PRODUCTION READY
 **Last Updated**: November 23, 2025
@@ -8,19 +8,19 @@
 ## Quick Start
 
 ```bash
-cd _build/bootstrap_scripts
+cd _build/omniforge
 
 # View what would run (no execution)
-ALLOW_DIRTY=true ./bin/bootstrap --dry-run --list
+ALLOW_DIRTY=true omni --dry-run --list
 
-# Full bootstrap (with resume capability)
-./bin/bootstrap
+# Initialize project (with resume capability)
+omni --init
 
 # Check progress
-./bin/status
+omni status
 
 # Show configuration
-./bin/status --config
+omni status --config
 ```
 
 ---
@@ -30,13 +30,14 @@ ALLOW_DIRTY=true ./bin/bootstrap --dry-run --list
 ### Modular Architecture
 - **bin/** - Clean entry points for all operations
 - **lib/** - Single-responsibility library modules
-- **Phase metadata** - Configuration-driven phase discovery from `bootstrap.conf`
+- **Phase metadata** - Configuration-driven phase discovery from `omniforge.conf`
 
-### New Entry Points
+### Entry Points
 ```bash
-./bin/bootstrap    # Main bootstrap execution
-./bin/compile      # Build and verify after bootstrap
-./bin/status       # Show status, list phases, view config
+omni             # Main entry point (or ./omni.sh)
+./bin/omni       # Main execution
+./bin/forge      # Build and verify
+./bin/status     # Show status, list phases, view config
 ```
 
 ### Library Modules
@@ -59,22 +60,22 @@ ALLOW_DIRTY=true ./bin/bootstrap --dry-run --list
 ### Directory Structure
 
 ```
-_build/bootstrap_scripts/
+_build/omniforge/
 ├── bin/                              # Entry point scripts
-│   ├── bootstrap                     # Main bootstrap execution
-│   ├── compile                       # Build/verify after bootstrap
+│   ├── omni                          # Main execution
+│   ├── forge                         # Build/verify after init
 │   └── status                        # Status, list, config display
 ├── lib/                              # Modular library files
 │   ├── common.sh                     # Master loader (sources all modules)
 │   ├── logging.sh                    # Logging functions
-│   ├── config_bootstrap.sh            # Configuration loading
+│   ├── config_bootstrap.sh           # Configuration loading
 │   ├── phases.sh                     # Phase discovery & execution
 │   ├── packages.sh                   # PKG_* expansion, dependencies
-│   ├── state.sh                      # Bootstrap state tracking
+│   ├── state.sh                      # State tracking
 │   ├── git.sh                        # Git safety checks
 │   ├── validation.sh                 # Requirement validation
 │   └── utils.sh                      # General utilities
-├── tech_stack/                       # Bootstrap scripts by technology
+├── tech_stack/                       # Scripts by technology
 │   ├── foundation/                   # Next.js, TypeScript (4 scripts)
 │   ├── docker/                       # Docker, Compose (3 scripts)
 │   ├── db/                           # Drizzle ORM (4 scripts)
@@ -90,15 +91,16 @@ _build/bootstrap_scripts/
 │   ├── ui/                           # Shadcn UI (3 scripts)
 │   ├── testing/                      # Vitest, Playwright (3 scripts)
 │   └── quality/                      # ESLint, Prettier (3 scripts)
-├── example/                          # Configuration templates
+├── example-files/                    # Configuration templates
+├── settings-files/                   # App-specific settings
+├── omni.sh                           # Main CLI entry point
 ├── bootstrap.conf                    # Active configuration
-├── run-bootstrap.sh                  # Legacy wrapper (delegates to bin/)
-└── .bootstrap_state                  # Runtime state tracking
+└── .omniforge_state                  # Runtime state tracking
 ```
 
 ### Configuration-Driven Phases
 
-Phases are now defined in `bootstrap.conf` using `PHASE_METADATA_N` variables:
+Phases are defined in `bootstrap.conf` using `PHASE_METADATA_N` variables:
 
 ```bash
 # Phase definition format
@@ -118,26 +120,31 @@ foundation/init-typescript.sh
 ### Commands
 
 ```bash
-# NEW: Recommended entry points
-./bin/bootstrap                    # Run all phases
-./bin/bootstrap --dry-run          # Preview execution
-./bin/bootstrap --phase 0          # Run only phase 0
-./bin/bootstrap --force            # Ignore state, re-run all
-./bin/bootstrap --list             # List phases
-./bin/bootstrap --status           # Show status
+# Primary CLI
+omni --init                    # Initialize project
+omni --help                    # Show help
+omni run                       # Run all phases
+omni run --dry-run             # Preview execution
+omni run --phase 0             # Run only phase 0
+omni run --force               # Ignore state, re-run all
+omni list                      # List phases
+omni status                    # Show status
+omni forge                     # Build and verify
 
-./bin/status                       # Show completion status
-./bin/status --list                # List all phases
-./bin/status --config              # Show configuration
-./bin/status --clear               # Clear all state
+# Direct bin/ access
+./bin/omni                     # Main execution
+./bin/omni --dry-run           # Preview all actions
+./bin/omni --phase 0           # Run only phase 0
+./bin/omni --list              # List all phases
+./bin/omni --status            # Show status
 
-./bin/compile                      # Build and verify
-./bin/compile --skip-build         # Skip build step
+./bin/status                   # Show completion status
+./bin/status --list            # List all phases
+./bin/status --config          # Show configuration
+./bin/status --clear           # Clear all state
 
-# LEGACY: Still works (delegates to bin/)
-./run-bootstrap.sh run             # Run all phases
-./run-bootstrap.sh list            # List phases
-./run-bootstrap.sh status          # Show status
+./bin/forge                    # Build and verify
+./bin/forge --skip-build       # Skip build step
 ```
 
 ### Environment Variables
@@ -155,33 +162,33 @@ foundation/init-typescript.sh
 
 **First-time setup with preview:**
 ```bash
-ALLOW_DIRTY=true ./bin/bootstrap --dry-run
+ALLOW_DIRTY=true omni run --dry-run
 ```
 
-**Full bootstrap with dirty working tree:**
+**Full initialization with dirty working tree:**
 ```bash
-ALLOW_DIRTY=true ./bin/bootstrap
+ALLOW_DIRTY=true omni --init
 ```
 
 **CI/CD non-interactive mode:**
 ```bash
-NON_INTERACTIVE=true ./bin/bootstrap
+NON_INTERACTIVE=true omni run
 ```
 
 **JSON logging for CI/CD:**
 ```bash
-LOG_FORMAT=json ./bin/bootstrap > bootstrap.json 2>&1
+LOG_FORMAT=json omni run > omniforge.json 2>&1
 ```
 
 **Reset and restart:**
 ```bash
-./bin/status --clear
-./bin/bootstrap
+omni status --clear
+omni --init
 ```
 
 ---
 
-## Bootstrap Phases (6 Phases)
+## Phases (6 Phases)
 
 ### Phase 0: Project Foundation
 - Next.js 15, TypeScript, directory structure
@@ -287,20 +294,6 @@ confirm "Continue?"          # User confirmation
 
 ---
 
-## Backward Compatibility
-
-The v3.0 architecture maintains backward compatibility:
-
-1. **run-bootstrap.sh** - Now delegates to bin/bootstrap
-2. **Legacy functions** - Aliased in common.sh:
-   - `_init_config()` -> `config_load && config_validate`
-   - `mark_script_success()` -> `state_mark_success()`
-   - `has_script_succeeded()` -> `state_has_succeeded()`
-   - `ensure_git_clean()` -> `git_ensure_clean()`
-   - `add_dependency()` -> `pkg_add_dependency()`
-
----
-
 ## Error Handling
 
 ### Git Safety Errors
@@ -309,7 +302,7 @@ The v3.0 architecture maintains backward compatibility:
 [ERROR] Use ALLOW_DIRTY=true to override this check.
 
 # Solution:
-ALLOW_DIRTY=true ./bin/bootstrap
+ALLOW_DIRTY=true omni --init
 ```
 
 ### Missing Dependencies
@@ -324,18 +317,18 @@ ALLOW_DIRTY=true ./bin/bootstrap
 [ERROR] Phase 0 (Project Foundation) failed at: foundation/init-nextjs.sh
 
 # Solution: Fix issue, then resume (auto-skips completed)
-./bin/bootstrap
+omni --init
 ```
 
 ---
 
 ## Version History
 
-- **v3.0** (Current) - Modular architecture with bin/lib separation
+- **v3.0** (Current) - OmniForge rebrand with modular architecture
   - 8 single-responsibility library modules
   - Configuration-driven phase discovery
-  - Clean entry points in bin/
-  - Backward-compatible legacy wrapper
+  - Clean entry points: `omni`, `forge`, `status`
+  - Industrial-strength CLI
 
 - **v2.0** - Config-driven orchestrator
   - Resume capability

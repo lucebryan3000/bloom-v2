@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # =============================================================================
-# bin/compile - Compile/verify the project after bootstrap
+# bin/forge - OmniForge Build & Verify
 # =============================================================================
-# Usage: ./bin/compile [options]
+# Usage: ./bin/forge [options]
 #
 # Options:
 #   -n, --dry-run      Show what would be done without executing
@@ -11,6 +11,8 @@
 # =============================================================================
 
 set -euo pipefail
+
+readonly CODENAME="OmniForge"
 
 # =============================================================================
 # PATH SETUP
@@ -27,9 +29,11 @@ source "${SCRIPTS_DIR}/lib/common.sh"
 
 usage() {
     cat << EOF
-Usage: $(basename "$0") [options]
+${CODENAME} Forge - Build & Verify
 
-Compile and verify the project after bootstrap.
+Usage: omni forge [options]
+
+Compile and verify the project after initialization.
 
 Options:
   -n, --dry-run      Show what would be done without executing
@@ -99,13 +103,13 @@ main() {
     config_validate
 
     # Initialize logging
-    log_init "compile"
+    log_init "forge"
 
     # Change to project root
     cd "${PROJECT_ROOT}"
 
     log_info "=========================================="
-    log_info "  COMPILE & VERIFY"
+    log_info "  OMNIFORGE - Forging Your Universe"
     log_info "=========================================="
     log_info "  Project: ${PROJECT_ROOT}"
     log_info "  Dry Run: ${DRY_RUN:-false}"
@@ -159,7 +163,7 @@ main() {
     fi
 
     log_success "=========================================="
-    log_success "  COMPILE COMPLETE"
+    log_success "  FORGE COMPLETE"
     log_success "=========================================="
 }
 

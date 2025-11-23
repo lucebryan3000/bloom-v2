@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # =============================================================================
-# bin/bootstrap - Main entry point for bootstrap execution
+# bin/omni - OmniForge Main Entry Point
 # =============================================================================
-# Usage: ./bin/bootstrap [options]
+# Usage: ./bin/omni [options]
 #
 # Options:
 #   -n, --dry-run      Show what would be done without executing
@@ -19,6 +19,8 @@
 # =============================================================================
 
 set -euo pipefail
+
+readonly CODENAME="OmniForge"
 
 # =============================================================================
 # PATH SETUP
@@ -37,9 +39,11 @@ source "${SCRIPTS_DIR}/lib/common.sh"
 
 usage() {
     cat << EOF
-Usage: $(basename "$0") [options]
+${CODENAME} - The Factory That Builds Universes
 
-Bootstrap the project by running all phase scripts in sequence.
+Usage: omni [options]
+
+Initialize the project by running all phase scripts in sequence.
 
 Options:
   -n, --dry-run      Show what would be done without executing
@@ -47,7 +51,7 @@ Options:
   -f, --force        Ignore previous state, re-run all scripts
   -p, --phase NUM    Run only specified phase (e.g., -p 0)
   -l, --list         List all phases without running
-  -s, --status       Show bootstrap status
+  -s, --status       Show current status
   -h, --help         Show this help message
 
 Environment Variables:
@@ -58,11 +62,11 @@ Environment Variables:
   STACK_PROFILE      Set stack profile (minimal, api-only, full)
 
 Examples:
-  ./bin/bootstrap                    # Run all phases
-  ./bin/bootstrap --dry-run          # Preview all actions
-  ./bin/bootstrap --phase 0          # Run only phase 0
-  ./bin/bootstrap --list             # List all phases
-  ./bin/bootstrap --status           # Show current status
+  omni                         # Run all phases
+  omni --dry-run               # Preview all actions
+  omni --phase 0               # Run only phase 0
+  omni --list                  # List all phases
+  omni --status                # Show current status
 EOF
 }
 
@@ -124,7 +128,7 @@ main() {
     config_apply_profile
 
     # Initialize logging
-    log_init "bootstrap"
+    log_init "omniforge"
 
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
@@ -142,7 +146,7 @@ main() {
 
     # Banner
     log_info "=========================================="
-    log_info "  BLOOM2 BOOTSTRAP"
+    log_info "  OMNIFORGE - The Factory That Builds Universes"
     log_info "=========================================="
     log_info "  Mode: ${DRY_RUN:-false} && dry-run || live"
     log_info "  Profile: ${STACK_PROFILE:-full}"
@@ -164,7 +168,7 @@ main() {
 
     echo ""
     log_success "=========================================="
-    log_success "  BOOTSTRAP COMPLETE"
+    log_success "  OMNIFORGE COMPLETE"
     log_success "=========================================="
 }
 

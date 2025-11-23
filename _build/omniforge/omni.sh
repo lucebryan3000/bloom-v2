@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Bloom2 Bootstrap Orchestrator
+# OmniForge - The Factory That Builds Universes
 # Thin wrapper that delegates to modular bin/ entry points
 # =============================================================================
 #
-# MIGRATION NOTICE:
-# This script is now a compatibility wrapper. All functionality has been
+# ARCHITECTURE:
+# This script is a compatibility wrapper. All functionality has been
 # moved to modular entry points in bin/:
-#   - bin/bootstrap  (main execution)
-#   - bin/compile    (build/verify)
-#   - bin/status     (show status)
+#   - bin/omni     (main execution)
+#   - bin/forge    (build/verify)
+#   - bin/status   (show status)
 #
 # The modular libraries in lib/ provide:
 #   - lib/logging.sh    (log_info, log_error, etc.)
@@ -30,6 +30,7 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 readonly VERSION="3.0.0"
+readonly CODENAME="OmniForge"
 
 # =============================================================================
 # USAGE
@@ -37,15 +38,16 @@ readonly VERSION="3.0.0"
 
 usage() {
     cat <<EOF
-Bloom2 Bootstrap Orchestrator v${VERSION}
+${CODENAME} v${VERSION} - The Factory That Builds Universes
 
-Usage: $(basename "$0") [OPTIONS] [COMMAND]
+Usage: omni [OPTIONS] [COMMAND]
 
 COMMANDS:
-    run             Run all phases using PHASE_METADATA from bootstrap.conf
+    init            Initialize project with all phases
+    run             Run all phases using PHASE_METADATA from omniforge.conf
     list            List all phases and scripts
     status          Show completion status
-    compile         Run compile/verify after bootstrap
+    forge           Build and verify project
 
 OPTIONS:
     -h, --help      Show this help
@@ -55,17 +57,19 @@ OPTIONS:
     -f, --force     Force re-run (ignore previous success state)
 
 EXAMPLES:
-    $(basename "$0") run                   # Run all phases
-    $(basename "$0") run --dry-run         # Preview execution
-    $(basename "$0") run --phase 0         # Run only phase 0
-    $(basename "$0") list                  # List all phases
-    $(basename "$0") status                # Show progress
-    $(basename "$0") compile               # Build and verify
+    omni --init                    # Initialize project (alias for run)
+    omni --help                    # Show this help
+    omni run                       # Run all phases
+    omni run --dry-run             # Preview execution
+    omni run --phase 0             # Run only phase 0
+    omni list                      # List all phases
+    omni status                    # Show progress
+    omni forge                     # Build and verify
 
-NEW ENTRY POINTS (recommended):
-    ./bin/bootstrap [options]    # Main bootstrap execution
-    ./bin/compile [options]      # Compile and verify
-    ./bin/status [options]       # Status and configuration
+ENTRY POINTS:
+    ./bin/omni [options]     # Main execution
+    ./bin/forge [options]    # Build and verify
+    ./bin/status [options]   # Status and configuration
 
 EOF
 }
@@ -88,6 +92,10 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
+        --init)
+            COMMAND="run"
+            shift
+            ;;
         -n|--dry-run)
             DRY_RUN=true
             shift
@@ -104,8 +112,13 @@ while [[ $# -gt 0 ]]; do
             PHASE="$2"
             shift 2
             ;;
-        run|list|status|compile)
-            COMMAND="$1"
+        init|run|list|status|forge|compile)
+            # Map 'compile' to 'forge' for backward compat
+            if [[ "$1" == "compile" ]]; then
+                COMMAND="forge"
+            else
+                COMMAND="$1"
+            fi
             shift
             ;;
         # Legacy compatibility
@@ -147,8 +160,8 @@ ARGS=""
 
 # Execute command by delegating to bin scripts
 case "${COMMAND:-}" in
-    run)
-        exec "${SCRIPT_DIR}/bin/bootstrap" $ARGS
+    init|run)
+        exec "${SCRIPT_DIR}/bin/omni" $ARGS
         ;;
     list)
         exec "${SCRIPT_DIR}/bin/status" --list
@@ -156,8 +169,8 @@ case "${COMMAND:-}" in
     status)
         exec "${SCRIPT_DIR}/bin/status" --state
         ;;
-    compile)
-        exec "${SCRIPT_DIR}/bin/compile" $ARGS
+    forge)
+        exec "${SCRIPT_DIR}/bin/forge" $ARGS
         ;;
     "")
         usage
