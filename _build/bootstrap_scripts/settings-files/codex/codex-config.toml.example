@@ -1,0 +1,178 @@
+# ==============================================================================
+# codex-config.toml - OpenAI Codex CLI Configuration Template
+# ==============================================================================
+#
+# LOCATION: ~/.codex/config.toml (user-level) or .codex/config.toml (project)
+#
+# PURPOSE:
+#   Configure the OpenAI Codex CLI agent behavior, security policies, and
+#   integrations. This file controls how the agent executes commands and
+#   interacts with your development environment.
+#
+# USAGE:
+#   1. Copy this file to ~/.codex/config.toml for user-level config
+#   2. Or copy to .codex/config.toml in your project root for project-specific
+#   3. Uncomment and modify settings as needed
+#   4. Initial values can reference bootstrap.conf, then this becomes source of truth
+#
+# BOOTSTRAP INTEGRATION:
+#   On first run, bootstrap scripts can populate values from bootstrap.conf:
+#   - APP_NAME -> used in MCP server naming
+#   - DB_NAME, DB_USER -> used in database tool configs
+#   After setup, this file is the authoritative source for Codex configuration.
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. MODEL SETTINGS
+# ==============================================================================
+# Configure which AI model powers the Codex agent
+
+# Primary model to use for code generation
+# model = "gpt-4"
+
+# Model provider (openai, azure, anthropic, etc.)
+# model_provider = "openai"
+
+# API key (prefer environment variable OPENAI_API_KEY instead)
+# api_key = ""
+
+# Temperature for response generation (0.0-2.0, lower = more deterministic)
+# temperature = 0.2
+
+# Maximum tokens for model responses
+# max_tokens = 4096
+
+# ==============================================================================
+# 2. SECURITY & EXECUTION POLICY
+# ==============================================================================
+# Control how the agent executes commands and accesses resources
+
+# Approval policy for command execution
+# Options: "never" | "untrusted" | "on-request" | "always"
+#   never      - Never ask for approval (dangerous!)
+#   untrusted  - Ask approval only for commands the agent deems untrusted
+#   on-request - Ask approval for ALL commands (recommended for safety)
+#   always     - Always require approval, even for read-only operations
+approval_policy = "on-request"
+
+# Sandbox mode for filesystem/network access
+# Options: "none" | "workspace-read" | "workspace-write" | "full"
+#   none            - No restrictions (dangerous!)
+#   workspace-read  - Read-only access to workspace files
+#   workspace-write - Read/write access only within project workspace (recommended)
+#   full            - Full filesystem access
+sandbox_mode = "workspace-write"
+
+# Allow network access for the agent
+# allow_network = true
+
+# Directories the agent is allowed to modify (if sandbox_mode = "custom")
+# allowed_paths = ["src/", "tests/", "docs/"]
+
+# Directories the agent should never touch
+# blocked_paths = ["node_modules/", ".git/", "src/db/migrations/"]
+
+# ==============================================================================
+# 3. MCP SERVER CONFIGURATION
+# ==============================================================================
+# Model Context Protocol servers give the agent access to external tools/APIs
+# Uncomment and configure servers as needed for your project
+
+# Database tool server (pg-boss job queue management)
+# [mcp_servers.database]
+# command = "npm run mcp:database"
+# enabled = true
+# description = "Access to database operations and job queue"
+
+# API documentation server
+# [mcp_servers.api_docs]
+# command = "npm run mcp:docs"
+# enabled = true
+# description = "Search and reference API documentation"
+
+# Testing tools server
+# [mcp_servers.testing]
+# command = "npm run mcp:test"
+# enabled = true
+# description = "Run tests and view coverage"
+
+# Custom tool server example
+# [mcp_servers.custom]
+# command = "/path/to/custom-mcp-server"
+# args = ["--port", "8080"]
+# enabled = false
+# env = { API_KEY = "your-key" }
+
+# ==============================================================================
+# 4. CONTEXT & INSTRUCTIONS
+# ==============================================================================
+# Provide persistent instructions and context to the agent
+
+# Inline instructions (alternative to AGENTS.md file)
+# instructions = """
+# - Use TypeScript for all new code
+# - Prefer Server Components in Next.js
+# - Use Drizzle ORM for database operations
+# - Run pnpm for package management
+# """
+
+# Path to instructions file (AGENTS.md)
+# instructions_file = "AGENTS.md"
+
+# Additional context files to always include
+# context_files = ["README.md", "ARCHITECTURE.md"]
+
+# Exclude patterns from context
+# context_exclude = ["*.test.ts", "*.spec.ts", "node_modules/**"]
+
+# ==============================================================================
+# 5. OUTPUT & LOGGING
+# ==============================================================================
+# Configure how the agent displays output and logs activity
+
+# Output format for responses
+# Options: "plain" | "markdown" | "json"
+# output_format = "markdown"
+
+# Enable verbose logging
+# verbose = false
+
+# Log file path (empty = no file logging)
+# log_file = ".codex/logs/codex.log"
+
+# Show token usage statistics
+# show_tokens = true
+
+# ==============================================================================
+# 6. WORKSPACE SETTINGS
+# ==============================================================================
+# Project-specific workspace configuration
+
+# Working directory (default: current directory)
+# cwd = "."
+
+# File patterns to always include in context
+# include_patterns = ["src/**/*.ts", "src/**/*.tsx"]
+
+# File patterns to exclude from context
+# exclude_patterns = ["**/*.test.ts", "**/node_modules/**", "**/.next/**"]
+
+# Maximum file size to include in context (bytes)
+# max_file_size = 100000
+
+# ==============================================================================
+# 7. KEYBINDINGS & SHORTCUTS
+# ==============================================================================
+# Custom keybindings for the Codex CLI (if supported)
+
+# [keybindings]
+# approve = "y"
+# reject = "n"
+# edit = "e"
+# explain = "?"
+# quit = "q"
+
+# ==============================================================================
+# END OF CONFIGURATION
+# ==============================================================================

@@ -1,0 +1,216 @@
+# ==============================================================================
+# pyproject.toml - Modern Python Project Configuration Template
+# ==============================================================================
+#
+# LOCATION: /pyproject.toml (project root)
+#
+# PURPOSE:
+#   Centralized configuration for Python packaging, build tools, formatters,
+#   linters, and test runners. This is the modern standard (PEP 518/621) for
+#   Python project configuration.
+#
+# USAGE:
+#   1. Copy this file to pyproject.toml in your project root
+#   2. Customize sections for your tools and project metadata
+#   3. Uncomment optional tool configurations as needed
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts can set initial values from bootstrap.conf:
+#   - APP_NAME -> project name
+#   - PYTHON_VERSION -> target version
+#   - Line length settings align with .prettierrc
+#   After setup, this file is the authoritative source for Python tool config.
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. BUILD SYSTEM
+# ==============================================================================
+[build-system]
+# Standard build backend (setuptools, poetry, pdm, hatch, etc.)
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Alternative: Poetry
+# requires = ["poetry-core>=1.0.0"]
+# build-backend = "poetry.core.masonry.api"
+
+# ==============================================================================
+# 2. PROJECT METADATA (PEP 621)
+# ==============================================================================
+# [project]
+# name = "myapp"
+# version = "1.0.0"
+# description = "Project description"
+# readme = "README.md"
+# requires-python = ">=3.11"
+# license = {text = "MIT"}
+# authors = [
+#     {name = "Your Name", email = "you@example.com"}
+# ]
+# dependencies = [
+#     "fastapi>=0.100.0",
+#     "uvicorn>=0.22.0",
+# ]
+#
+# [project.optional-dependencies]
+# dev = [
+#     "pytest>=7.0.0",
+#     "black>=23.0.0",
+#     "mypy>=1.0.0",
+# ]
+
+# ==============================================================================
+# 3. TOOL: BLACK (Code Formatter)
+# ==============================================================================
+[tool.black]
+# Line length (align with Prettier/ESLint for consistency)
+line-length = 100
+
+# Target Python version
+target-version = ['py311']
+
+# Include Python files
+include = '\.pyi?$'
+
+# Exclude directories from formatting
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.venv
+  | venv
+  | build
+  | dist
+  | migrations
+  | __pycache__
+)/
+'''
+
+# ==============================================================================
+# 4. TOOL: MYPY (Static Type Checker)
+# ==============================================================================
+[tool.mypy]
+# Python version
+python_version = "3.11"
+
+# Ignore missing type stubs
+ignore_missing_imports = true
+
+# Directories to check
+files = ["src/", "tests/"]
+
+# Strict mode (enable for maximum type safety)
+strict = true
+
+# Exclude directories
+exclude = [
+    "venv/",
+    ".venv/",
+    "build/",
+    "dist/",
+    "migrations/",
+]
+
+# ==============================================================================
+# 5. TOOL: PYTEST (Test Runner)
+# ==============================================================================
+[tool.pytest.ini_options]
+# Test file patterns
+python_files = ["test_*.py", "*_test.py"]
+
+# Test directory
+testpaths = ["tests"]
+
+# Directories to skip
+norecursedirs = [
+    ".git",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "migrations",
+    ".mypy_cache",
+    "__pycache__",
+]
+
+# Additional options
+addopts = [
+    "-v",              # Verbose output
+    "--tb=short",      # Short traceback format
+    # "--cov=src",     # Enable coverage
+    # "--cov-report=term-missing",
+]
+
+# ==============================================================================
+# 6. TOOL: ISORT (Import Sorter)
+# ==============================================================================
+[tool.isort]
+# Compatibility with Black
+profile = "black"
+
+# Line length (align with Black)
+line_length = 100
+
+# Skip directories
+skip_glob = [
+    "venv/*",
+    ".venv/*",
+    "migrations/*",
+]
+
+# Known first-party modules
+# known_first_party = ["myapp"]
+
+# ==============================================================================
+# 7. TOOL: RUFF (Fast Linter - Alternative to Flake8/Pylint)
+# ==============================================================================
+# [tool.ruff]
+# line-length = 100
+# target-version = "py311"
+#
+# [tool.ruff.lint]
+# select = [
+#     "E",   # pycodestyle errors
+#     "W",   # pycodestyle warnings
+#     "F",   # pyflakes
+#     "I",   # isort
+#     "B",   # flake8-bugbear
+#     "UP",  # pyupgrade
+# ]
+# ignore = [
+#     "E501",  # Line too long (handled by Black)
+# ]
+#
+# [tool.ruff.lint.per-file-ignores]
+# "tests/*" = ["S101"]  # Allow assert in tests
+
+# ==============================================================================
+# 8. TOOL: COVERAGE
+# ==============================================================================
+[tool.coverage.run]
+# Enable branch coverage
+branch = true
+
+# Directories to exclude
+omit = [
+    ".venv/*",
+    "venv/*",
+    "tests/*",
+    "migrations/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+# Lines to exclude from coverage
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+# ==============================================================================
+# END OF PYPROJECT.TOML
+# ==============================================================================

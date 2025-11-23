@@ -1,0 +1,324 @@
+// ==============================================================================
+// tasks.json - VS Code Tasks Configuration Template
+// ==============================================================================
+//
+// LOCATION: /.vscode/tasks.json (project root)
+//
+// PURPOSE:
+//   Define reusable tasks for common development operations like building,
+//   testing, linting, and database management. Tasks can be run via Command
+//   Palette (Ctrl/Cmd+Shift+P -> "Tasks: Run Task").
+//
+// USAGE:
+//   1. Create .vscode/ directory in your project root
+//   2. Copy this file to .vscode/tasks.json
+//   3. Uncomment and customize tasks for your project
+//   4. Run tasks via Command Palette or keyboard shortcuts
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   - ENABLE_PYTHON -> Include/exclude Python-related tasks
+//   - Package manager commands, paths adjusted per project
+//   After setup, this file is the authoritative source for task definitions.
+//
+// ==============================================================================
+{
+  "version": "2.0.0",
+  "tasks": [
+    // ==========================================================================
+    // 1. DATABASE TASKS (Drizzle ORM)
+    // ==========================================================================
+
+    {
+      // Generate Drizzle migration files from schema changes
+      "label": "db:generate",
+      "type": "shell",
+      "command": "pnpm db:generate",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+
+    {
+      // Apply pending database migrations
+      "label": "db:migrate",
+      "type": "shell",
+      "command": "pnpm db:migrate",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+
+    // {
+    //   // Push schema changes directly (development only)
+    //   "label": "db:push",
+    //   "type": "shell",
+    //   "command": "pnpm db:push",
+    //   "group": "build",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Open Drizzle Studio for database inspection
+    //   "label": "db:studio",
+    //   "type": "shell",
+    //   "command": "pnpm db:studio",
+    //   "group": "none",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "dedicated"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // ==========================================================================
+    // 2. BUILD & DEVELOPMENT TASKS
+    // ==========================================================================
+
+    // {
+    //   // Start Next.js development server
+    //   "label": "dev",
+    //   "type": "shell",
+    //   "command": "pnpm dev",
+    //   "group": "none",
+    //   "isBackground": true,
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "dedicated"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Build production bundle
+    //   "label": "build",
+    //   "type": "shell",
+    //   "command": "pnpm build",
+    //   "group": {
+    //     "kind": "build",
+    //     "isDefault": true
+    //   },
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": ["$tsc"]
+    // },
+
+    // {
+    //   // Type check without emitting
+    //   "label": "typecheck",
+    //   "type": "shell",
+    //   "command": "pnpm typecheck",
+    //   "group": "build",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": ["$tsc"]
+    // },
+
+    // ==========================================================================
+    // 3. LINTING & FORMATTING TASKS
+    // ==========================================================================
+
+    // {
+    //   // Run ESLint on entire project
+    //   "label": "lint",
+    //   "type": "shell",
+    //   "command": "pnpm lint",
+    //   "group": "test",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": ["$eslint-stylish"]
+    // },
+
+    // {
+    //   // Run ESLint with auto-fix
+    //   "label": "lint:fix",
+    //   "type": "shell",
+    //   "command": "pnpm lint:fix",
+    //   "group": "test",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": ["$eslint-stylish"]
+    // },
+
+    // {
+    //   // Format all files with Prettier
+    //   "label": "format",
+    //   "type": "shell",
+    //   "command": "pnpm format",
+    //   "group": "none",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // ==========================================================================
+    // 4. TESTING TASKS
+    // ==========================================================================
+
+    // {
+    //   // Run all tests
+    //   "label": "test",
+    //   "type": "shell",
+    //   "command": "pnpm test",
+    //   "group": {
+    //     "kind": "test",
+    //     "isDefault": true
+    //   },
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Run tests in watch mode
+    //   "label": "test:watch",
+    //   "type": "shell",
+    //   "command": "pnpm test:watch",
+    //   "group": "test",
+    //   "isBackground": true,
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "dedicated"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Run tests with coverage report
+    //   "label": "test:coverage",
+    //   "type": "shell",
+    //   "command": "pnpm test:coverage",
+    //   "group": "test",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // ==========================================================================
+    // 5. PYTHON TASKS
+    // ==========================================================================
+
+    {
+      // Run Python unit tests with pytest
+      "label": "test:python-unit",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pytest",
+      "args": ["tests/unit", "-v"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+
+    // {
+    //   // Run all Python tests
+    //   "label": "test:python",
+    //   "type": "shell",
+    //   "command": "${workspaceFolder}/.venv/bin/pytest",
+    //   "args": ["tests/", "-v", "--tb=short"],
+    //   "group": "test",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Run Python type checker (mypy)
+    //   "label": "typecheck:python",
+    //   "type": "shell",
+    //   "command": "${workspaceFolder}/.venv/bin/mypy",
+    //   "args": ["src/"],
+    //   "group": "build",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Format Python code with Black
+    //   "label": "format:python",
+    //   "type": "shell",
+    //   "command": "${workspaceFolder}/.venv/bin/black",
+    //   "args": ["src/", "tests/"],
+    //   "group": "none",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // ==========================================================================
+    // 6. CLEANUP & MAINTENANCE TASKS
+    // ==========================================================================
+
+    {
+      // Remove node_modules and reinstall dependencies
+      "label": "clean:node_modules",
+      "type": "shell",
+      "command": "rm -rf node_modules && rm -rf .next && pnpm install",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+
+    // {
+    //   // Remove all build artifacts
+    //   "label": "clean:all",
+    //   "type": "shell",
+    //   "command": "rm -rf node_modules .next build dist .venv __pycache__ .pytest_cache .mypy_cache",
+    //   "group": "none",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // },
+
+    // {
+    //   // Update all dependencies
+    //   "label": "deps:update",
+    //   "type": "shell",
+    //   "command": "pnpm update",
+    //   "group": "none",
+    //   "presentation": {
+    //     "reveal": "always",
+    //     "panel": "new"
+    //   },
+    //   "problemMatcher": []
+    // }
+  ]
+}

@@ -1,0 +1,29 @@
+# ==============================================================================
+# .python-version - Python Version Manager Configuration Template
+# ==============================================================================
+#
+# LOCATION: /.python-version (project root)
+#
+# PURPOSE:
+#   Specify the exact Python version required for this project. Tools like
+#   pyenv, poetry, asdf, and mise read this file to automatically switch
+#   to the correct Python interpreter.
+#
+# USAGE:
+#   1. Copy this file to .python-version in your project root
+#   2. Tools will auto-switch when entering the directory
+#   3. CI/CD can use actions/setup-python with python-version-file
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts populate this from bootstrap.conf:
+#   - PYTHON_VERSION -> The version number below
+#   After setup, this file is the authoritative source for Python version.
+#
+# ==============================================================================
+
+# Python version (major.minor.patch)
+3.11.8
+
+# Alternative formats supported by some tools:
+# 3.11        (latest patch of 3.11)
+# 3.11.8:.venv (version with venv path hint)

@@ -17,15 +17,15 @@
 # Core Identity & Paths
 # -----------------------------------------------------------------------------
 
-APP_NAME="bloom2"
+APP_NAME="myapp"
 PROJECT_ROOT="."
 
 # Script locations (self-contained in _build/bootstrap_scripts)
 # These are set by run-bootstrap.sh before sourcing this config
 # SCRIPT_DIR - Directory where run-bootstrap.sh is located (_build/bootstrap_scripts)
 # LOG_DIR - Set to ${SCRIPT_DIR}/logs in run-bootstrap.sh
-# Logs directory (created if not exists)
-LOGS_DIR="${LOG_DIR}"
+# Logs directory is set dynamically by the bootstrap scripts
+# See lib/logging.sh for log directory configuration
 
 # Bootstrap state tracking (actual runs only - not updated in dry-run mode)
 # Tracks which scripts have completed for resume capability across runs
@@ -47,8 +47,8 @@ PGVECTOR_IMAGE="pgvector/pgvector:pg16"
 # Database Configuration
 # -----------------------------------------------------------------------------
 
-DB_NAME="bloom2_db"
-DB_USER="bloom2"
+DB_NAME="myapp_db"
+DB_USER="dbuser"
 DB_PASSWORD="change_me"
 DB_PORT="5432"
 
@@ -138,7 +138,7 @@ PKG_PINO_PRETTY="pino-pretty"
 PKG_ZOD="zod"
 PKG_T3_ENV="@t3-oss/env-nextjs"
 
-# Export System (CRITICAL for business logic)
+# Export System
 PKG_JSPDF="jspdf"
 PKG_HTML2CANVAS="html2canvas"
 PKG_EXCELJS="exceljs"
@@ -206,10 +206,10 @@ jobs/pgboss-setup.sh
 jobs/job-worker-template.sh
 observability/pino-logger.sh
 observability/pino-pretty-dev.sh
-intelligence/melissa-prompts.sh
-intelligence/roi-engine.sh
-intelligence/confidence-engine.sh
-intelligence/hitl-review-queue.sh
+intelligence/ai-prompts.sh
+intelligence/analysis-engine.sh
+intelligence/scoring-engine.sh
+intelligence/review-queue.sh
 ui/shadcn-init.sh
 ui/react-to-print.sh
 ui/components-structure.sh

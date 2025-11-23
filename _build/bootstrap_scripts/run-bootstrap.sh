@@ -13,7 +13,7 @@
 #
 # The modular libraries in lib/ provide:
 #   - lib/logging.sh    (log_info, log_error, etc.)
-#   - lib/config.sh     (config_load, config_validate)
+#   - lib/config_bootstrap.sh     (config_load, config_validate)
 #   - lib/phases.sh     (phase_discover, phase_execute)
 #   - lib/packages.sh   (pkg_expand, pkg_add_dependency)
 #   - lib/state.sh      (state_mark_success, state_has_succeeded)

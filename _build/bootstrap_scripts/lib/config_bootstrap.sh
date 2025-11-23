@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# lib/config.sh - Configuration loading and validation
+# lib/config_bootstrap.sh - Configuration loading and validation
 # =============================================================================
 # Pure functions for loading bootstrap.conf. No execution on source.
 # Requires: lib/logging.sh to be loaded first

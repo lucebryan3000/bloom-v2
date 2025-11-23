@@ -1,0 +1,193 @@
+// ==============================================================================
+// playwright.config.ts - Playwright E2E Test Configuration Template
+// ==============================================================================
+//
+// LOCATION: /playwright.config.ts (project root)
+//
+// PURPOSE:
+//   Configure Playwright for end-to-end testing. Includes browser configuration,
+//   test parallelization, and web server management for running tests against
+//   your Next.js application.
+//
+// USAGE:
+//   1. Copy this file to playwright.config.ts in your project root
+//   2. Install Playwright: pnpm add -D @playwright/test
+//   3. Install browsers: pnpm exec playwright install
+//   4. Run tests with: pnpm test:e2e
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can customize based on bootstrap.conf:
+//   - Base URL, ports
+//   - Browser configurations
+//   After setup, this file is the authoritative source for Playwright configuration.
+//
+// ==============================================================================
+
+import { defineConfig, devices } from '@playwright/test';
+
+// Base URL for tests (from environment or default)
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000';
+
+export default defineConfig({
+  // ==========================================================================
+  // TEST CONFIGURATION
+  // ==========================================================================
+
+  // Directory containing test files
+  testDir: './e2e',
+
+  // Test file patterns
+  testMatch: '**/*.spec.ts',
+
+  // Run tests in parallel (faster execution)
+  fullyParallel: true,
+
+  // Fail the build if .only() is left in tests (CI safety)
+  forbidOnly: !!process.env.CI,
+
+  // Retry failed tests (more in CI for flaky test handling)
+  retries: process.env.CI ? 2 : 0,
+
+  // Number of parallel workers (limit in CI for stability)
+  workers: process.env.CI ? 1 : undefined,
+
+  // ==========================================================================
+  // REPORTING
+  // ==========================================================================
+
+  // Reporter to use
+  reporter: [
+    ['html', { open: 'never' }],
+    ['list'],
+    // CI reporters (uncomment for CI integration)
+    // ['junit', { outputFile: 'test-results/junit.xml' }],
+    // ['github'],
+  ],
+
+  // Output directory for artifacts (add to .gitignore)
+  outputDir: './test-results',
+
+  // ==========================================================================
+  // SHARED SETTINGS
+  // ==========================================================================
+  use: {
+    // Base URL for navigation
+    baseURL: baseURL,
+
+    // Capture trace on first retry (for debugging failures)
+    trace: 'on-first-retry',
+
+    // Capture screenshot on failure
+    screenshot: 'only-on-failure',
+
+    // Capture video on failure
+    video: 'on-first-retry',
+
+    // Viewport size
+    // viewport: { width: 1280, height: 720 },
+
+    // Extra HTTP headers
+    // extraHTTPHeaders: {
+    //   'Accept-Language': 'en-US',
+    // },
+
+    // Action timeout
+    actionTimeout: 10000,
+
+    // Navigation timeout
+    navigationTimeout: 30000,
+  },
+
+  // ==========================================================================
+  // BROWSER PROJECTS
+  // ==========================================================================
+  projects: [
+    // Desktop browsers
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+
+    // Mobile browsers (uncomment to enable)
+    // {
+    //   name: 'mobile-chrome',
+    //   use: { ...devices['Pixel 5'] },
+    // },
+    // {
+    //   name: 'mobile-safari',
+    //   use: { ...devices['iPhone 12'] },
+    // },
+
+    // Branded browsers (uncomment to enable)
+    // {
+    //   name: 'edge',
+    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
+    // },
+    // {
+    //   name: 'chrome',
+    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    // },
+  ],
+
+  // ==========================================================================
+  // WEB SERVER (Start app before running tests)
+  // ==========================================================================
+  webServer: {
+    // Command to start the application
+    command: 'pnpm start',
+
+    // URL to wait for before running tests
+    url: 'http://localhost:3000',
+
+    // Timeout for server startup
+    timeout: 120 * 1000,
+
+    // Reuse existing server in development (start fresh in CI)
+    reuseExistingServer: !process.env.CI,
+
+    // Stdout handling
+    stdout: 'pipe',
+    stderr: 'pipe',
+  },
+
+  // ==========================================================================
+  // GLOBAL SETUP/TEARDOWN
+  // ==========================================================================
+
+  // Global setup script (runs once before all tests)
+  // globalSetup: './e2e/global-setup.ts',
+
+  // Global teardown script (runs once after all tests)
+  // globalTeardown: './e2e/global-teardown.ts',
+
+  // ==========================================================================
+  // TIMEOUTS
+  // ==========================================================================
+
+  // Test timeout
+  timeout: 30 * 1000,
+
+  // Expect timeout
+  expect: {
+    timeout: 5000,
+  },
+});
+
+// ==============================================================================
+// PACKAGE.JSON SCRIPTS (add these to your package.json)
+// ==============================================================================
+// "scripts": {
+//   "test:e2e": "playwright test",
+//   "test:e2e:ui": "playwright test --ui",
+//   "test:e2e:debug": "playwright test --debug",
+//   "test:e2e:report": "playwright show-report"
+// }
+// ==============================================================================

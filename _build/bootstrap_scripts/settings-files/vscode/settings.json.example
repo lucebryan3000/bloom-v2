@@ -1,0 +1,240 @@
+// ==============================================================================
+// settings.json - VS Code Workspace Settings Template
+// ==============================================================================
+//
+// LOCATION: /.vscode/settings.json (project root)
+//
+// PURPOSE:
+//   Enforce project-wide code standards, formatting rules, and tool configurations.
+//   These settings ensure consistent development experience across team members
+//   and override user-level VS Code settings for this workspace.
+//
+// USAGE:
+//   1. Create .vscode/ directory in your project root
+//   2. Copy this file to .vscode/settings.json
+//   3. Uncomment and customize settings as needed for your project
+//   4. Commit to version control for team consistency
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   - ENABLE_PYTHON -> Enable/disable Python-specific settings
+//   - Tab size, line endings align with .editorconfig and .prettierrc
+//   After setup, this file is the authoritative source for VS Code settings.
+//
+// ==============================================================================
+{
+  // ============================================================================
+  // 1. CORE EDITOR SETTINGS
+  // ============================================================================
+
+  // Sets Prettier as the default formatter for all supported file types
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Automatically format code when saving a file (recommended)
+  "editor.formatOnSave": true,
+
+  // Code actions to run on save
+  "editor.codeActionsOnSave": {
+    // Run ESLint auto-fixes when saving TypeScript/JavaScript files
+    "source.fixAll.eslint": "explicit",
+    // Auto-organize imports on save (can be handled by ESLint/Prettier)
+    "source.organizeImports": "explicit"
+  },
+
+  // Number of spaces per indentation level (should match .editorconfig)
+  "editor.tabSize": 2,
+
+  // Insert spaces instead of tabs
+  "editor.insertSpaces": true,
+
+  // Line ending style (lf = Unix-style, recommended for cross-platform)
+  "files.eol": "\n",
+
+  // Trim trailing whitespace on save
+  // "files.trimTrailingWhitespace": true,
+
+  // Insert final newline at end of file
+  // "files.insertFinalNewline": true,
+
+  // Font family for editor (uncomment to customize)
+  // "editor.fontFamily": "'Fira Code', 'Cascadia Code', Menlo, monospace",
+
+  // Enable font ligatures (for fonts that support them)
+  // "editor.fontLigatures": true,
+
+  // Font size in pixels
+  // "editor.fontSize": 14,
+
+  // Line height (0 = automatic based on font size)
+  // "editor.lineHeight": 0,
+
+  // Word wrap mode: off, on, wordWrapColumn, bounded
+  // "editor.wordWrap": "off",
+
+  // Show minimap on the right side of editor
+  // "editor.minimap.enabled": true,
+
+  // Bracket pair colorization for better readability
+  // "editor.bracketPairColorization.enabled": true,
+
+  // ============================================================================
+  // 2. TYPESCRIPT / JAVASCRIPT SETTINGS
+  // ============================================================================
+
+  // Use project's local TypeScript version instead of VS Code's bundled version
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  // Enable TypeScript suggestions in JavaScript files
+  // "typescript.suggest.enabled": true,
+
+  // Enable auto-import suggestions
+  // "typescript.suggest.autoImports": true,
+
+  // Preferred import style: relative, non-relative, project-relative, shortest
+  // "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // Update imports when moving/renaming files
+  // "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // Enable inlay hints for parameter names
+  // "typescript.inlayHints.parameterNames.enabled": "all",
+
+  // Enable inlay hints for variable types
+  // "typescript.inlayHints.variableTypes.enabled": true,
+
+  // ============================================================================
+  // 3. PYTHON SETTINGS (Enable if using Python backend)
+  // ============================================================================
+
+  // Path to Python interpreter in project virtual environment
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  // Python code formatter: black, autopep8, yapf
+  "python.formatting.provider": "black",
+
+  // Black formatter arguments (align with pyproject.toml)
+  "python.formatting.blackArgs": ["--line-length", "100"],
+
+  // Type checking mode: off, basic, strict
+  "python.analysis.typeCheckingMode": "basic",
+
+  // Enable isort for import sorting
+  "isort.check": true,
+
+  // Python linting enabled
+  // "python.linting.enabled": true,
+
+  // Enable pylint linter
+  // "python.linting.pylintEnabled": true,
+
+  // Enable flake8 linter
+  // "python.linting.flake8Enabled": false,
+
+  // Enable mypy type checker
+  // "python.linting.mypyEnabled": true,
+
+  // ============================================================================
+  // 4. FILE EXCLUSIONS (Improve Performance)
+  // ============================================================================
+
+  // Hide files/folders from file explorer
+  "files.exclude": {
+    // Build outputs
+    "**/.next": true,
+    "**/build": true,
+    "**/dist": true,
+    // Dependencies
+    "**/node_modules": true,
+    "**/.venv": true,
+    // Caches
+    "**/.mypy_cache": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    // Generated files (Drizzle migrations)
+    "src/db/migrations/**/*.sql": true,
+    // Lock files (optional - reduces clutter)
+    "pnpm-lock.yaml": true
+  },
+
+  // Exclude from search results
+  "search.exclude": {
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/.venv": true,
+    "**/build": true,
+    "**/dist": true,
+    "src/db/migrations/**/*.sql": true,
+    "pnpm-lock.yaml": true
+  },
+
+  // Exclude from file watcher (improves performance)
+  // "files.watcherExclude": {
+  //   "**/.next/**": true,
+  //   "**/node_modules/**": true,
+  //   "**/.venv/**": true
+  // },
+
+  // ============================================================================
+  // 5. LANGUAGE-SPECIFIC OVERRIDES
+  // ============================================================================
+
+  // Markdown-specific settings
+  // "[markdown]": {
+  //   "editor.wordWrap": "on",
+  //   "editor.quickSuggestions": false
+  // },
+
+  // JSON-specific settings
+  // "[json]": {
+  //   "editor.defaultFormatter": "esbenp.prettier-vscode"
+  // },
+
+  // JSONC (JSON with comments) settings
+  // "[jsonc]": {
+  //   "editor.defaultFormatter": "esbenp.prettier-vscode"
+  // },
+
+  // ============================================================================
+  // 6. GIT SETTINGS
+  // ============================================================================
+
+  // Enable Git integration
+  // "git.enabled": true,
+
+  // Auto-fetch from remote
+  // "git.autofetch": true,
+
+  // Confirm before sync
+  // "git.confirmSync": false,
+
+  // Default clone directory
+  // "git.defaultCloneDirectory": "~/Projects",
+
+  // ============================================================================
+  // 7. TERMINAL SETTINGS
+  // ============================================================================
+
+  // Default shell profile (uncomment for your OS)
+  // "terminal.integrated.defaultProfile.osx": "zsh",
+  // "terminal.integrated.defaultProfile.linux": "bash",
+  // "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // Font size in integrated terminal
+  // "terminal.integrated.fontSize": 14,
+
+  // Scrollback buffer size
+  // "terminal.integrated.scrollback": 10000
+
+  // ============================================================================
+  // 8. EXTENSION-SPECIFIC SETTINGS
+  // ============================================================================
+
+  // ESLint working directories (for monorepos)
+  // "eslint.workingDirectories": ["./frontend", "./backend"],
+
+  // Tailwind CSS IntelliSense class attributes
+  // "tailwindCSS.classAttributes": ["class", "className", "ngClass"],
+
+  // Prettier config path (if not in root)
+  // "prettier.configPath": ".prettierrc"
+}

@@ -1,0 +1,190 @@
+// ==============================================================================
+// .code-workspace - VS Code Multi-Root Workspace Template
+// ==============================================================================
+//
+// LOCATION: /project-name.code-workspace (project root)
+//
+// PURPOSE:
+//   Define a multi-root VS Code workspace for monorepo setups. This allows
+//   opening multiple related folders (frontend, backend, docs) as a single
+//   workspace with shared settings.
+//
+// USAGE:
+//   1. Copy this file to your project root as "project-name.code-workspace"
+//   2. Adjust folder paths to match your project structure
+//   3. Open VS Code with: "code project-name.code-workspace"
+//   4. Settings here override .vscode/settings.json when workspace is open
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   - APP_NAME -> Workspace file naming
+//   - Project structure -> Folder paths
+//   After setup, this file is the authoritative source for workspace configuration.
+//
+// ==============================================================================
+{
+  // ============================================================================
+  // 1. WORKSPACE FOLDERS
+  // ============================================================================
+  // Define the root folders included in this workspace.
+  // Each folder appears as a separate root in the VS Code explorer.
+
+  "folders": [
+    {
+      // Frontend application (Next.js, React, etc.)
+      "path": "frontend",
+      "name": "Client (Next.js)"
+    },
+    {
+      // Backend API service (Python, Node.js, etc.)
+      "path": "backend",
+      "name": "API (Python)"
+    },
+    {
+      // Documentation and guides
+      "path": "docs",
+      "name": "Documentation"
+    }
+
+    // Uncomment to add more folders:
+    // {
+    //   // Shared libraries/packages
+    //   "path": "packages",
+    //   "name": "Shared Packages"
+    // },
+    // {
+    //   // Infrastructure and deployment configs
+    //   "path": "infra",
+    //   "name": "Infrastructure"
+    // },
+    // {
+    //   // Root folder (for monorepo-level configs)
+    //   "path": ".",
+    //   "name": "Root"
+    // }
+  ],
+
+  // ============================================================================
+  // 2. WORKSPACE SETTINGS
+  // ============================================================================
+  // Settings here OVERRIDE .vscode/settings.json when this workspace is open.
+  // Only include settings specific to multi-root workspace needs.
+
+  "settings": {
+    // Zoom level for this workspace (0 = default)
+    // "window.zoomLevel": 0,
+
+    // Search across all workspace folders
+    // "search.useGlobalIgnoreFiles": true,
+
+    // ESLint working directories for monorepo
+    // "eslint.workingDirectories": [
+    //   { "directory": "frontend", "changeProcessCWD": true },
+    //   { "directory": "backend", "changeProcessCWD": true }
+    // ],
+
+    // TypeScript SDK path (if frontend has its own node_modules)
+    // "typescript.tsdk": "frontend/node_modules/typescript/lib",
+
+    // Python interpreter for backend
+    // "python.defaultInterpreterPath": "${workspaceFolder:API (Python)}/.venv/bin/python",
+
+    // File associations across workspace
+    // "files.associations": {
+    //   "*.env.*": "dotenv"
+    // },
+
+    // Editor settings for workspace
+    // "editor.formatOnSave": true,
+    // "editor.tabSize": 2
+
+    // IMPORTANT: Avoid settings that might conflict with individual folder configs.
+    // Settings in .vscode/settings.json of each folder take precedence for
+    // folder-specific operations.
+  },
+
+  // ============================================================================
+  // 3. WORKSPACE EXTENSIONS
+  // ============================================================================
+  // Extension recommendations specific to this workspace.
+  // Supplements .vscode/extensions.json in each folder.
+
+  "extensions": {
+    "recommendations": [
+      // Multi-root workspace utilities
+      // "alefragnani.project-manager",
+
+      // Monorepo package management
+      // "arcanis.vscode-zipfs"
+    ]
+  },
+
+  // ============================================================================
+  // 4. LAUNCH CONFIGURATIONS
+  // ============================================================================
+  // Debug configurations that span multiple folders.
+  // Supplements .vscode/launch.json in each folder.
+
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      // {
+      //   // Debug frontend from workspace root
+      //   "name": "Workspace: Frontend Dev",
+      //   "type": "node",
+      //   "request": "launch",
+      //   "cwd": "${workspaceFolder:Client (Next.js)}",
+      //   "runtimeExecutable": "pnpm",
+      //   "runtimeArgs": ["dev"],
+      //   "console": "integratedTerminal"
+      // },
+      // {
+      //   // Debug backend from workspace root
+      //   "name": "Workspace: Backend Dev",
+      //   "type": "python",
+      //   "request": "launch",
+      //   "cwd": "${workspaceFolder:API (Python)}",
+      //   "module": "uvicorn",
+      //   "args": ["src.main:app", "--reload"]
+      // }
+    ],
+    "compounds": [
+      // {
+      //   // Start full stack from workspace
+      //   "name": "Workspace: Full Stack",
+      //   "configurations": [
+      //     "Workspace: Frontend Dev",
+      //     "Workspace: Backend Dev"
+      //   ],
+      //   "stopAll": true
+      // }
+    ]
+  },
+
+  // ============================================================================
+  // 5. TASKS
+  // ============================================================================
+  // Tasks that operate across multiple folders.
+
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      // {
+      //   // Install dependencies in all folders
+      //   "label": "Workspace: Install All",
+      //   "type": "shell",
+      //   "command": "pnpm install",
+      //   "options": {
+      //     "cwd": "${workspaceFolder}"
+      //   },
+      //   "group": "build"
+      // },
+      // {
+      //   // Run tests in all folders
+      //   "label": "Workspace: Test All",
+      //   "dependsOn": ["Frontend: Test", "Backend: Test"],
+      //   "group": "test"
+      // }
+    ]
+  }
+}

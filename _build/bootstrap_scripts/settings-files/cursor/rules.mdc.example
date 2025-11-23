@@ -1,0 +1,91 @@
+// ==============================================================================
+// rules.mdc - Cursor AI Agent Rules Configuration
+// ==============================================================================
+//
+// LOCATION: /.cursor/rules.mdc (project root, inside .cursor folder)
+//
+// PURPOSE:
+//   Provide persistent instructions and constraints to the Cursor AI Agent.
+//   These rules enforce framework choices, coding standards, and architectural
+//   decisions across all AI-assisted code generation.
+//
+// USAGE:
+//   1. Create .cursor/ directory in your project root
+//   2. Copy this file to .cursor/rules.mdc
+//   3. Customize globs and rules to match your project's tech stack
+//   4. Rules apply to files matching the glob patterns
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can populate initial values from bootstrap.conf:
+//   - NEXT_VERSION, NODE_VERSION -> Framework version constraints
+//   - ENABLE_PYTHON -> Whether Python rules apply
+//   After setup, this file is the authoritative source for Cursor rules.
+//
+// ==============================================================================
+
+---
+name: Project Architecture Constraints
+description: Enforce framework, database, and language style for the project.
+globs:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  - '**/*.py'
+alwaysApply: true
+---
+
+# Project Development Constraints
+
+## 1. Frontend Framework Rules
+
+1.  **Framework:** All new frontend code MUST use **Next.js App Router** with **React Server Components** unless explicitly directed otherwise.
+2.  **Components:** Default to Server Components (async functions). Only add `"use client"` when client hooks are required (`useState`, `useEffect`, event handlers).
+3.  **Data Fetching:** Use Server Actions for mutations. Avoid client-side data fetching where server-side is possible.
+
+## 2. State Management
+
+1.  **Avoid Global State Libraries:** Do not use Redux, MobX, or similar unless explicitly approved.
+2.  **Preferred Patterns:**
+    - React Context for component tree state
+    - Server Actions for data mutations
+    - Zustand for complex client state (if needed)
+3.  **URL State:** Prefer URL search params for shareable/bookmarkable state.
+
+## 3. Database & Backend
+
+1.  **ORM:** All database interactions must use **Drizzle ORM** (TypeScript) via the centralized `src/db/` directory.
+2.  **Python ORM:** For Python services, use SQLAlchemy or SQLModel with equivalent patterns.
+3.  **Migrations:** Never manually edit files in `src/db/migrations/`. Use `pnpm db:generate`.
+4.  **Schema:** Check `src/db/schema.ts` before any database-related changes.
+
+## 4. Code Style & Formatting
+
+1.  **Formatter:** Follow **Prettier** configuration (`.prettierrc`).
+2.  **Linter:** Follow **ESLint** rules. Fix all warnings before committing.
+3.  **Type Safety:** Use **TypeScript** with strict mode. Avoid `any` type.
+4.  **Imports:** Use absolute imports via `@/` alias. Keep imports organized.
+
+## 5. Package Management
+
+1.  **Package Manager:** Always use **pnpm** for Node.js package operations.
+2.  **Dependencies:** Check `package.json` before suggesting new dependencies.
+3.  **Prefer Existing:** Use existing utilities over adding new packages.
+
+## 6. File Organization
+
+1.  **Components:** Place in `src/components/` with appropriate subdirectories.
+2.  **Pages:** Follow App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`).
+3.  **Utilities:** Shared code goes in `src/lib/`.
+4.  **Types:** TypeScript types in `src/types/` or co-located with components.
+
+## 7. Security & Best Practices
+
+1.  **Environment Variables:** Never hardcode secrets. Use `.env.local` for local development.
+2.  **Input Validation:** Validate all user input at API boundaries.
+3.  **SQL Injection:** Always use parameterized queries (Drizzle handles this).
+4.  **XSS:** Sanitize user-generated content before rendering.
+
+// ==============================================================================
+// END OF CURSOR RULES
+// ==============================================================================

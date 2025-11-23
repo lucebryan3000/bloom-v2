@@ -1,0 +1,31 @@
+# ----------------------------------------------------------------------
+# .dockerignore Template - Docker Build Context Exclusions
+# ----------------------------------------------------------------------
+
+# 1. VERSION CONTROL & SECRETS
+.git
+.gitignore
+.gitmodules
+.env
+.env.local
+.env.development
+.env.production
+.vscode/
+
+# 2. DEPENDENCIES & BUILD ARTIFACTS
+# The Dockerfile will copy package.json/pnpm-lock.yaml *first* to leverage caching.
+# We exclude the result/inputs that are not needed for that specific layer.
+node_modules
+.next/
+dist/
+out/
+coverage/
+.pnpm-store/
+# Exclude the local persistent volume if it exists
+postgres_data/
+
+# 3. NON-SOURCE CODE (Tests, Docs, Dev Tools)
+tests/                 # Exclude all unit, integration, and e2e tests
+playwright-report/
+# Exclude temporary or heavy development directories
+_build/

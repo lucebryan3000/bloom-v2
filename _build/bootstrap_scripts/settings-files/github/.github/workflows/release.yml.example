@@ -1,0 +1,170 @@
+# ==============================================================================
+# release.yml - GitHub Actions CD/Release Pipeline Template
+# ==============================================================================
+#
+# LOCATION: /.github/workflows/release.yml (project root)
+#
+# PURPOSE:
+#   Handle continuous deployment: build Docker images, push to registries,
+#   and deploy to production/staging environments. Triggered on main branch
+#   pushes or manual dispatch.
+#
+# USAGE:
+#   1. Create .github/workflows/ directory in your project root
+#   2. Copy this file to .github/workflows/release.yml
+#   3. Configure repository secrets (DOCKER_USERNAME, DOCKER_PASSWORD, etc.)
+#   4. Customize deployment steps for your infrastructure
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts can customize based on bootstrap.conf:
+#   - APP_NAME -> Docker image naming
+#   - Deployment targets and registry URLs
+#   After setup, this file is the authoritative source for CD configuration.
+#
+# REQUIRED SECRETS:
+#   - DOCKER_USERNAME: Docker Hub username (or registry username)
+#   - DOCKER_PASSWORD: Docker Hub password/token (or registry token)
+#   - DEPLOYMENT_KEY: Deployment credentials (platform-specific)
+#
+# ==============================================================================
+
+name: CD - Release & Deploy
+
+# ==============================================================================
+# TRIGGERS
+# ==============================================================================
+on:
+  push:
+    branches: [main]
+    # Optionally trigger on tags:
+    # tags:
+    #   - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+# ==============================================================================
+# ENVIRONMENT VARIABLES
+# ==============================================================================
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# ==============================================================================
+# JOBS
+# ==============================================================================
+jobs:
+  # ============================================================================
+  # BUILD & PUSH DOCKER IMAGE
+  # ============================================================================
+  build-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    # Requires CI to pass first (if you have a separate ci.yml)
+    # needs: [build-test]
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup Docker Buildx for multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login to Docker Hub (or other registry)
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Alternative: Login to GitHub Container Registry
+      # - name: Login to GHCR
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Generate image tags and labels
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # Build and push image
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # DEPLOY TO STAGING
+  # ============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-push]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+
+    environment:
+      name: staging
+      url: https://staging.example.com
+
+    steps:
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your deployment commands here:
+          # - kubectl apply -f k8s/staging/
+          # - vercel deploy --prebuilt
+          # - aws ecs update-service ...
+
+  # ============================================================================
+  # DEPLOY TO PRODUCTION (Manual approval recommended)
+  # ============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-push, deploy-staging]
+    if: github.event.inputs.environment == 'production'
+
+    environment:
+      name: production
+      url: https://example.com
+
+    steps:
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to production environment..."
+          # Add your deployment commands here
+
+# ==============================================================================
+# END OF RELEASE WORKFLOW
+# ==============================================================================

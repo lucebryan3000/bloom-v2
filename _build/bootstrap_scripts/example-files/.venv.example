@@ -1,0 +1,65 @@
+# ==============================================================================
+# .venv - Python Virtual Environment Gitignore Snippet
+# ==============================================================================
+#
+# LOCATION: Append to /.gitignore (project root)
+#
+# PURPOSE:
+#   Exclude Python virtual environment directories from version control.
+#   Virtual environments contain local dependencies and should never be
+#   committed to Git.
+#
+# USAGE:
+#   1. Append these patterns to your .gitignore file
+#   2. Or use this as reference for virtual environment exclusions
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts can append these patterns to .gitignore based on:
+#   - ENABLE_PYTHON -> Include Python venv exclusions
+#   After setup, these patterns are part of your .gitignore.
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. STANDARD PYTHON VIRTUAL ENVIRONMENTS
+# ==============================================================================
+
+# Common venv directory names
+.venv/
+venv/
+env/
+
+# Windows-style (sometimes uppercase)
+ENV/
+VENV/
+
+# ==============================================================================
+# 2. PACKAGE MANAGER SPECIFIC ENVIRONMENTS
+# ==============================================================================
+
+# Poetry
+.poetry/
+
+# PDM
+.pdm-python/
+.pdm.toml
+
+# Pixi
+.pixi/
+
+# Conda
+.conda/
+
+# ==============================================================================
+# 3. VIRTUAL ENVIRONMENT CONFIG FILES
+# ==============================================================================
+
+# Path configuration files
+*.pth
+
+# Pip cache (if local)
+.pip/
+
+# ==============================================================================
+# END OF VENV EXCLUSIONS
+# ==============================================================================

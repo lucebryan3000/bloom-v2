@@ -1,0 +1,101 @@
+# ==============================================================================
+# .npmignore - NPM Publish Exclusion Configuration Template
+# ==============================================================================
+#
+# LOCATION: /.npmignore (project root)
+#
+# PURPOSE:
+#   Exclude files when publishing a package to npm. Keeps published packages
+#   small and secure by omitting source code, tests, and development configs.
+#   Only needed for publishable libraries (set "private": true otherwise).
+#
+# USAGE:
+#   1. Copy this file to .npmignore in your project root
+#   2. Customize based on what should be excluded from the published package
+#   3. Alternatively, use "files" whitelist in package.json (preferred)
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts can set "private": true in package.json for applications.
+#   This file is only relevant for publishable libraries.
+#   After setup, this file is the authoritative source for npm publish exclusions.
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. DEVELOPMENT & TESTING CODE
+# ==============================================================================
+
+# Test directories (not needed by consumers)
+tests/
+__tests__/
+e2e/
+test/
+spec/
+
+# Coverage reports
+coverage/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+
+# Migration history (only for source repository)
+src/db/migrations/
+
+# ==============================================================================
+# 2. SOURCE CODE (if publishing only transpiled output)
+# ==============================================================================
+
+# Exclude src if your final output is only in 'dist/'
+# NOTE: Remove this if you're publishing source files
+src/
+
+# ==============================================================================
+# 3. DEVELOPMENT CONFIGURATION FILES
+# ==============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Editor/IDE configs
+.vscode/
+.idea/
+.editorconfig
+
+# Formatting/linting configs
+.prettierrc
+.prettierignore
+.eslintrc*
+.eslintignore
+eslint.config.*
+
+# Docker configs
+.dockerignore
+Dockerfile*
+docker-compose*
+
+# Database configs
+drizzle.config.ts
+
+# CI/CD configs
+.github/
+.gitlab-ci.yml
+
+# ==============================================================================
+# 4. LOCAL SECRETS & LOGS
+# ==============================================================================
+
+# Environment files
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# ==============================================================================
+# END OF NPMIGNORE
+# ==============================================================================

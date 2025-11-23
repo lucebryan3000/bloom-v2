@@ -33,9 +33,9 @@ npm-shrinkwrap.json
 *.tsbuildinfo
 next-env.d.ts
 
-# Drizzle ORM
-drizzle/
-.drizzle/
+# Drizzle ORM (root-level only, not bootstrap template folders)
+/drizzle/
+/.drizzle/
 
 ## ============================================================================
 ## TESTING & COVERAGE (Vitest + Playwright)

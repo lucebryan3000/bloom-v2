@@ -1,0 +1,133 @@
+# ==============================================================================
+# CODEOWNERS - GitHub Code Ownership Configuration Template
+# ==============================================================================
+#
+# LOCATION: /CODEOWNERS or /.github/CODEOWNERS (project root)
+#
+# PURPOSE:
+#   Automatically assign reviewers to pull requests based on file paths.
+#   Ensures the right teams/people review changes to code they own.
+#   Required reviewers must approve before merging (when branch protection enabled).
+#
+# USAGE:
+#   1. Copy this file to CODEOWNERS in your project root (or .github/)
+#   2. Replace placeholder usernames (@your-org/team) with actual GitHub handles
+#   3. Enable "Require review from Code Owners" in branch protection rules
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts can customize based on bootstrap.conf:
+#   - Team/username placeholders for your organization
+#   After setup, this file is the authoritative source for code ownership.
+#
+# SYNTAX:
+#   - Lines starting with # are comments
+#   - Pattern followed by one or more @usernames or @org/team
+#   - Later patterns override earlier ones
+#   - * matches all files
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. GLOBAL OWNERS (Default for all files)
+# ==============================================================================
+# These owners are assigned to ALL files unless overridden below
+
+* @your-org/core-reviewers
+
+# ==============================================================================
+# 2. FRONTEND / NEXT.JS OWNERSHIP
+# ==============================================================================
+
+# App Router pages and layouts
+/src/app/                       @your-org/frontend-team
+
+# React components
+/src/components/                @your-org/frontend-team
+
+# Shared utilities and helpers
+/src/lib/                       @your-org/frontend-team
+
+# Custom React hooks
+/src/hooks/                     @your-org/frontend-team
+
+# Zustand stores
+/src/stores/                    @your-org/frontend-team
+
+# Styling (CSS/Tailwind)
+/src/styles/                    @your-org/frontend-team
+tailwind.config.*               @your-org/frontend-team
+
+# ==============================================================================
+# 3. BACKEND / API OWNERSHIP
+# ==============================================================================
+
+# Python API code
+/src/api/                       @your-org/backend-team
+
+# Server Actions
+/src/actions/                   @your-org/backend-team
+
+# Background jobs
+/src/jobs/                      @your-org/backend-team
+
+# ==============================================================================
+# 4. DATABASE / ORM OWNERSHIP (CRITICAL)
+# ==============================================================================
+
+# Drizzle schema (shared ownership - affects both frontend & backend)
+/src/db/schema.ts               @your-org/backend-team @your-org/frontend-team
+
+# Database migrations (require DBA review!)
+/src/db/migrations/             @your-org/dba-team
+
+# Database configuration
+drizzle.config.ts               @your-org/backend-team
+
+# ==============================================================================
+# 5. INFRASTRUCTURE & DEVOPS
+# ==============================================================================
+
+# Docker configuration
+Dockerfile*                     @your-org/infra-team
+docker-compose*                 @your-org/infra-team
+.dockerignore                   @your-org/infra-team
+
+# CI/CD workflows
+/.github/workflows/             @your-org/infra-team
+/.github/actions/               @your-org/infra-team
+
+# Deployment configuration
+/infra/                         @your-org/infra-team
+/deploy/                        @your-org/infra-team
+
+# ==============================================================================
+# 6. CONFIGURATION & TOOLING
+# ==============================================================================
+
+# Package configuration
+package.json                    @your-org/core-reviewers
+pnpm-lock.yaml                  @your-org/core-reviewers
+
+# TypeScript configuration
+tsconfig*.json                  @your-org/frontend-team
+
+# ESLint/Prettier configuration
+eslint.config.*                 @your-org/core-reviewers
+.prettierrc*                    @your-org/core-reviewers
+
+# Python configuration
+pyproject.toml                  @your-org/backend-team
+requirements*.txt               @your-org/backend-team
+
+# ==============================================================================
+# 7. DOCUMENTATION
+# ==============================================================================
+
+# Documentation files
+/docs/                          @your-org/docs-team
+*.md                            @your-org/docs-team
+README.md                       @your-org/core-reviewers
+
+# ==============================================================================
+# END OF CODEOWNERS
+# ==============================================================================

@@ -1,0 +1,40 @@
+// .prettierrc.example - Prettier Configuration Template
+{
+  // ------------------------------------------------------------------
+  // CORE STYLING (Optimized for TypeScript/Next.js)
+  // ------------------------------------------------------------------
+  "semi": true,
+  // Enforce semicolons, consistent with strong typing discipline.
+  "singleQuote": true,
+  // Use single quotes for strings in JavaScript/TypeScript.
+  "jsxSingleQuote": false,
+  // Use double quotes in JSX (standard for HTML/React attributes).
+  "trailingComma": "all",
+  // Print trailing commas for cleaner diffs and array/object handling.
+  "printWidth": 100,
+  // Standard print width for modern development.
+  "tabWidth": 2,
+  // Standard 2 spaces for indentation.
+  "useTabs": false,
+  // Enforce spaces over tabs.
+
+  // ------------------------------------------------------------------
+  // ARROW FUNCTIONS & PARENTHESES
+  // ------------------------------------------------------------------
+  "arrowParens": "always",
+  // Always include parentheses around single function parameters (e.g., `(x) => x`).
+
+  // ------------------------------------------------------------------
+  // HTML/JSX
+  // ------------------------------------------------------------------
+  "bracketSpacing": true,
+  // Print spaces between brackets in object literals.
+  "bracketSameLine": false,
+  // Put the `>` of a multi-line HTML/JSX element on a new line.
+
+  // ------------------------------------------------------------------
+  // MISC
+  // ------------------------------------------------------------------
+  "endOfLine": "lf"
+  // Ensure Unix-style line endings (`\n`) for cross-platform consistency (Git/Docker).
+}

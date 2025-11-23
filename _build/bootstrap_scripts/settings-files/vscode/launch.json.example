@@ -1,0 +1,187 @@
+// ==============================================================================
+// launch.json - VS Code Debug Configurations Template
+// ==============================================================================
+//
+// LOCATION: /.vscode/launch.json (project root)
+//
+// PURPOSE:
+//   Define debug configurations for running and stepping through code in VS Code.
+//   Supports multiple languages (Node.js, Python) and compound configurations
+//   for full-stack debugging.
+//
+// USAGE:
+//   1. Create .vscode/ directory in your project root
+//   2. Copy this file to .vscode/launch.json
+//   3. Uncomment and customize configurations for your project
+//   4. Use F5 or Run menu to start debugging
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   - ENABLE_PYTHON -> Include/exclude Python debug configs
+//   - Port numbers, paths adjusted per project structure
+//   After setup, this file is the authoritative source for debug configurations.
+//
+// ==============================================================================
+{
+  "version": "0.2.0",
+  "configurations": [
+    // ==========================================================================
+    // 1. NEXT.JS / NODE.JS DEBUG CONFIGURATIONS
+    // ==========================================================================
+
+    {
+      // Debug Next.js server-side code (API routes, Server Components)
+      "name": "Next.js: Debug Server-side",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"]
+    },
+
+    {
+      // Debug Next.js client-side code in Chrome browser
+      "name": "Next.js: Debug Client-side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      // Chrome executable path (adjust for your OS)
+      // macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+      // Windows: "C:/Program Files/Google/Chrome/Application/chrome.exe"
+      // Linux: "/usr/bin/google-chrome"
+      "runtimeExecutable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "skipFiles": ["node_modules/**"]
+    },
+
+    // {
+    //   // Debug a specific Node.js script
+    //   "name": "Node: Debug Script",
+    //   "type": "node",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}/scripts/my-script.ts",
+    //   "runtimeExecutable": "pnpm",
+    //   "runtimeArgs": ["tsx"],
+    //   "console": "integratedTerminal",
+    //   "skipFiles": ["<node_internals>/**"]
+    // },
+
+    // {
+    //   // Attach to running Node.js process
+    //   "name": "Node: Attach to Process",
+    //   "type": "node",
+    //   "request": "attach",
+    //   "port": 9229,
+    //   "restart": true,
+    //   "skipFiles": ["<node_internals>/**"]
+    // },
+
+    // ==========================================================================
+    // 2. PYTHON DEBUG CONFIGURATIONS
+    // ==========================================================================
+
+    {
+      // Debug FastAPI/Uvicorn Python API service
+      "name": "Python: Debug API Service",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      // Change module path to match your project structure
+      "args": ["src.api.main:app", "--reload", "--port", "8000"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "ENV": "development"
+      },
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "cwd": "${workspaceFolder}"
+    },
+
+    // {
+    //   // Debug a specific Python script
+    //   "name": "Python: Debug Script",
+    //   "type": "python",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}/scripts/my_script.py",
+    //   "env": {
+    //     "PYTHONPATH": "${workspaceFolder}"
+    //   },
+    //   "justMyCode": true,
+    //   "console": "integratedTerminal"
+    // },
+
+    // {
+    //   // Debug Python unit tests with pytest
+    //   "name": "Python: Debug Tests",
+    //   "type": "python",
+    //   "request": "launch",
+    //   "module": "pytest",
+    //   "args": ["tests/", "-v", "--tb=short"],
+    //   "env": {
+    //     "PYTHONPATH": "${workspaceFolder}"
+    //   },
+    //   "justMyCode": false,
+    //   "console": "integratedTerminal"
+    // },
+
+    // {
+    //   // Debug Django development server
+    //   "name": "Python: Django",
+    //   "type": "python",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}/manage.py",
+    //   "args": ["runserver", "--noreload"],
+    //   "django": true,
+    //   "justMyCode": true
+    // },
+
+    // {
+    //   // Debug Flask development server
+    //   "name": "Python: Flask",
+    //   "type": "python",
+    //   "request": "launch",
+    //   "module": "flask",
+    //   "args": ["run", "--debug"],
+    //   "env": {
+    //     "FLASK_APP": "src.app:create_app"
+    //   },
+    //   "jinja": true,
+    //   "justMyCode": true
+    // },
+
+    // ==========================================================================
+    // 3. COMPOUND DEBUG CONFIGURATIONS
+    // ==========================================================================
+
+    {
+      // Start both Next.js and Python API simultaneously
+      "name": "COMPOUND: Full Stack Dev",
+      "configurations": ["Next.js: Debug Server-side", "Python: Debug API Service"],
+      "stopAll": true
+    }
+
+    // {
+    //   // Start Next.js with both server and client debugging
+    //   "name": "COMPOUND: Next.js Full Debug",
+    //   "configurations": [
+    //     "Next.js: Debug Server-side",
+    //     "Next.js: Debug Client-side"
+    //   ],
+    //   "stopAll": true
+    // }
+  ]
+
+  // ============================================================================
+  // INPUT VARIABLES (for parameterized configs)
+  // ============================================================================
+  // "inputs": [
+  //   {
+  //     "id": "scriptPath",
+  //     "type": "promptString",
+  //     "description": "Path to script to debug"
+  //   }
+  // ]
+}

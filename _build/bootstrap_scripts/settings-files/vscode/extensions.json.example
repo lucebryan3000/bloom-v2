@@ -1,0 +1,204 @@
+// ==============================================================================
+// extensions.json - VS Code Extension Recommendations Template
+// ==============================================================================
+//
+// LOCATION: /.vscode/extensions.json (project root)
+//
+// PURPOSE:
+//   Recommend and suggest VS Code extensions for team members to ensure
+//   consistent development tooling. VS Code will prompt users to install
+//   recommended extensions when opening the workspace.
+//
+// USAGE:
+//   1. Create .vscode/ directory in your project root
+//   2. Copy this file to .vscode/extensions.json
+//   3. Uncomment extensions relevant to your project
+//   4. Add project-specific extensions as needed
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can customize based on bootstrap.conf:
+//   - ENABLE_PYTHON -> Include/exclude Python extensions
+//   - Tech stack choices -> Relevant framework extensions
+//   After setup, this file is the authoritative source for extension recommendations.
+//
+// ==============================================================================
+{
+  "recommendations": [
+    // ==========================================================================
+    // 1. CORE LANGUAGE & FORMATTING
+    // ==========================================================================
+
+    // ESLint - JavaScript/TypeScript linting and auto-fixing
+    "dbaeumer.vscode-eslint",
+
+    // Prettier - Opinionated code formatter for consistent style
+    "esbenp.prettier-vscode",
+
+    // EditorConfig - Maintain consistent coding styles across editors
+    "editorconfig.editorconfig",
+
+    // ==========================================================================
+    // 2. TYPESCRIPT / JAVASCRIPT
+    // ==========================================================================
+
+    // TypeScript language features (usually built-in, but ensures latest)
+    // "ms-vscode.vscode-typescript-next",
+
+    // Auto Import - Automatically find and add imports
+    // "steoates.autoimport",
+
+    // Import Cost - Display inline size of imported packages
+    // "wix.vscode-import-cost",
+
+    // Error Lens - Inline display of errors and warnings
+    // "usernamehw.errorlens",
+
+    // ==========================================================================
+    // 3. REACT / NEXT.JS
+    // ==========================================================================
+
+    // ES7+ React/Redux/React-Native snippets
+    // "dsznajder.es7-react-js-snippets",
+
+    // Tailwind CSS IntelliSense - Autocomplete for Tailwind classes
+    // "bradlc.vscode-tailwindcss",
+
+    // PostCSS Language Support
+    // "csstools.postcss",
+
+    // ==========================================================================
+    // 4. PYTHON
+    // ==========================================================================
+
+    // Python - Core Python extension with Pylance language server
+    "ms-python.python",
+
+    // Black Formatter - Python code formatting
+    "ms-python.black-formatter",
+
+    // Mypy Type Checker - Static type checking for Python
+    "ms-python.mypy-type-checker",
+
+    // isort - Python import sorting
+    // "ms-python.isort",
+
+    // Pylint - Python linting
+    // "ms-python.pylint",
+
+    // Python Docstring Generator
+    // "njpwerner.autodocstring",
+
+    // ==========================================================================
+    // 5. DATABASE & SQL
+    // ==========================================================================
+
+    // SQLTools - Database management and query execution
+    // "mtxr.sqltools",
+
+    // SQLTools PostgreSQL Driver
+    // "mtxr.sqltools-driver-pg",
+
+    // Prisma - Prisma schema syntax highlighting (if using Prisma)
+    // "Prisma.prisma",
+
+    // ==========================================================================
+    // 6. DOCKER & CONTAINERS
+    // ==========================================================================
+
+    // Docker - Docker file support and container management
+    "ms-azuretools.vscode-docker",
+
+    // Remote Containers - Develop inside containers
+    // "ms-vscode-remote.remote-containers",
+
+    // ==========================================================================
+    // 7. GIT & VERSION CONTROL
+    // ==========================================================================
+
+    // GitLens - Supercharge Git capabilities
+    // "eamodio.gitlens",
+
+    // Git Graph - View repository graph
+    // "mhutchie.git-graph",
+
+    // GitHub Pull Requests - Review PRs directly in VS Code
+    // "GitHub.vscode-pull-request-github",
+
+    // GitHub Copilot - AI pair programming
+    // "GitHub.copilot",
+
+    // ==========================================================================
+    // 8. DOCUMENTATION & MARKDOWN
+    // ==========================================================================
+
+    // Markdown All in One - Keyboard shortcuts, TOC, auto preview
+    "yzhang.markdown-all-in-one",
+
+    // Markdown Preview Enhanced
+    // "shd101wyy.markdown-preview-enhanced",
+
+    // Draw.io Integration - Diagram editing
+    // "hediet.vscode-drawio",
+
+    // ==========================================================================
+    // 9. TESTING & DEBUGGING
+    // ==========================================================================
+
+    // Jest - Jest test runner integration
+    // "Orta.vscode-jest",
+
+    // Vitest - Vitest test runner integration
+    // "ZixuanChen.vitest-explorer",
+
+    // Test Explorer UI - Unified test explorer
+    // "hbenl.vscode-test-explorer",
+
+    // ==========================================================================
+    // 10. PRODUCTIVITY & UI
+    // ==========================================================================
+
+    // Todo Tree - Highlight TODOs and FIXMEs
+    // "Gruntfuggly.todo-tree",
+
+    // Better Comments - Colorize comments by type
+    // "aaron-bond.better-comments",
+
+    // Bookmarks - Mark lines and jump between them
+    // "alefragnani.bookmarks",
+
+    // Path Intellisense - Autocomplete file paths
+    // "christian-kohler.path-intellisense",
+
+    // Material Icon Theme - File icons
+    // "PKief.material-icon-theme",
+
+    // Peacock - Colorize workspaces for multi-project work
+    // "johnpapa.vscode-peacock",
+
+    // ==========================================================================
+    // 11. API & HTTP
+    // ==========================================================================
+
+    // REST Client - Send HTTP requests directly from VS Code
+    // "humao.rest-client",
+
+    // Thunder Client - Lightweight REST API client
+    // "rangav.vscode-thunder-client",
+
+    // OpenAPI (Swagger) Editor
+    // "42Crunch.vscode-openapi"
+  ],
+
+  "unwantedRecommendations": [
+    // ==========================================================================
+    // UNWANTED EXTENSIONS
+    // ==========================================================================
+    // List extensions that should NOT be recommended (conflicts, deprecated, etc.)
+
+    // Example: If preferring pnpm, exclude npm-focused extensions
+    // "eg2.vscode-npm-script",
+
+    // Example: Deprecated formatter
+    // "HookyQR.beautify"
+  ]
+}

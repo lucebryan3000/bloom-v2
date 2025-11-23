@@ -1,0 +1,28 @@
+# ==============================================================================
+# .nvmrc - Node Version Manager Configuration Template
+# ==============================================================================
+#
+# LOCATION: /.nvmrc (project root)
+#
+# PURPOSE:
+#   Specify the exact Node.js version required for this project. Ensures
+#   consistency across development environments and CI/CD pipelines.
+#   Tools like nvm, fnm, and volta read this file automatically.
+#
+# USAGE:
+#   1. Copy this file to .nvmrc in your project root
+#   2. Run 'nvm use' or 'fnm use' to switch to the specified version
+#   3. CI/CD can use actions/setup-node with node-version-file: '.nvmrc'
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts populate this from bootstrap.conf:
+#   - NODE_VERSION -> The version number below
+#   After setup, this file is the authoritative source for Node.js version.
+#
+# ==============================================================================
+
+# Node.js LTS version (recommended for Next.js 15 / React 19)
+v20.11.0
+
+# Alternative: Use major version alias for flexibility on patch releases
+# 20

@@ -1,0 +1,27 @@
+# .editorconfig.example - Editor Configuration Template
+
+# EditorConfig is awesome: https://EditorConfig.org
+root = true
+
+# ----------------------------------------------------------------------
+# GLOBAL RULES: Applies to all files
+# ----------------------------------------------------------------------
+[*]
+charset = utf-8
+end_of_line = lf              ; Consistent with Prettier/Docker
+insert_final_newline = true   ; Ensure every file ends with a blank line
+trim_trailing_whitespace = true ; Remove unnecessary whitespace
+
+# ----------------------------------------------------------------------
+# JAVASCRIPT, TYPESCRIPT, & JSON
+# ----------------------------------------------------------------------
+[*.{js,jsx,ts,tsx,json,jsonc,md,mdx,yml,yaml}]
+indent_style = space
+indent_size = 2               ; Consistent with 2-space Prettier setting
+tab_width = 2                 ; Tab width should match indent size
+
+# ----------------------------------------------------------------------
+# MARKDOWN FILES
+# ----------------------------------------------------------------------
+[*.md]
+trim_trailing_whitespace = false ; Keep two trailing spaces for hard line breaks in Markdown.

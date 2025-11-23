@@ -1,0 +1,150 @@
+# ------------------------------------------------------------------------------
+# .claudeignore Template
+# Focus Claude Code analysis on relevant source code only
+# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 1. GENERATED CODE & BUILD OUTPUT
+# ==============================================================================
+
+# Next.js build artifacts
+.next/
+out/
+.vercel/
+
+# Generic build outputs
+build/
+dist/
+
+# TypeScript incremental build
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ==============================================================================
+# 2. DEPENDENCIES & LOCK FILES
+# ==============================================================================
+
+# Node modules (never analyze)
+node_modules/
+.pnpm-store/
+
+# Lock files (verbose, rarely need inspection)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# ==============================================================================
+# 3. SECRETS & ENVIRONMENT VARIABLES (CRITICAL)
+# ==============================================================================
+
+# Never expose secrets to AI context
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Credentials files
+secrets.json
+credentials.json
+*.pem
+*.key
+
+# ==============================================================================
+# 4. TESTING & COVERAGE ARTIFACTS
+# ==============================================================================
+
+# Coverage reports
+coverage/
+.nyc_output/
+*.lcov
+
+# Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# ==============================================================================
+# 5. DATABASE & PERSISTENCE
+# ==============================================================================
+
+# Drizzle ORM generated files
+drizzle/
+.drizzle/
+drizzle-kit.lock.json
+
+# Database volumes and dumps
+postgres_data/
+db_data/
+postgres_logs/
+*.sql
+*.dump
+
+# Generated migrations (optional - uncomment if you don't need to analyze)
+# src/db/migrations/
+
+# ==============================================================================
+# 6. LOGS & RUNTIME ARTIFACTS
+# ==============================================================================
+
+# Application and debug logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.pino-pretty/
+
+# Runtime state and cache
+.state/
+.cache/
+temp/
+tmp/
+.tmp/
+
+# Bootstrap script logs
+_build/bootstrap_scripts/logs/
+
+# ==============================================================================
+# 7. DOCKER & INFRASTRUCTURE
+# ==============================================================================
+
+# Docker local overrides
+docker-compose.override.yml
+docker-compose.local.yml
+.dockerignore
+
+# ==============================================================================
+# 8. IDE & EDITOR FILES
+# ==============================================================================
+
+# IDE settings (not code)
+.vscode/
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor swap/backup files
+*.swp
+*.swo
+*~
+*.sublime-workspace
+
+# ==============================================================================
+# 9. OPTIONAL EXCLUSIONS (Uncomment to speed up analysis)
+# ==============================================================================
+
+# Verbose config files
+# .editorconfig
+# tsconfig.json
+# tailwind.config.ts
+
+# Public static assets (images, fonts)
+# public/
+
+# ------------------------------------------------------------------------------
+# END .claudeignore
+# ------------------------------------------------------------------------------

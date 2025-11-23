@@ -1,0 +1,18 @@
+# pnpm-workspace.yaml - pnpm Workspace Configuration Template
+
+# This file defines the scope of your workspace.
+# It is set up here even for a single-package project to enable
+# future monorepo expansion (e.g., adding a separate worker package)
+# without major configuration changes.
+
+packages:
+  # The application source code package is at the root.
+  - '.'
+
+  # Example of a future background worker package (pg-boss runner)
+  # that might need to be isolated.
+  # - 'packages/worker'
+
+  # Exclude test directories or temporary workspaces
+  - '!**/tests/**'
+  - '!_build/**'

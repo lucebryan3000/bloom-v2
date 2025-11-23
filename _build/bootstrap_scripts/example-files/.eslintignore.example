@@ -1,0 +1,92 @@
+# ==============================================================================
+# .eslintignore - ESLint Exclusion Configuration Template
+# ==============================================================================
+#
+# LOCATION: /.eslintignore (project root)
+#
+# PURPOSE:
+#   Exclude files and directories from ESLint processing. Prevents linting
+#   of build artifacts, generated code, and external dependencies.
+#
+# USAGE:
+#   1. Copy this file to .eslintignore in your project root
+#   2. Customize exclusions based on your project structure
+#   3. Uses gitignore-style glob patterns
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts can adjust patterns based on bootstrap.conf:
+#   - Project structure -> Migration paths, output directories
+#   After setup, this file is the authoritative source for ESLint exclusions.
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. BUILD ARTIFACTS
+# ==============================================================================
+
+# Next.js build output (contains minified/generated code)
+.next/
+
+# Static export output
+out/
+
+# Distribution/build output
+dist/
+build/
+
+# ==============================================================================
+# 2. DEPENDENCIES & LOCK FILES
+# ==============================================================================
+
+# Node modules (third-party code)
+node_modules/
+
+# pnpm store directory (if local)
+.pnpm-store/
+
+# ==============================================================================
+# 3. GENERATED CODE
+# ==============================================================================
+
+# Drizzle ORM migration files (machine-generated SQL)
+src/db/migrations/
+
+# TypeScript declaration files (optional)
+# *.d.ts
+
+# Auto-generated API clients
+# src/generated/
+
+# ==============================================================================
+# 4. CONFIGURATION FILES
+# ==============================================================================
+
+# Config files that ESLint might try to process
+*.config.js
+*.config.ts
+*.config.mjs
+*.config.cjs
+
+# ==============================================================================
+# 5. ENVIRONMENT & SECRETS
+# ==============================================================================
+
+# Environment files (typically covered by .gitignore)
+.env
+.env.*
+.env.local
+
+# ==============================================================================
+# 6. TEST OUTPUTS & COVERAGE
+# ==============================================================================
+
+# Coverage reports
+coverage/
+
+# Playwright test results
+test-results/
+playwright-report/
+
+# ==============================================================================
+# END OF ESLINTIGNORE
+# ==============================================================================

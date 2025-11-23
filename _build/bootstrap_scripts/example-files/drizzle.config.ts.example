@@ -1,0 +1,36 @@
+// drizzle.config.ts - Drizzle ORM Configuration Template
+import type { Config } from 'drizzle-kit';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env.local to access DATABASE_URL
+dotenv.config({ path: '.env.local' });
+
+/**
+ * @type {Config}
+ * Drizzle Kit uses this config to generate and push migrations.
+ * The `schema` path must cover all exported table definitions.
+ */
+export default {
+  schema: './src/db/schema.ts',
+  // For module-split schema, change the above line to:
+  // schema: './src/db/schema/*.ts', // if you put each table in a separate file
+
+  out: './src/db/migrations',
+  // This must match your `migrations` directory in your final directory structure.
+
+  dialect: 'postgresql',
+  // Required: Matches your decision to use PostgreSQL v16.x.
+
+  dbCredentials: {
+    url: process.env.DATABASE_URL!,
+    // Drizzle requires the DATABASE_URL to be set in your environment (from .env.local).
+  },
+
+  // Optional: Set strict mode to catch potential issues early.
+  strict: true,
+
+  // Optional: Set up logging if you need to debug the kit operations.
+  // verbose: true,
+  // logger: 'better-sqlite',
+
+} satisfies Config;

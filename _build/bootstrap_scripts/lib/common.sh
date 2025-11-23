@@ -55,7 +55,7 @@ source "${_COMMON_LIB_DIR}/validation.sh"
 source "${_COMMON_LIB_DIR}/utils.sh"
 
 # 4. Config loading (depends on logging)
-source "${_COMMON_LIB_DIR}/config.sh"
+source "${_COMMON_LIB_DIR}/config_bootstrap.sh"
 
 # 5. State tracking (depends on logging)
 source "${_COMMON_LIB_DIR}/state.sh"

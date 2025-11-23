@@ -43,7 +43,7 @@ ALLOW_DIRTY=true ./bin/bootstrap --dry-run --list
 | Module | Functions | Purpose |
 |--------|-----------|---------|
 | `logging.sh` | `log_info`, `log_error`, `log_debug`, etc. | Colored and JSON logging |
-| `config.sh` | `config_load`, `config_validate`, `config_apply_profile` | Configuration management |
+| `config_bootstrap.sh` | `config_load`, `config_validate`, `config_apply_profile` | Configuration management |
 | `phases.sh` | `phase_discover`, `phase_execute`, `phase_list_all` | Dynamic phase discovery |
 | `packages.sh` | `pkg_expand`, `pkg_add_dependency`, `pkg_add_script` | Package management |
 | `state.sh` | `state_mark_success`, `state_has_succeeded`, `state_clear` | Resume capability |
@@ -67,7 +67,7 @@ _build/bootstrap_scripts/
 ├── lib/                              # Modular library files
 │   ├── common.sh                     # Master loader (sources all modules)
 │   ├── logging.sh                    # Logging functions
-│   ├── config.sh                     # Configuration loading
+│   ├── config_bootstrap.sh            # Configuration loading
 │   ├── phases.sh                     # Phase discovery & execution
 │   ├── packages.sh                   # PKG_* expansion, dependencies
 │   ├── state.sh                      # Bootstrap state tracking
@@ -224,7 +224,7 @@ log_dry "Would do X"         # Cyan [DRY RUN]
 log_init "script-name"       # Initialize logging
 ```
 
-### Configuration (lib/config.sh)
+### Configuration (lib/config_bootstrap.sh)
 ```bash
 config_load                  # Load bootstrap.conf
 config_validate              # Validate required settings

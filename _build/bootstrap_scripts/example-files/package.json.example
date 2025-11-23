@@ -1,0 +1,82 @@
+// ==============================================================================
+// package.json - NPM Package Configuration Template
+// ==============================================================================
+//
+// LOCATION: /package.json (project root)
+//
+// PURPOSE:
+//   Define project metadata, dependencies, and scripts for Node.js projects.
+//   This example shows the "files" field for publishable libraries and the
+//   "private" field for applications.
+//
+// USAGE:
+//   1. For applications: Set "private": true to prevent accidental publishing
+//   2. For libraries: Use "files" whitelist to control published contents
+//   3. Customize scripts for your build/dev workflow
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   - APP_NAME -> package name
+//   - Private vs library mode based on project type
+//   After setup, this file is the authoritative source for package configuration.
+//
+// ==============================================================================
+{
+  "name": "@myorg/myapp",
+  "version": "1.0.0",
+  "description": "Project description goes here.",
+
+  // ==========================================================================
+  // OPTION 1: APPLICATION MODE
+  // ==========================================================================
+  // Set to TRUE for applications (prevents accidental npm publish)
+  "private": true,
+
+  // ==========================================================================
+  // OPTION 2: LIBRARY MODE (Publishable Package)
+  // ==========================================================================
+  // If this is a library, uncomment below and set "private": false
+  //
+  // "main": "./dist/index.js",
+  // "module": "./dist/index.mjs",
+  // "types": "./dist/index.d.ts",
+  // "exports": {
+  //   ".": {
+  //     "import": "./dist/index.mjs",
+  //     "require": "./dist/index.js",
+  //     "types": "./dist/index.d.ts"
+  //   }
+  // },
+  // "files": [
+  //   "dist/**/*",
+  //   "README.md",
+  //   "LICENSE"
+  // ],
+
+  // ==========================================================================
+  // SCRIPTS
+  // ==========================================================================
+  "scripts": {
+    // Development
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+
+    // Linting & Formatting
+    "lint": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+
+    // Database (Drizzle)
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+
+    // Testing
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test"
+  }
+}

@@ -1,0 +1,103 @@
+// ==============================================================================
+// .sequelizerc - Sequelize CLI Configuration Template
+// ==============================================================================
+//
+// LOCATION: /.sequelizerc (project root)
+//
+// PURPOSE:
+//   Configure Sequelize CLI for database management tasks like migrations,
+//   seeders, and model generation. This is OPTIONAL and only needed if you
+//   use Sequelize alongside or instead of Drizzle ORM.
+//
+// USAGE:
+//   1. Copy this file to .sequelizerc in your project root
+//   2. Install Sequelize CLI: pnpm add -D sequelize-cli
+//   3. Adjust paths to match your project structure
+//   4. Run migrations: npx sequelize-cli db:migrate
+//
+// BOOTSTRAP INTEGRATION:
+//   Bootstrap scripts can include this based on bootstrap.conf:
+//   - If using Sequelize for specific tasks (seeders, raw SQL migrations)
+//   After setup, this file is the authoritative source for Sequelize CLI paths.
+//
+// NOTE:
+//   - Drizzle ORM is the recommended ORM for this tech stack
+//   - Use Sequelize CLI only for specific use cases (seeders, legacy migrations)
+//
+// ==============================================================================
+
+const path = require('path');
+
+// Project root directory
+const projectRoot = path.resolve(__dirname);
+
+module.exports = {
+  // ==========================================================================
+  // CONFIGURATION FILE
+  // ==========================================================================
+  // Path to database connection configuration
+  // Sequelize CLI expects a JSON/JS config file with connection details
+  config: path.resolve(projectRoot, 'config', 'database.json'),
+
+  // Alternative: JavaScript config for environment-based settings
+  // config: path.resolve(projectRoot, 'config', 'database.js'),
+
+  // ==========================================================================
+  // MIGRATIONS DIRECTORY
+  // ==========================================================================
+  // Directory for migration files (separate from Drizzle migrations)
+  'migrations-path': path.resolve(projectRoot, 'src', 'db', 'sequelize', 'migrations'),
+
+  // ==========================================================================
+  // SEEDERS DIRECTORY
+  // ==========================================================================
+  // Directory for data seeding scripts
+  'seeders-path': path.resolve(projectRoot, 'src', 'db', 'sequelize', 'seeders'),
+
+  // ==========================================================================
+  // MODELS DIRECTORY
+  // ==========================================================================
+  // Directory for Sequelize models (if using Sequelize ORM)
+  'models-path': path.resolve(projectRoot, 'src', 'db', 'sequelize', 'models'),
+};
+
+// ==============================================================================
+// DATABASE CONFIG EXAMPLE (config/database.json)
+// ==============================================================================
+// {
+//   "development": {
+//     "username": "dbuser",
+//     "password": "dbpassword",
+//     "database": "myapp_dev",
+//     "host": "127.0.0.1",
+//     "dialect": "postgres"
+//   },
+//   "test": {
+//     "username": "dbuser",
+//     "password": "dbpassword",
+//     "database": "myapp_test",
+//     "host": "127.0.0.1",
+//     "dialect": "postgres"
+//   },
+//   "production": {
+//     "use_env_variable": "DATABASE_URL",
+//     "dialect": "postgres",
+//     "dialectOptions": {
+//       "ssl": {
+//         "require": true,
+//         "rejectUnauthorized": false
+//       }
+//     }
+//   }
+// }
+// ==============================================================================
+
+// ==============================================================================
+// COMMON SEQUELIZE CLI COMMANDS
+// ==============================================================================
+// npx sequelize-cli db:migrate              # Run pending migrations
+// npx sequelize-cli db:migrate:undo         # Revert last migration
+// npx sequelize-cli db:seed:all             # Run all seeders
+// npx sequelize-cli migration:generate      # Create new migration
+// npx sequelize-cli seed:generate           # Create new seeder
+// ==============================================================================

@@ -1,0 +1,159 @@
+# ==============================================================================
+# gitignore.append - Core Gitignore Patterns to Append
+# ==============================================================================
+#
+# LOCATION: Append to /.gitignore (project root)
+#
+# PURPOSE:
+#   Core, universal exclusion patterns that apply to most projects.
+#   Append these to your existing .gitignore file to ensure common
+#   build artifacts, dependencies, and sensitive files are excluded.
+#
+# USAGE:
+#   1. Append contents of this file to your .gitignore
+#   2. Or use as reference for patterns to add
+#   3. Bootstrap scripts can merge this automatically
+#
+# BOOTSTRAP INTEGRATION:
+#   Bootstrap scripts append these patterns based on bootstrap.conf:
+#   - ENABLE_PYTHON -> Include Python exclusions
+#   - Base patterns always included
+#   After setup, these patterns are part of your .gitignore.
+#
+# ==============================================================================
+
+# ==============================================================================
+# 1. DEPENDENCIES & BUILD OUTPUT
+# ==============================================================================
+
+# Node.js dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Next.js
+.next/
+.tsbuildinfo
+
+# ==============================================================================
+# 2. SECRETS & ENVIRONMENT (CRITICAL)
+# ==============================================================================
+
+# Environment files (contain secrets!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==============================================================================
+# 3. LOGS, CACHE & TEMP FILES
+# ==============================================================================
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Temp files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# pnpm
+.pnpm-store/
+.pnpm-debug/
+
+# ==============================================================================
+# 4. PYTHON (if enabled)
+# ==============================================================================
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Type checker cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# ==============================================================================
+# 5. IDE & EDITOR
+# ==============================================================================
+
+# VS Code (keep .vscode/settings.json, exclude user-specific)
+.vscode/storage/
+.vscode/.history/
+.vscode/*.log
+
+# JetBrains IDEs
+.idea/
+
+# Vim
+*.swp
+*.swo
+
+# ==============================================================================
+# 6. OS FILES
+# ==============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ==============================================================================
+# 7. TESTING & COVERAGE
+# ==============================================================================
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+# ==============================================================================
+# 8. AI & TOOLING CACHES
+# ==============================================================================
+
+# Cursor
+.cursor/cache/
+
+# Claude
+.claude/cache/
+
+# ==============================================================================
+# END OF GITIGNORE APPEND
+# ==============================================================================

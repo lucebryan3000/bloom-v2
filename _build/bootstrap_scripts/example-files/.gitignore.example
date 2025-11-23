@@ -1,0 +1,180 @@
+# ------------------------------------------------------------------------------
+# .gitignore Template
+# Next.js 15 / pnpm / TypeScript / PostgreSQL + Drizzle ORM
+# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 1. DEPENDENCIES & PACKAGE MANAGEMENT (pnpm v9)
+# ==============================================================================
+
+# Node modules (locked in pnpm-lock.yaml)
+node_modules/
+.pnpm-store/
+.pnp
+.pnp.js
+
+# Alternative package managers (if present during migration)
+package-lock.json
+yarn.lock
+npm-shrinkwrap.json
+
+# Bundled dependency tarballs
+*.tgz
+
+# ==============================================================================
+# 2. BUILD & RUNTIME ARTIFACTS (Next.js 15 / TypeScript)
+# ==============================================================================
+
+# Next.js build output
+.next/
+out/
+.vercel/
+
+# TypeScript build artifacts
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# Generic build outputs
+build/
+dist/
+
+# ==============================================================================
+# 3. SECRETS & ENVIRONMENT VARIABLES (CRITICAL)
+# ==============================================================================
+
+# Local environment files - NEVER commit secrets!
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# SSL/TLS certificates
+*.pem
+*.key
+*.crt
+*.cert
+
+# Sensitive configuration
+secrets.json
+credentials.json
+
+# ==============================================================================
+# 4. DATABASE & PERSISTENCE (PostgreSQL + Drizzle ORM)
+# ==============================================================================
+
+# Docker Postgres volumes (local data)
+postgres_data/
+db_data/
+postgres_logs/
+
+# Drizzle ORM artifacts
+drizzle/
+.drizzle/
+drizzle-kit.lock.json
+
+# Database dumps (may contain user data)
+*.sql
+*.sql.gz
+*.dump
+
+# Migration backups (generated migrations ARE committed)
+migrations_backup/
+
+# NOTE: src/db/migrations/ SQL files are typically COMMITTED
+# as they define the source of truth for schema changes.
+
+# ==============================================================================
+# 5. TESTING & COVERAGE (Vitest + Playwright)
+# ==============================================================================
+
+# Coverage reports (Vitest)
+coverage/
+.nyc_output/
+*.lcov
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# ==============================================================================
+# 6. LOGS & TEMP FILES (Pino / Runtime)
+# ==============================================================================
+
+# Application logs
+logs/
+*.log
+
+# Debug logs (package managers)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Temp files
+*.tmp
+*.temp
+.cache
+.state
+
+# Bootstrap state (runtime only)
+.bootstrap_state
+
+# ==============================================================================
+# 7. DOCKER & CONTAINERIZATION
+# ==============================================================================
+
+# Docker compose local overrides
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ==============================================================================
+# 8. IDE & EDITOR FILES
+# ==============================================================================
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+.vim/
+*.vim
+*.swp
+*.swo
+
+# Emacs
+*~
+\#*#
+.\#*
+
+# ==============================================================================
+# 9. OS FILES
+# ==============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+*.lnk
+
+# ------------------------------------------------------------------------------
+# END .gitignore
+# ------------------------------------------------------------------------------
