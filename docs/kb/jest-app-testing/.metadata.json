@@ -1,0 +1,12 @@
+{
+  "command": "kb-codex jest app testing",
+  "generated": "2025-11-10T07:42:55Z",
+  "sources": [
+    "https://jestjs.io/docs/getting-started",
+    "https://testing-library.com/docs/react-testing-library/intro",
+    "https://nextjs.org/docs/pages/building-your-application/testing"
+  ],
+  "quality_score": "5/10",
+  "total_lines": 1197,
+  "status": "draft"
+}

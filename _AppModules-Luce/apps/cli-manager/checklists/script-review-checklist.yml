@@ -1,0 +1,227 @@
+---
+name: script-review-checklist
+description: Comprehensive script review checklist (config + standards + security)
+version: 1.0.0
+created: 2025-10-27
+---
+
+# Bash Script Review Checklist
+
+Comprehensive checklist for reviewing Axon Menu bash scripts.
+
+## 1. Configuration Management (🔴 CRITICAL)
+
+### Config Sourcing
+- [ ] Sources axon-menu.conf correctly
+- [ ] Sourcing happens after `set -euo pipefail`
+- [ ] Uses standard pattern (SCRIPT_DIR → PROJECT_ROOT → source)
+
+### Path Variables
+- [ ] No hard-coded paths (`/Users/`, `/tmp/axon-menu`, etc.)
+- [ ] Uses `${REPORTS_DIR}` not `${SCRIPT_DIR}/reports`
+- [ ] Uses `${LOG_DIR}` for logs
+- [ ] Uses `${TEMP_DIR}` for temporary files
+- [ ] Uses `${LIB_DIR}` for library references
+
+### Variable Management
+- [ ] No redefinition of config variables
+- [ ] Local variables properly scoped with `local`
+- [ ] Checked axon-menu.conf for existing variables before creating new ones
+
+## 2. Script Standards (🟡 HIGH)
+
+### Header & Metadata
+- [ ] Proper shebang: `#!/usr/bin/env bash`
+- [ ] Header comment with description, version, date
+- [ ] AXON metadata for discovery (if applicable)
+
+### Error Handling
+- [ ] `set -euo pipefail` present at top
+- [ ] Error messages are clear and actionable
+- [ ] Functions return proper exit codes (0=success, 1=error)
+- [ ] Trap handlers for cleanup if needed
+
+### Code Quality
+- [ ] All variables quoted: `"${variable}"`
+- [ ] 4-space indentation (no tabs)
+- [ ] Functions use snake_case naming
+- [ ] Global variables use UPPER_CASE
+- [ ] Local variables use lower_case
+
+### Comments & Documentation
+- [ ] Complex logic is commented
+- [ ] Functions have purpose documented
+- [ ] Non-obvious decisions explained
+
+## 3. Functionality (🟠 MEDIUM)
+
+### Logic
+- [ ] Script does what it's supposed to do
+- [ ] Edge cases handled
+- [ ] Input validation present
+- [ ] No unnecessary complexity
+
+### Dependencies
+- [ ] Required commands checked before use
+- [ ] Graceful degradation if optional tools missing
+- [ ] Dependencies documented in header
+
+### Performance
+- [ ] No unnecessary loops or operations
+- [ ] Efficient use of external commands
+- [ ] Avoids spawning excessive subshells
+
+## 4. Security (🔴 CRITICAL)
+
+### Input Validation
+- [ ] All external input validated
+- [ ] No eval of user input
+- [ ] No unquoted variables in dangerous contexts
+
+### File Operations
+- [ ] Temp files created securely
+- [ ] File permissions set appropriately
+- [ ] No race conditions in file creation
+
+### Privilege
+- [ ] Sudo usage justified and minimal
+- [ ] Runs with least privilege necessary
+- [ ] Privilege escalation properly handled
+
+## 5. Testing & Validation
+
+### Syntax
+- [ ] `bash -n script.sh` passes
+- [ ] No shellcheck warnings (or explained)
+
+### Manual Testing
+- [ ] Script tested in expected environment
+- [ ] Error conditions tested
+- [ ] Works on both Intel and Apple Silicon (if applicable)
+
+### Automated Tests
+- [ ] Unit tests present (bats) if complex logic
+- [ ] Integration tests if affects other scripts
+
+## 6. Configuration Compliance Check
+
+Run validation:
+```bash
+./scripts/test/validate_config_usage.sh
+```
+
+Expected: **ZERO** violations
+
+## Review Process
+
+### Step 1: Initial Scan
+```bash
+# Syntax
+bash -n script.sh
+
+# Config check
+grep "source.*axon-menu.conf" script.sh
+
+# Hard-coded paths
+grep -E "/Users/|/tmp/axon-menu" script.sh
+```
+
+### Step 2: Detailed Review
+- Read script line by line
+- Check against all checklist items
+- Note issues with line numbers
+
+### Step 3: Generate Feedback
+- List all issues found
+- Assign severity (CRITICAL/HIGH/MEDIUM/LOW)
+- Provide specific fixes for each
+- Include before/after examples
+
+## Common Issues to Look For
+
+### Configuration
+- ❌ Missing config source
+- ❌ Hard-coded `/tmp/axon-menu`
+- ❌ Relative paths to libraries
+- ❌ Redefined config variables
+
+### Standards
+- ❌ Missing `set -euo pipefail`
+- ❌ Unquoted variables
+- ❌ Tabs instead of spaces
+- ❌ Missing header
+
+### Security
+- ❌ Unsafe temp file creation
+- ❌ Unvalidated user input
+- ❌ Unnecessary sudo usage
+- ❌ Exposed secrets
+
+### Functionality
+- ❌ No error handling
+- ❌ Missing input validation
+- ❌ Poor error messages
+- ❌ Overly complex logic
+
+## Review Output Template
+
+```markdown
+# Script Review: path/to/script.sh
+
+## Overall Assessment
+[PASS / FAIL / NEEDS WORK]
+
+## Issues Found
+
+### Critical (Must Fix)
+1. [Line N] Missing config source
+2. [Line M] Hard-coded path
+
+### High Priority (Should Fix)
+1. [Line X] Unquoted variable
+2. [Line Y] Missing error handling
+
+### Medium Priority (Consider Fixing)
+1. [Line A] Could simplify logic
+2. [Line B] Add more comments
+
+### Low Priority (Nice to Have)
+1. [Line P] Consider refactoring
+2. [Line Q] Could use better variable name
+
+## Recommendations
+1. Add config sourcing after set -euo pipefail
+2. Replace hard-coded paths with config variables
+3. Add quotes around all variable references
+
+## Compliments
+- Good error handling structure
+- Clear function names
+- Well-organized logic
+
+## Next Steps
+1. Fix critical issues
+2. Address high priority items
+3. Re-submit for review
+```
+
+## Success Criteria
+
+Script is ready to merge when:
+- ✅ ALL critical issues resolved
+- ✅ ALL high priority issues resolved
+- ✅ Syntax validation passes
+- ✅ Configuration compliance: 0 violations
+- ✅ Security concerns addressed
+- ✅ Functionality verified
+
+## Notes
+
+- Use this checklist for all script reviews
+- Document reasons if skipping any items
+- When in doubt, be conservative (ask for changes)
+- Praise good patterns as well as noting issues
+
+---
+
+**Remember:** Quality over speed. Better to catch issues in review than in production.

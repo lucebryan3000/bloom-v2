@@ -1,0 +1,277 @@
+---
+name: category-config-review
+version: 2025-10-29
+description: >-
+  Comprehensive review and validation of .category.conf files for dynamic menu system.
+  Ensures category metadata accuracy, naming consistency, and proper integration with
+  the category discovery system.
+
+purpose: |
+  Review .category.conf files for:
+  - Naming consistency and clarity
+  - Accurate descriptions matching directory content
+  - Proper PRIMARY_CATEGORY grouping
+  - Metadata completeness and accuracy
+  - Integration with category_definitions.sh
+  - Preview pane correctness
+
+when_to_use:
+  - "Dynamic menu displaying incorrect/confusing category names"
+  - "Category counts showing as 0 or unexpected numbers"
+  - "Preview pane showing inaccurate or generic descriptions"
+  - "New category added and needs validation"
+  - "Category reorganization or directory restructure"
+  - "User reports confusing menu navigation"
+
+workflow:
+  discovery:
+    - action: "Find all .category.conf files"
+      command: "find scripts/ -maxdepth 2 -name '.category.conf' -type f"
+
+    - action: "Read target category config"
+      focus:
+        - "CATEGORY_NAME (display name)"
+        - "PRIMARY_CATEGORY (grouping)"
+        - "CATEGORY_DESCRIPTION (preview pane)"
+        - "CATEGORY_ICON (display icon)"
+        - "CATEGORY_ORDER (sort order)"
+        - "CATEGORY_ENABLED (active status)"
+        - "CATEGORY_DETAILS (comprehensive info)"
+
+  validation:
+    naming_consistency:
+      - check: "CATEGORY_NAME matches directory purpose"
+        examples:
+          good:
+            - "scripts/cli-tools/ → 'Modern CLI Tools'"
+            - "scripts/gui-apps/ → 'macOS GUI & System'"
+            - "scripts/network/ → 'Network & Connectivity'"
+          bad:
+            - "scripts/cli-tools/ → 'OS: Linux'"
+            - "scripts/gui-apps/ → 'OS: MacOS'"
+            - "scripts/security/ → 'Security'"  # Too generic
+
+      - check: "No technical prefixes (OS:, PHASE:, etc.)"
+        rationale: "Prefixes are confusing in menu display"
+
+      - check: "Name is descriptive (3-8 words)"
+        examples:
+          good:
+            - "Modern CLI Tools"
+            - "macOS GUI & System"
+            - "Windows PowerShell"
+          bad:
+            - "CLI"
+            - "Tools"
+            - "Linux and Unix command-line utilities and system tools"
+
+    description_accuracy:
+      - check: "CATEGORY_DESCRIPTION matches actual directory content"
+        steps:
+          - "List subdirectories: ls -la scripts/<category>/"
+          - "Compare description to actual content"
+          - "Identify outdated references"
+
+      - check: "Description is comprehensive (2-4 sentences)"
+        must_include:
+          - "Primary purpose of category"
+          - "Key features/capabilities"
+          - "Major subcategories (if applicable)"
+          - "Requirements/prerequisites (if any)"
+
+      - check: "CATEGORY_DETAILS is current and accurate"
+        validation:
+          - "Check if subdirectories mentioned actually exist"
+          - "Verify utility counts if provided"
+          - "Update outdated references"
+
+    primary_category:
+      - check: "PRIMARY_CATEGORY is appropriate"
+        valid_groups:
+          - "System & Operations"  # System maintenance, config, orchestration
+          - "Development & Applications"  # Dev tools, IDEs, CLI tools
+          - "Network & Media"  # Network tools, media processing
+
+      - check: "Category is in correct group"
+        guidelines:
+          system_operations:
+            - "System maintenance and health"
+            - "System configuration"
+            - "Package management"
+            - "GUI system tools"
+            - "Project orchestration"
+          development:
+            - "Development tools and IDEs"
+            - "Version control"
+            - "CLI utilities"
+            - "PowerShell scripts"
+            - "Cloud platforms"
+          network_media:
+            - "Network connectivity"
+            - "Media processing"
+            - "Communication tools"
+
+    metadata_completeness:
+      required_fields:
+        - "CATEGORY_NAME"
+        - "PRIMARY_CATEGORY"
+        - "CATEGORY_DESCRIPTION"
+        - "CATEGORY_ICON"
+        - "CATEGORY_ORDER"
+        - "CATEGORY_ENABLED"
+
+      optional_but_recommended:
+        - "CATEGORY_DETAILS"  # Comprehensive information for preview
+        - "CATEGORY_TAGS"  # Search keywords
+
+  fix_patterns:
+    pattern_1_rename_confusing_prefix:
+      problem: 'CATEGORY_NAME="OS: Linux"'
+      fix: 'CATEGORY_NAME="Modern CLI Tools"'
+      rationale: "Descriptive of actual content, no technical prefix"
+
+    pattern_2_update_description:
+      problem: 'CATEGORY_DESCRIPTION="Linux and Unix utilities..."'
+      fix: |
+        CATEGORY_DESCRIPTION="Modern command-line tools: fd, rg, bat, fzf, eza, delta.
+        Rust-powered replacements for traditional Unix commands with enhanced features."
+      rationale: "Accurate description of actual directory content"
+
+    pattern_3_fix_primary_category:
+      problem: |
+        # gui-apps directory
+        PRIMARY_CATEGORY="Development & Applications"
+      fix: |
+        # gui-apps directory
+        PRIMARY_CATEGORY="System & Operations"
+      rationale: "GUI system tools belong in System & Operations"
+
+    pattern_4_update_outdated_details:
+      problem: |
+        CATEGORY_DETAILS="
+        📱 GUI Applications (scripts/gui-apps/*):
+        ⚙️ System Configuration (scripts/gui-apps/system-configuration/): 47 scripts
+        🤖 Automation & Workflows (scripts/gui-apps/automation/): 36 scripts
+        "
+      fix: |
+        CATEGORY_DETAILS="
+        macOS GUI & System Tool Categories:
+
+        📱 Communication (communication/):
+          • Launch/quit: Mail, Messages, Slack, Teams
+
+        🎬 Media (media/):
+          • Launch/quit: Music, TV, Photos, QuickTime
+
+        ⚙️ System Configuration (system-configuration/):
+          • Dock, Finder, Mission Control settings
+        "
+      rationale: "Updated to reflect current subdirectory structure"
+
+  testing:
+    syntax_validation:
+      - command: "source scripts/<category>/.category.conf"
+        expected: "No syntax errors, variables load correctly"
+
+    category_discovery:
+      - command: |
+          find scripts -maxdepth 2 -name ".category.conf" -exec grep -H "^CATEGORY_NAME=" {} \;
+        expected: "All category names display correctly"
+
+    index_rebuild:
+      - action: "Delete index to force rebuild"
+        command: "rm -f ~/.cache/axon-menu/script-index.txt"
+        rationale: "Category changes require index regeneration"
+
+    menu_display:
+      - action: "Launch menu and verify"
+        checks:
+          - "Category name displays clearly"
+          - "Category count is accurate"
+          - "Preview pane shows correct metadata"
+          - "No 'OS:' or other technical prefixes"
+          - "Categories are in correct PRIMARY_CATEGORY group"
+
+  reporting:
+    generate_report:
+      include:
+        - "Issues found (naming, description, grouping)"
+        - "Fixes applied (before/after examples)"
+        - "Validation results (syntax, discovery, display)"
+        - "Impact assessment (user experience improvement)"
+        - "Files modified (paths and line numbers)"
+
+      format: "Markdown with clear sections and examples"
+      location: "docs/reports/CATEGORY_FIX_YYYY-MM-DD.md"
+
+common_issues:
+  - issue: "Category name with technical prefix (OS:, PHASE:)"
+    impact: "Confusing menu display, inconsistent naming"
+    fix: "Rename to descriptive, functional name"
+    severity: "HIGH"
+
+  - issue: "Description doesn't match directory content"
+    impact: "Misleading preview pane, user confusion"
+    fix: "Update description after reviewing directory"
+    severity: "MEDIUM"
+
+  - issue: "Wrong PRIMARY_CATEGORY grouping"
+    impact: "Category appears in wrong menu section"
+    fix: "Move to appropriate group (System/Dev/Network)"
+    severity: "MEDIUM"
+
+  - issue: "Outdated CATEGORY_DETAILS references"
+    impact: "Preview pane shows non-existent subdirectories"
+    fix: "Update to reflect current structure"
+    severity: "LOW"
+
+  - issue: "Missing or generic CATEGORY_DESCRIPTION"
+    impact: "Preview pane unhelpful, poor user experience"
+    fix: "Write comprehensive 2-4 sentence description"
+    severity: "MEDIUM"
+
+acceptance_criteria:
+  must_pass:
+    - "Syntax validation successful"
+    - "Category name is descriptive and clear"
+    - "No technical prefixes in display name"
+    - "Description accurately reflects content"
+    - "PRIMARY_CATEGORY is appropriate"
+    - "All required fields present"
+    - "Menu displays correctly"
+    - "Preview pane shows accurate info"
+    - "Category count is correct"
+
+invocation_examples:
+  - "@cli-manager review .category.conf files"
+  - "@cli-manager fix category naming in scripts/cli-tools/"
+  - "@cli-manager validate category configuration"
+  - "@cli-manager audit dynamic menu categories"
+
+related_files:
+  - "scripts/lib/category_definitions.sh (discovery system)"
+  - "scripts/lib/fuzzy_menu_hierarchical.sh (display)"
+  - "scripts/lib/generate_category_preview.sh (preview pane)"
+  - "~/.cache/axon-menu/script-index.txt (category index)"
+  - "docs/reports/CATEGORY_FIX_*.md (fix reports)"
+
+notes: |
+  - Category names are displayed literally from CATEGORY_NAME field
+  - No parsing or transformation occurs in discovery system
+  - Index must be rebuilt after category changes
+  - Preview pane pulls from CATEGORY_DESCRIPTION and CATEGORY_DETAILS
+  - PRIMARY_CATEGORY determines which menu section category appears in
+  - Category discovery scans for .category.conf files up to 2 levels deep
+
+references:
+  - "docs/reports/CATEGORY_FIX_2025-10-29.md (comprehensive fix example)"
+  - "CLAUDE.md (category system overview)"
+  - "docs/DYNAMIC_MENU_MANAGEMENT_PLAYBOOK.md (if exists)"
+
+version_history:
+  - version: "1.0.0"
+    date: "2025-10-29"
+    changes:
+      - "Initial playbook created based on category fix findings"
+      - "Documented common issues and fix patterns"
+      - "Added comprehensive validation workflow"

@@ -1,0 +1,964 @@
+---
+id: playwright-bloom-specific-patterns
+topic: playwright
+file_role: patterns
+profile: full
+difficulty_level: intermediate
+kb_version: 3.1
+prerequisites: ['javascript', 'testing-basics']
+related_topics: ['testing', 'e2e', 'automation']
+embedding_keywords: [playwright, patterns, examples, integration]
+last_reviewed: 2025-11-13
+---
+
+# Playwright Testing: Bloom Project-Specific Patterns
+
+**For**: Appmelia Bloom (Next.js 14 + Prisma + SQLite + Redis)
+**Last Updated**: November 8, 2025
+
+## Overview
+
+This guide covers patterns specific to testing the Bloom application, including:
+- Workshop session management
+- Melissa AI chat interactions
+- ROI calculation flows
+- Database isolation strategies
+- Performance monitoring
+
+---
+
+## Table of Contents
+
+1. [Testing Workshop Sessions](#testing-workshop-sessions)
+2. [Testing Melissa Chat](#testing-melissa-chat)
+3. [Testing ROI Calculations](#testing-roi-calculations)
+4. [Database Test Isolation](#database-test-isolation)
+5. [Session State Management](#session-state-management)
+6. [API Mocking Strategies](#api-mocking-strategies)
+7. [Performance Testing](#performance-testing)
+8. [Common Bloom Test Patterns](#common-bloom-test-patterns)
+
+---
+
+## Testing Workshop Sessions
+
+### Session Creation Test
+
+```typescript
+// e2e/specs/integration/session-creation.spec.ts
+import { test, expect } from '@playwright/test';
+import { WorkshopPage } from '../../helpers/page-objects/WorkshopPage';
+
+test.describe('Workshop Session Creation', () => {
+  test('should create new session when accessing workshop', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Get session ID from page
+    const sessionId = await demo.getSessionId();
+    expect(sessionId).toBeTruthy();
+
+    // Session ID should follow pattern: WS-YYYYMMDD-NNN or cuid format
+    expect(sessionId).toMatch(/^(WS-\d{8}-\d+|[a-z0-9]{20,})$/i);
+  });
+
+  test('should load existing session', async ({ page, context }) => {
+    // Create session first
+    await page.goto('/workshop');
+    const sessionId = await page.locator('[data-testid="session-id"]').textContent();
+
+    // Clear storage to simulate new tab
+    await context.clearCookies();
+
+    // Navigate to same session
+    await page.goto(`/workshop?session=${sessionId}`);
+
+    // Verify same session loaded
+    const loadedId = await page.locator('[data-testid="session-id"]').textContent();
+    expect(loadedId).toBe(sessionId);
+  });
+
+  test('should timeout session after 15 minutes', async ({ page }) => {
+    // Note: This test requires mocking time or waiting actual 15 minutes
+    // In practice, use vi.useFakeTimers() or mock the timeout
+
+    await page.goto('/workshop');
+    const sessionId = await page.locator('[data-testid="session-id"]').textContent();
+
+    // Mock time progression
+    await page.evaluate(() => {
+      // Advance system clock by 16 minutes
+      const futureTime = Date.now() + (16 * 60 * 1000);
+      global.testTime = futureTime;
+    });
+
+    // Try to send message (should fail if session expired)
+    const response = await page.request.post('/api/melissa/chat', {
+      data: {
+        sessionId,
+        message: 'Test message',
+      },
+    });
+
+    // Should return 410 Gone or similar
+    expect([410, 401, 404]).toContain(response.status());
+  });
+});
+```
+
+### Session Resume Test
+
+```typescript
+// e2e/specs/integration/session-resume.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Session Resume', () => {
+  test('should display session history on resume', async ({ page, context }) => {
+    // 1. Create session and send message
+    await page.goto('/workshop');
+    const sessionId = await page.locator('[data-testid="session-id"]').textContent();
+
+    // Send test message
+    await page.locator('textarea').fill('Revenue: $1M annually');
+    await page.getByRole('button', { name: 'Send' }).click();
+
+    // Wait for response
+    await page.waitForTimeout(1000);
+
+    // Get message count
+    const messageCount1 = await page.locator('[data-testid="messages"] > div').count();
+    expect(messageCount1).toBeGreaterThan(0);
+
+    // 2. Close and reopen session
+    await context.clearCookies();
+    await page.reload();
+
+    // Click "Resume Session"
+    await page.getByRole('button', { name: 'Resume Session' }).click();
+    await page.fill('input[placeholder="Session ID"]', sessionId);
+    await page.getByRole('button', { name: 'Load' }).click();
+
+    // 3. Verify history loaded
+    await expect(page.locator('[data-testid="messages"]')).toBeVisible();
+    const messageCount2 = await page.locator('[data-testid="messages"] > div').count();
+
+    // Should have same or more messages
+    expect(messageCount2).toBeGreaterThanOrEqual(messageCount1);
+  });
+});
+```
+
+---
+
+## Testing Melissa Chat
+
+### Basic Chat Test
+
+```typescript
+// e2e/specs/smoke/melissa-chat.spec.ts
+import { test, expect } from '@playwright/test';
+import { WorkshopPage } from '../../helpers/page-objects/WorkshopPage';
+
+test.describe('Melissa Chat Interface', () => {
+  test('should send message and receive response', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Send message
+    const message = 'What business metrics should we focus on?';
+    await demo.sendMessage(message);
+
+    // Wait for response (with timeout)
+    const responseLocator = page.locator('[data-testid="melissa-response"]').first();
+    await expect(responseLocator).toBeVisible({ timeout: 10000 });
+
+    // Verify response contains expected content
+    const responseText = await responseLocator.textContent();
+    expect(responseText).toBeTruthy();
+    expect(responseText.length).toBeGreaterThan(20); // Not just empty
+  });
+
+  test('should display loading indicator during response', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Intercept API to delay response
+    let resolveRequest: () => void;
+    const requestPromise = new Promise<void>((resolve) => {
+      resolveRequest = resolve;
+    });
+
+    await page.route('**/api/melissa/chat', async (route) => {
+      await requestPromise; // Wait before responding
+      route.continue();
+    });
+
+    // Send message
+    await demo.sendMessage('Test message');
+
+    // Verify loading indicator appears
+    const loader = page.locator('[data-testid="loading-spinner"]');
+    await expect(loader).toBeVisible();
+
+    // Resolve request
+    resolveRequest!();
+
+    // Verify loader disappears
+    await expect(loader).not.toBeVisible();
+  });
+
+  test('should format AI response with proper markdown', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Mock response with markdown
+    await page.route('**/api/melissa/chat', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          response: `## Key Metrics\n\n- **Revenue**: $1M\n- **Growth**: 15%`,
+        }),
+      });
+    });
+
+    await demo.sendMessage('List key metrics');
+
+    // Verify markdown is rendered
+    const heading = page.locator('h2:has-text("Key Metrics")');
+    await expect(heading).toBeVisible();
+
+    const listItems = page.locator('li');
+    await expect(listItems).toHaveCount(2);
+  });
+
+  test('should handle streaming responses', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Mock streaming response
+    await page.route('**/api/melissa/chat', async (route) => {
+      const response = await route.fetch();
+      const stream = await response.body();
+
+      // Send chunked response
+      const controller = new TextController();
+      controller.enqueue('Analyzing your ');
+      controller.enqueue('business metrics');
+      controller.enqueue('...');
+
+      route.fulfill({
+        status: 200,
+        body: stream,
+      });
+    });
+
+    await demo.sendMessage('Analyze business');
+
+    // Verify complete response appears
+    const response = page.locator('[data-testid="melissa-response"]').first();
+    await expect(response).toContainText('Analyzing your business metrics');
+  });
+});
+```
+
+### Chat Error Handling Test
+
+```typescript
+// e2e/specs/integration/melissa-errors.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Melissa Error Handling', () => {
+  test('should handle API errors gracefully', async ({ page }) => {
+    await page.goto('/workshop');
+
+    // Mock API error
+    await page.route('**/api/melissa/chat', (route) => {
+      route.abort('failed');
+    });
+
+    // Send message
+    await page.locator('textarea').fill('Test message');
+    await page.getByRole('button', { name: 'Send' }).click();
+
+    // Verify error message appears
+    const errorMessage = page.locator('[data-testid="error-message"]');
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toContainText('Failed to get response');
+  });
+
+  test('should handle timeout gracefully', async ({ page }) => {
+    await page.goto('/workshop');
+
+    // Mock slow response (timeout)
+    await page.route('**/api/melissa/chat', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 35000)); // > 30s timeout
+      route.continue();
+    });
+
+    await page.locator('textarea').fill('Test message');
+    await page.getByRole('button', { name: 'Send' }).click();
+
+    // Should show timeout error
+    const errorMessage = page.locator('[data-testid="error-message"]');
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toContainText('Request timeout');
+  });
+
+  test('should retry on transient errors', async ({ page }) => {
+    await page.goto('/workshop');
+
+    let attempts = 0;
+    await page.route('**/api/melissa/chat', (route) => {
+      attempts++;
+
+      if (attempts === 1) {
+        // First attempt fails
+        route.abort('failed');
+      } else {
+        // Second attempt succeeds
+        route.fulfill({
+          status: 200,
+          body: JSON.stringify({ response: 'Success after retry' }),
+        });
+      }
+    });
+
+    await page.locator('textarea').fill('Test message');
+    await page.getByRole('button', { name: 'Send' }).click();
+
+    // Should eventually show success
+    const response = page.locator('[data-testid="melissa-response"]');
+    await expect(response).toContainText('Success after retry');
+
+    expect(attempts).toBeGreaterThan(1);
+  });
+});
+```
+
+---
+
+## Testing ROI Calculations
+
+### ROI Report Generation Test
+
+```typescript
+// e2e/specs/integration/roi-calculation.spec.ts
+import { test, expect } from '@playwright/test';
+import { WorkshopPage } from '../../helpers/page-objects/WorkshopPage';
+
+test.describe('ROI Calculation & Reporting', () => {
+  test('should calculate NPV correctly', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Mock Melissa response with calculation
+    await page.route('**/api/melissa/chat', (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({
+          response: 'Your NPV is $800,000 with a discount rate of 10%.',
+          metrics: {
+            npv: 800000,
+            discountRate: 0.10,
+          },
+        }),
+      });
+    });
+
+    // Send business metrics
+    await demo.sendMessage('Annual revenue: $1M, Annual cost: $200K, 5-year horizon');
+
+    // Verify NPV displayed in report
+    const report = page.locator('[data-testid="roi-report"]');
+    await expect(report).toBeVisible();
+    await expect(report).toContainText('$800,000');
+    await expect(report).toContainText('NPV');
+  });
+
+  test('should generate confidence score', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Mock response with confidence metrics
+    await page.route('**/api/melissa/chat', (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({
+          response: 'Analysis complete',
+          confidence: {
+            score: 0.78,
+            factors: {
+              completeness: 0.80,
+              dataQuality: 0.85,
+              historicalAccuracy: 0.70,
+              industryComparison: 0.75,
+            },
+          },
+        }),
+      });
+    });
+
+    await demo.sendMessage('Complete workshop');
+
+    // Verify confidence score displayed
+    const confidenceScore = page.locator('[data-testid="confidence-score"]');
+    await expect(confidenceScore).toBeVisible();
+    await expect(confidenceScore).toContainText('78%');
+  });
+
+  test('should show sensitivity analysis', async ({ page }) => {
+    const demo = new WorkshopPage(page);
+    await demo.goto();
+
+    // Navigate to sensitivity analysis section
+    await page.getByRole('button', { name: 'Sensitivity Analysis' }).click();
+
+    // Verify variables can be adjusted
+    const revenueSlider = page.locator('[data-testid="revenue-slider"]');
+    await expect(revenueSlider).toBeVisible();
+
+    // Adjust slider
+    await revenueSlider.drag(revenueSlider, { x: 100 });
+
+    // Verify NPV updates
+    const npvValue = page.locator('[data-testid="npv-value"]');
+    const initialNPV = await npvValue.textContent();
+
+    await revenueSlider.drag(revenueSlider, { x: 200 });
+
+    const updatedNPV = await npvValue.textContent();
+    expect(updatedNPV).not.toBe(initialNPV);
+  });
+});
+```
+
+---
+
+## Database Test Isolation
+
+### Problem: SQLite Lock Contention
+
+Your tests hang because multiple test workers write to same SQLite file simultaneously.
+
+### Solution 1: Single Worker (Recommended for DB Tests)
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  // For database tests: Use single worker
+  workers: 1,
+
+  // Or selectively:
+  projects: [
+    {
+      name: 'database-tests',
+      testMatch: '**/database/**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'ui-tests',
+      testMatch: '**/ui/**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+      workers: 4, // Can parallelize UI tests
+    },
+  ],
+});
+```
+
+### Solution 2: Per-Worker Test Databases
+
+```typescript
+// e2e/helpers/test-database.ts
+import { test as baseTest } from '@playwright/test';
+import { PrismaClient } from '@prisma/client';
+
+export const test = baseTest.extend({
+  prismaClient: async ({ }, use, info) => {
+    // Each worker gets its own database file
+    const dbIndex = info.parallelIndex;
+    const dbPath = `./prisma/bloom-test-worker-${dbIndex}.db`;
+
+    const prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: `file:${dbPath}?mode=wal`,
+        },
+      },
+    });
+
+    // Initialize test data
+    await initTestDatabase(prisma);
+    await seedTestDatabase(prisma);
+
+    await use(prisma);
+
+    // Cleanup
+    await prisma.$disconnect();
+    await cleanupDatabase(dbPath);
+  },
+});
+
+// Usage in tests
+import { test } from './helpers/test-database';
+
+test('create session', async ({ page, prismaClient }) => {
+  // This test gets its own database
+  const session = await prismaClient.session.create({
+    data: { /* ... */ },
+  });
+
+  expect(session).toBeTruthy();
+});
+```
+
+### Solution 3: Mock API Instead of Database
+
+```typescript
+// e2e/specs/integration/session-mocked.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Session (with mocked API)', () => {
+  test('should create session with mocked API', async ({ page }) => {
+    // Mock the entire session API
+    await page.route('**/api/sessions', (route) => {
+      route.fulfill({
+        status: 201,
+        body: JSON.stringify({
+          id: 'test-session-123',
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        }),
+      });
+    });
+
+    await page.goto('/workshop');
+
+    // Verify session created
+    const sessionId = await page.locator('[data-testid="session-id"]').textContent();
+    expect(sessionId).toBe('test-session-123');
+  });
+});
+```
+
+---
+
+## Session State Management
+
+### Testing Zustand Store
+
+```typescript
+// e2e/specs/integration/session-state.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Session State Management', () => {
+  test('should persist session data in storage', async ({ page }) => {
+    await page.goto('/workshop');
+
+    // Access store through window object
+    const sessionData = await page.evaluate(() => {
+      return (window as any).useSessionStore.getState();
+    });
+
+    expect(sessionData).toHaveProperty('sessionId');
+    expect(sessionData).toHaveProperty('messages');
+    expect(sessionData).toHaveProperty('metrics');
+  });
+
+  test('should restore state from localStorage', async ({ page, context }) => {
+    // 1. Set session state in localStorage
+    const sessionState = {
+      sessionId: 'test-123',
+      messages: [{ role: 'user', content: 'Test' }],
+      metrics: { revenue: 1000000 },
+    };
+
+    await page.goto('/workshop', {
+      waitUntil: 'load',
+    });
+
+    // Store state
+    await page.evaluate((state) => {
+      localStorage.setItem('session-store', JSON.stringify(state));
+    }, sessionState);
+
+    // 2. Reload page
+    await page.reload();
+
+    // 3. Verify state restored
+    const restoredState = await page.evaluate(() => {
+      const stored = localStorage.getItem('session-store');
+      return stored ? JSON.parse(stored) : null;
+    });
+
+    expect(restoredState.sessionId).toBe('test-123');
+  });
+
+  test('should clear state on logout', async ({ page }) => {
+    await page.goto('/workshop');
+
+    // Set some state
+    await page.evaluate(() => {
+      localStorage.setItem('session-store', JSON.stringify({ sessionId: 'test' }));
+    });
+
+    // Logout
+    await page.click('[data-testid="logout-button"]');
+
+    // Verify state cleared
+    const state = await page.evaluate(() => {
+      return localStorage.getItem('session-store');
+    });
+
+    expect(state).toBeNull();
+  });
+});
+```
+
+---
+
+## API Mocking Strategies
+
+### Mock Network Responses
+
+```typescript
+// e2e/helpers/api-mocks.ts
+import { Page } from '@playwright/test';
+
+export async function mockMelissaResponse(
+  page: Page,
+  response: {
+    text?: string;
+    metrics?: Record<string, any>;
+    confidence?: number;
+  }
+) {
+  await page.route('**/api/melissa/chat', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        response: response.text || 'Response from Melissa',
+        metrics: response.metrics || {},
+        confidence: response.confidence || 0.7,
+      }),
+    });
+  });
+}
+
+export async function mockExportAPI(page: Page) {
+  await page.route('**/api/export/**', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        downloadUrl: '/files/report.pdf',
+      }),
+    });
+  });
+}
+
+// Usage
+import { test, expect } from '@playwright/test';
+import { mockMelissaResponse } from './api-mocks';
+
+test('send message with mocked response', async ({ page }) => {
+  await mockMelissaResponse(page, {
+    text: 'Test response',
+    metrics: { npv: 500000 },
+    confidence: 0.85,
+  });
+
+  await page.goto('/workshop');
+  await page.locator('textarea').fill('Test');
+  await page.getByRole('button', { name: 'Send' }).click();
+
+  await expect(page.locator('[data-testid="melissa-response"]'))
+    .toContainText('Test response');
+});
+```
+
+### Intercept and Modify Requests
+
+```typescript
+// e2e/specs/integration/request-interception.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('should handle API request modifications', async ({ page }) => {
+  // Log all requests
+  page.on('request', (request) => {
+    console.log('>>>', request.method(), request.url());
+  });
+
+  // Abort specific requests
+  await page.route('**/api/analytics/**', (route) => {
+    route.abort();
+  });
+
+  // Modify request headers
+  await page.route('**/api/sessions/**', (route) => {
+    const request = route.request();
+    const headers = {
+      ...request.headers(),
+      'X-Custom-Header': 'test-value',
+    };
+
+    route.continue({ headers });
+  });
+
+  await page.goto('/workshop');
+
+  // Analytics calls should be blocked
+  const requests = [];
+  page.on('request', (req) => {
+    if (req.url().includes('/api/analytics')) {
+      requests.push(req);
+    }
+  });
+
+  // Analytics should not be called
+  await page.waitForTimeout(1000);
+  expect(requests).toHaveLength(0);
+});
+```
+
+---
+
+## Performance Testing
+
+### Page Load Time Test
+
+```typescript
+// e2e/specs/performance/load-time.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Performance Tests', () => {
+  test('should load workshop within 3 seconds', async ({ page }) => {
+    const startTime = performance.now();
+
+    // Navigate and wait for full load
+    await page.goto('/workshop');
+    await page.waitForLoadState('networkidle');
+
+    const loadTime = performance.now() - startTime;
+    const secondsLoaded = loadTime / 1000;
+
+    expect(secondsLoaded).toBeLessThan(3);
+
+    console.log(`✅ Workshop loaded in ${secondsLoaded.toFixed(2)}s`);
+  });
+
+  test('should respond to messages within 5 seconds', async ({ page }) => {
+    await page.goto('/workshop');
+
+    const startTime = performance.now();
+
+    // Send message
+    await page.locator('textarea').fill('Test message');
+    await page.getByRole('button', { name: 'Send' }).click();
+
+    // Wait for response
+    await expect(page.locator('[data-testid="melissa-response"]')).toBeVisible({
+      timeout: 10000,
+    });
+
+    const responseTime = performance.now() - startTime;
+    const secondsToRespond = responseTime / 1000;
+
+    expect(secondsToRespond).toBeLessThan(5);
+
+    console.log(`✅ Got response in ${secondsToRespond.toFixed(2)}s`);
+  });
+
+  test('should export report without memory leak', async ({ page }) => {
+    await page.goto('/workshop');
+
+    // Get initial memory
+    const initialMemory = await page.evaluate(() => {
+      return (performance as any).memory?.usedJSHeapSize || 0;
+    });
+
+    // Perform export operation multiple times
+    for (let i = 0; i < 5; i++) {
+      await page.click('[data-testid="export-button"]');
+      await page.waitForTimeout(500);
+    }
+
+    // Check memory after operations
+    const finalMemory = await page.evaluate(() => {
+      return (performance as any).memory?.usedJSHeapSize || 0;
+    });
+
+    const memoryIncrease = (finalMemory - initialMemory) / 1024 / 1024; // MB
+
+    // Should not grow by more than 50MB
+    expect(memoryIncrease).toBeLessThan(50);
+
+    console.log(`✅ Memory increase: ${memoryIncrease.toFixed(2)}MB`);
+  });
+});
+```
+
+---
+
+## Common Bloom Test Patterns
+
+### Pattern 1: Complete Workshop Flow
+
+```typescript
+// e2e/specs/integration/complete-workshop.spec.ts
+import { test, expect } from '@playwright/test';
+import { WorkshopPage } from '../../helpers/page-objects/WorkshopPage';
+
+test('should complete entire workshop workflow', async ({ page }) => {
+  const demo = new WorkshopPage(page);
+
+  // Step 1: Start workshop
+  await demo.goto();
+  const sessionId = await demo.getSessionId();
+  expect(sessionId).toBeTruthy();
+
+  // Step 2: Answer business questions
+  const questions = [
+    'What is your annual revenue?',
+    'What are your annual operating costs?',
+    'What problems are you trying to solve?',
+  ];
+
+  const answers = [
+    '$1,000,000 annually',
+    '$200,000 annually',
+    'Improve operational efficiency by 20%',
+  ];
+
+  for (let i = 0; i < questions.length; i++) {
+    await demo.sendMessage(questions[i]);
+    await page.waitForTimeout(500);
+
+    // Verify response received
+    const responses = await demo.getMessages();
+    expect(responses.length).toBeGreaterThan(i * 2);
+  }
+
+  // Step 3: View ROI report
+  await page.click('[data-testid="view-report"]');
+  await expect(page.locator('[data-testid="roi-report"]')).toBeVisible();
+
+  // Step 4: Export report
+  const downloadPromise = page.context().waitForEvent('download');
+  await page.click('[data-testid="export-pdf"]');
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toContain('.pdf');
+});
+```
+
+### Pattern 2: Error Recovery
+
+```typescript
+// e2e/specs/resilience/error-recovery.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('should recover from network errors', async ({ page }) => {
+  await page.goto('/workshop');
+
+  let errorCount = 0;
+
+  // Simulate network failures
+  await page.route('**/api/melissa/chat', (route) => {
+    errorCount++;
+
+    if (errorCount <= 2) {
+      // Fail first 2 attempts
+      route.abort('failed');
+    } else {
+      // Succeed on 3rd attempt
+      route.continue();
+    }
+  });
+
+  // Send message
+  await page.locator('textarea').fill('Test recovery');
+  await page.getByRole('button', { name: 'Send' }).click();
+
+  // Should eventually show response
+  await expect(page.locator('[data-testid="melissa-response"]')).toBeVisible({
+    timeout: 30000,
+  });
+
+  expect(errorCount).toBeGreaterThan(2);
+});
+```
+
+---
+
+## Running Bloom-Specific Tests
+
+```bash
+# Run all Bloom tests
+npm run test:e2e
+
+# Run only database tests (single worker)
+npx playwright test --grep @database --workers=1
+
+# Run only integration tests
+npx playwright test --grep @integration
+
+# Run performance tests
+npx playwright test e2e/specs/performance/
+
+# Run with debug output
+DEBUG=pw:api npm run test:e2e -- --grep @critical
+
+# Generate test report
+npm run test:e2e && npm run test:report
+```
+
+---
+
+## Troubleshooting Bloom-Specific Issues
+
+### Issue: Tests hang on database operations
+
+```bash
+# ❌ Problem: All workers write to same SQLite
+# ✅ Solution:
+npx playwright test --workers=1
+
+# Or update playwright.config.ts:
+workers: 1,
+```
+
+### Issue: Session state not persisting
+
+```typescript
+// ❌ Problem: Not waiting for state persistence
+await page.goto('/');  // Too fast
+
+// ✅ Solution: Wait for storage
+await page.goto('/');
+await page.evaluate(() => localStorage.getItem('session-store'));
+```
+
+### Issue: Melissa responses timing out
+
+```typescript
+// ❌ Problem: Timeout too short
+await expect(response).toBeVisible({ timeout: 5000 });
+
+// ✅ Solution: Increase timeout for AI responses
+await expect(response).toBeVisible({ timeout: 15000 });
+```
+
+---
+
+**See Also**:
+- [PLAYWRIGHT-COMPREHENSIVE-GUIDE.md](./PLAYWRIGHT-COMPREHENSIVE-GUIDE.md) - Full Playwright reference
+- [Test Reports](../../_build/test/reports/playwright-html) - Previous test results
+- [Fixtures Documentation](https://playwright.dev/docs/test-fixtures)
+
+---
+
+**Last Updated**: November 8, 2025
+**Status**: Ready for Production

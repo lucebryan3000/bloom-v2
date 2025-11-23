@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Write",
+      "Edit",
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(npm run dev:*)",
+      "Bash(git fetch:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(tree:*)",
+      "Bash(sed:*)",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(mv:*)",
+      "Bash(lsof:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:kill:*)",
+      "Bash(sudo journalctl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: comprehensive system improvements - admin tools, monitoring enhancements, and infrastructure\n\n## Major Changes\n\n### 1. Admin Task System Enhancements\n- Added task execution history tracking (TaskExecution model)\n- Implemented execution retry logic with exponential backoff\n- Added API endpoint for execution history: `/api/admin/tasks/executions`\n- Enhanced task scheduler UI with execution history display\n- Improved task form fields with better validation and Monaco editor\n\n### 2. Monitoring & Observability\n- Enhanced monitoring dashboard with system metrics\n- Added log level filtering and search capabilities\n- Improved health check status display\n- Added context panel toggle improvements\n- Enhanced logging with better categorization and filtering\n\n### 3. API Improvements\n- Fixed Next.js 16 async params pattern in session routes\n- Improved session creation performance and error handling\n- Enhanced Melissa chat endpoint with better error handling\n- Added system metrics endpoint improvements\n- Improved file upload handling and validation\n\n### 4. Configuration Management\n- Added Melissa configuration enhancements\n- Improved quick prompts management\n- Enhanced settings persistence\n- Added Claude ignore configuration for better context management\n\n### 5. Database Schema Updates\n- Added `lastRunAt` field to Task model\n- Added TaskExecution model for execution tracking\n- Improved schema organization and relationships\n\n### 6. Developer Experience\n- Added multiple utility scripts:\n  - `analyze-context.py/sh` - Context analysis tools\n  - `check-status.sh` - System status checking\n  - `start-persistent.sh` - Persistent server management\n  - `test-hung-task.sh` - Task hang detection\n  - `test-long-running.sh` - Long-running task testing\n- Enhanced Makefile with new targets\n- Improved logging pipeline test scripts\n- Added comprehensive investigation documentation\n\n### 7. Documentation\n- Added LOG-INGESTION-INVESTIGATION.md\n- Added persistent server operations guide\n- Improved operational documentation\n\n## Technical Details\n\n**Files Changed**: 24 modified, 8 new files\n**Impact**: 509 additions, 163 deletions\n**Key Areas**: Admin tools, monitoring, API layer, database schema\n\n## Testing Notes\n\n- Task execution retry logic tested with hung tasks\n- Session creation performance verified\n- Monitoring dashboard tested with real-time data\n- Log filtering validated with various log levels\n\n## Breaking Changes\n\nNone - all changes are backward compatible\n\n## Next Steps\n\n1. Test task execution history in production\n2. Monitor system metrics for performance insights\n3. Validate log ingestion improvements\n4. Review task scheduler enhancements with users\nEOF\n)\")",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "outputStyle": "default"
+}

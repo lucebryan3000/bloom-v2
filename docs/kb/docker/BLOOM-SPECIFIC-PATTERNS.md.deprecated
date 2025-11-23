@@ -1,0 +1,123 @@
+---
+id: docker-bloom-specific-patterns
+topic: docker
+file_role: patterns
+profile: full
+difficulty_level: intermediate
+kb_version: 3.1
+prerequisites: ['linux-basics']
+related_topics: ['containers', 'deployment', 'cicd']
+embedding_keywords: [docker, patterns, examples, integration]
+last_reviewed: 2025-11-13
+---
+
+# Bloom-Specific Docker Patterns
+
+Real file paths and workflows from Bloom repositories.
+
+---
+
+## 1. Web App Dockerfile
+
+`apps/roi-app/Dockerfile` uses multi-stage Next.js build with PNPM:
+
+```dockerfile
+FROM node:20 AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+
+FROM node:20 AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm build
+
+FROM gcr.io/distroless/nodejs20
+WORKDIR /app
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+ENV PORT=4000
+CMD ["server.js"]
+```
+
+Referenced by Compose (`docker/compose.dev.yml`).
+
+---
+
+## 2. API Dockerfile
+
+`apps/roi-api/Dockerfile` uses Bun for tests + Node runtime. Multi-stage ensures Prisma client generated only once.
+
+---
+
+## 3. Compose Stack
+
+`docker/compose.dev.yml` defines services:
+- `web`: Next.js
+- `api`: Node/Bun
+- `postgres`: uses volume `bloom-postgres`
+- `redis`
+- `otel-collector`
+
+Profiles `web`, `ai`, `ops` allow targeted start-up.
+
+---
+
+## 4. Build Script
+
+`scripts/docker/build.sh` wraps Buildx:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+APP=${1:-roi-service}
+TAG=${TAG:-$(git rev-parse --short HEAD)}
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --push \
+  -f apps/$APP/Dockerfile \
+  -t ghcr.io/appmelia/$APP:$TAG .
+```
+
+Used in release workflows.
+
+---
+
+## 5. GitHub Actions
+
+`.github/workflows/docker-build.yml` runs on push + release. Uploads SBOM artifact to `artifacts/docker-sbom.json`.
+
+---
+
+## 6. Volume Backups
+
+`scripts/docker/backup-volume.sh` invoked nightly via cron container. Stores archives in `s3://bloom-docker-backups`.
+
+---
+
+## 7. Security Scans
+
+`security/docker-scan.yml` workflow triggers Trivy + cosign verification. Alerts posted to `#security-alerts`.
+
+---
+
+## 8. Local Tooling
+
+`packages/cli/src/commands/docker-stack.ts` wraps Compose commands, adding friendly messages + environment detection.
+
+---
+
+## 9. Testing Harness
+
+`tests/docker/integration.test.ts` spins up Compose stack using `dockerode`, runs integration tests, ensures cleanup.
+
+---
+
+## 10. Governance Doc
+
+`docs/governance/docker.md` stores approvals, base-image inventory, and exception process referenced in Chapter 11.
+
+---
+
+Use these references when grounding answers or updating tooling; they ensure documentation stays aligned with actual repositories.

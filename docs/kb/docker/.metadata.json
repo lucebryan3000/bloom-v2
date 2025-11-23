@@ -1,0 +1,11 @@
+{
+  "command": "kb docker",
+  "generated": "2025-11-10T00:42:15Z",
+  "sources": [
+    "https://docs.docker.com/",
+    "https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry"
+  ],
+  "quality_score": "6/10",
+  "total_lines": 1519,
+  "status": "draft"
+}

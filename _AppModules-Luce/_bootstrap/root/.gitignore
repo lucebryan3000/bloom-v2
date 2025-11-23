@@ -1,0 +1,191 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Temporary: keep core source visible for Claude Code Web cleanup
+# lib/
+# app/
+# components/
+# scripts/
+# stores/
+# prisma/
+# *.ts
+# *.tsx
+# **/*.ts
+# **/*.tsx
+
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Testing - All test reports consolidated in tests/reports/
+.nyc_output/
+*.lcov
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/reports/tests/
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# Production build
+/build/
+dist/
+
+# Misc
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+.DS_Store
+*.pem
+Thumbs.db
+desktop.ini
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Application runtime logs (allow logs/ directory structure, ignore actual log files)
+logs/*.log
+logs/*.log.*
+logs/**/*.log
+logs/**/*.log.*
+!logs/.gitkeep
+!logs/**/.gitkeep
+
+# Local env files (keep .env.example files)
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Allow .env.docker for private repo migration
+!.env.docker
+
+# Database files (SQLite)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+/prisma/*.db
+/prisma/*.db-journal
+/prisma/*.db-shm
+/prisma/*.db-wal
+/prisma/prisma/*.db
+/prisma/prisma/*.db-journal
+/prisma/prisma/*.db-shm
+/prisma/prisma/*.db-wal
+
+# Playbooks
+# Allow .gitkeep to ensure directory is tracked
+# Allow .json playbook files to be tracked
+# .gitkeep and *.json will be tracked, other files ignored
+/data/playbooks/*
+!/data/playbooks/.gitkeep
+!/data/playbooks/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# System Files
+**/.DS_Store
+**/Thumbs.db
+
+# Cache
+.cache/
+.temp/
+.tmp/
+*.cache
+
+# Backup files
+*.bak
+*.backup
+*.backup1
+*.backup2
+*.backup1.md
+*.backup2.md
+*.old
+
+# Python virtual environments (should never be committed)
+**/.venv/
+**/venv/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Docker
+# Generated files (use ./scripts/docker/docker_setup.sh to create these)
+Dockerfile
+docker-compose.yml
+docker-entrypoint.sh
+.dockerignore
+.env.docker
+
+# Docker reference files with credentials (keep local only)
+scripts/docker/.env.docker.reference
+
+# Docker generated files (excluded, will be rebuilt on target machine)
+.bloom-mode
+docker-volumes/
+
+# Sentry
+.sentryclirc
+
+# Build prompts - User working directories (now tracked)
+# Note: Directories _build/, _build-prompts/, _deploy-Prompt/, _LuceApps/
+# are active working directories and should be tracked in git
+
+# Allow tracking of user working directories
+!_build/
+!_build-prompts/
+!_deploy-Prompt/
+!_LuceApps/
+
+# Claude
+.claude/logs/
+/tmp/claude-*-cwd
+/tmp/claude-prompt-metrics.json
+/tmp/watch-hook-log.offset
+_AppModules-Luce/
+!CLAUDE.md
+!.claude/docs/context-management-claude
+
+
+# Exclude only generated/temporary content within _build/
+_build/_completed
+
+
+
+# Documentation generated files
+docs/generated/
+prisma/bloom-test.db*
+.env.test.local
+
+# Test reports (now consolidated under tests/reports/)
+tests/reports/
+
+# Playwright
+/blob-report/
+/playwright/.auth/
+
+
+
+# Corrupt database files
+*.corrupt
+prisma/logs.db*
+exports/roi-smoke/
+exports/roi-pdf/

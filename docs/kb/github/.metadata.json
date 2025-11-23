@@ -1,0 +1,12 @@
+{
+  "command": "kb github",
+  "generated": "2025-11-10T00:30:41Z",
+  "sources": [
+    "https://docs.github.com/en",
+    "https://docs.github.com/en/actions",
+    "https://docs.github.com/en/codespaces"
+  ],
+  "quality_score": "6/10",
+  "total_lines": 1514,
+  "status": "draft"
+}
