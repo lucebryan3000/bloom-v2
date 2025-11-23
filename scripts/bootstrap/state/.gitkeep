@@ -1,5 +1,0 @@
-# State directory for bootstrap checkpoint tracking
-# Files in this directory:
-#   .bootstrap-state  - Track completed scripts/phases
-#   .checkpoint       - Resume point after interruption
-#   handoffs/         - LLM handoff documentation exports
