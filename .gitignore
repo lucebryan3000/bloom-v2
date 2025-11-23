@@ -213,6 +213,11 @@ scripts/debug/
 *.bak
 *.old
 
+# Bootstrap System State (runtime tracking, never committed)
+.bootstrap_state
+.bootstrap_state.bak
+_build/bootstrap_scripts/logs/
+
 # Random notes / scratch files (should not exist in repo)
 NOTES.md
 SCRATCH.md
