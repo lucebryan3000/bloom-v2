@@ -1,36 +1,223 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+################################################################################
+# Bloom2 .gitignore - Node.js / Next.js 15 / pnpm / PostgreSQL + Drizzle ORM
+# Organized by technology layer and build phase
+################################################################################
 
-# dependencies
-/node_modules
+## ============================================================================
+## CORE DEPENDENCIES & PACKAGE MANAGEMENT (pnpm v9.x)
+## ============================================================================
+
+# pnpm modules (locked in pnpm-lock.yaml, never committed)
+/node_modules/
+/pnpm-store/
 /.pnp
 .pnp.js
 
-# testing
-/coverage
+# Alternative package managers (if present during migration)
+/package-lock.json
+/yarn.lock
+npm-shrinkwrap.json
 
-# next.js
+## ============================================================================
+## BUILD & RUNTIME ARTIFACTS
+## ============================================================================
+
+# Next.js 15 App Router artifacts
 /.next/
 /out/
+/.vercel/
 
-# production
-/build
+# Build outputs (Drizzle, TS compilation)
+/build/
+/dist/
+*.tsbuildinfo
+next-env.d.ts
 
-# misc
+# Drizzle ORM
+drizzle/
+.drizzle/
+
+## ============================================================================
+## TESTING & COVERAGE (Vitest + Playwright)
+## ============================================================================
+
+# Coverage reports (Vitest)
+/coverage/
+.nyc_output/
+*.lcov
+
+# Playwright test artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+## ============================================================================
+## ENVIRONMENT & CONFIGURATION
+## ============================================================================
+
+# Local environment files (never commit secrets)
+.env
+.env*.local
+.env.*.local
+
+# Vercel/deployment config
+.vercel/
+.vercelignore
+
+# IDE & editor local settings
+.idea/
+.vscode/
 .DS_Store
-*.pem
+*.swp
+*.swo
+*~
+*.sublime-workspace
 
-# debug
+## ============================================================================
+## LOGGING & RUNTIME STATE (should not be committed)
+## ============================================================================
+
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 
-# local env files
-.env*.local
-.env
+# pnpm logs
+pnpm-debug.log
 
-# vercel
-.vercel
+# Runtime state / logs (if stored locally)
+*.log
+logs/
 
-# typescript
+# Temporary state files
+.state
+.cache
+
+## ============================================================================
+## SECURITY & CREDENTIALS (CRITICAL - Never commit)
+## ============================================================================
+
+# SSL/TLS certificates
+*.pem
+*.key
+*.crt
+*.cert
+
+# Database dumps (may contain user data)
+*.sql
+*.sql.gz
+*.dump
+
+# Sensitive configuration
+.env.production
+secrets.json
+credentials.json
+
+## ============================================================================
+## DATABASE & PERSISTENCE (PostgreSQL + Docker volumes)
+## ============================================================================
+
+# Docker volumes (local Postgres data, logs)
+postgres_data/
+db_data/
+postgres_logs/
+
+# Database migration artifacts
+migrations_backup/
+
+## ============================================================================
+## DOCKER & CONTAINERIZATION
+## ============================================================================
+
+# Docker build cache (automatically managed, but useful to ignore)
+.dockerignore
+
+# Docker compose overrides (if needed locally)
+docker-compose.override.yml
+docker-compose.local.yml
+
+## ============================================================================
+## MACOS & WINDOWS
+## ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+
+# Windows
+Thumbs.db
+*.lnk
+
+## ============================================================================
+## TYPESCRIPT
+## ============================================================================
+
+# TS build info (already listed above, but explicit for clarity)
 *.tsbuildinfo
-next-env.d.ts
+tsconfig.tsbuildinfo
+
+## ============================================================================
+## IDE & EDITOR FILES
+## ============================================================================
+
+# VS Code workspace settings
+.vscode/*.json
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# vim
+.vim/
+*.vim
+
+# Emacs
+*~
+#*#
+.\#*
+
+## ============================================================================
+## OPTIONAL: CLUTTER & DEBUG (Remove or Review)
+## ============================================================================
+
+# These entries should be reviewed and either formalized or deleted
+
+# Temporary test outputs
+test-output/
+temp/
+tmp/
+
+# Old build artifacts
+old_build/
+legacy/
+deprecated/
+
+# Local development utilities
+tools/local/
+scripts/debug/
+
+# Stale configuration backups
+*.backup
+*.bak
+*.old
+
+# Random notes / scratch files (should not exist in repo)
+NOTES.md
+SCRATCH.md
+TODO_DEV.md
+
+################################################################################
+# END .gitignore
+################################################################################
