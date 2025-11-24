@@ -54,11 +54,11 @@ while IFS= read -r dir; do
     [[ -z "${dir// }" ]] && continue
 
     if [[ -d "$dir" ]]; then
-        ((skipped_count++))
+        skipped_count=$((skipped_count + 1))
     else
         mkdir -p "$dir"
         log_debug "Created: $dir"
-        ((created_count++))
+        created_count=$((created_count + 1))
     fi
 done <<< "$DIRS_TO_CREATE"
 

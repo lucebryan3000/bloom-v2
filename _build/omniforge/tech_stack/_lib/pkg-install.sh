@@ -260,9 +260,9 @@ pkg_verify_all() {
 # PREFLIGHT CHECK
 # =============================================================================
 
-# Check cache status for a list of packages
+# Check cache status for a list of packages (informational only)
 # Usage: pkg_preflight_check "next" "react" "typescript"
-# Returns: 0 if all cached, 1 if some need network
+# Returns: Always 0 (this is purely informational, never fails the build)
 pkg_preflight_check() {
     local packages=("$@")
     local cached=0
@@ -276,10 +276,10 @@ pkg_preflight_check() {
         local found=$(pkg_cache_find "$pkg")
         if [[ -n "$found" ]]; then
             echo "  [CACHED]  $pkg → $found"
-            ((cached++))
+            cached=$((cached + 1))
         else
             echo "  [NETWORK] $pkg"
-            ((network++))
+            network=$((network + 1))
         fi
     done
 
@@ -287,7 +287,7 @@ pkg_preflight_check() {
     echo "  Summary: $cached cached, $network require network"
     echo ""
 
-    [[ $network -eq 0 ]]
+    return 0  # Informational only - always succeed
 }
 
 # =============================================================================
