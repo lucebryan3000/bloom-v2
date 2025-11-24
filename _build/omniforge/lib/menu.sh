@@ -562,53 +562,65 @@ menu_options() {
         _menu_title "OPTIONS"
         echo ""
 
-        _menu_item "1" "Default Profile" "[${STACK_PROFILE:-full}]"
-        _menu_item "2" "Log Level" "[${LOG_LEVEL:-status}]"
-        _menu_item "3" "Logo Style" "[${OMNI_LOGO:-block}]"
-        _menu_item "4" "Default Timeout" "[${MAX_CMD_SECONDS:-300}s]"
-        _menu_item "5" "Git Safety" "[${GIT_SAFETY:-true}]"
-        _menu_item "6" "Reset to Defaults"
+        _menu_item "1" "Install Target" "[${INSTALL_TARGET:-test}]"
+        _menu_item "2" "Default Profile" "[${STACK_PROFILE:-full}]"
+        _menu_item "3" "Log Level" "[${LOG_LEVEL:-status}]"
+        _menu_item "4" "Logo Style" "[${OMNI_LOGO:-block}]"
+        _menu_item "5" "Default Timeout" "[${MAX_CMD_SECONDS:-300}s]"
+        _menu_item "6" "Git Safety" "[${GIT_SAFETY:-true}]"
+        _menu_item "7" "Reset to Defaults"
         echo ""
         _menu_item "0" "Back"
 
-        _menu_prompt "Select [0-6]"
+        _menu_prompt "Select [0-7]"
 
         case "$_MENU_SELECTION" in
             1)
+                echo ""
+                echo "  Targets: test (./test/install-1), prod (./app)"
+                read -rp "  New target: " val
+                if [[ "$val" == "test" || "$val" == "prod" ]]; then
+                    INSTALL_TARGET="$val"
+                    [[ "$val" == "prod" ]] && INSTALL_DIR="./app" || INSTALL_DIR="./test/install-1"
+                fi
+                ;;
+            2)
                 echo ""
                 echo "  Profiles: minimal, api-only, full"
                 read -rp "  New profile: " val
                 [[ -n "$val" ]] && STACK_PROFILE="$val"
                 ;;
-            2)
+            3)
                 echo ""
                 echo "  Levels: quiet, status, verbose"
                 read -rp "  New level: " val
                 [[ -n "$val" ]] && LOG_LEVEL="$val"
                 ;;
-            3)
+            4)
                 echo ""
                 echo "  Styles: block, gradient, shadow, simple, minimal, none"
                 read -rp "  New style: " val
                 [[ -n "$val" ]] && OMNI_LOGO="$val"
                 ;;
-            4)
+            5)
                 read -rp "  Timeout (seconds): " val
                 [[ -n "$val" ]] && MAX_CMD_SECONDS="$val"
                 ;;
-            5)
+            6)
                 if [[ "${GIT_SAFETY:-true}" == "true" ]]; then
                     GIT_SAFETY="false"
                 else
                     GIT_SAFETY="true"
                 fi
                 ;;
-            6)
+            7)
+                INSTALL_TARGET="test"
                 STACK_PROFILE="full"
                 LOG_LEVEL="status"
                 OMNI_LOGO="block"
                 MAX_CMD_SECONDS="300"
                 GIT_SAFETY="true"
+                INSTALL_DIR="./test/install-1"
                 echo "  [OK] Reset to defaults"
                 sleep 1
                 ;;
