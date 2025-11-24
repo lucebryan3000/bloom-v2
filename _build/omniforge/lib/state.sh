@@ -146,7 +146,15 @@ state_show_status() {
     echo ""
 
     if [[ ! -f "${BOOTSTRAP_STATE_FILE}" ]]; then
-        log_warn "No state file found. Bootstrap has not been run yet."
+        echo "State file: ${BOOTSTRAP_STATE_FILE}"
+        echo "Completed scripts: 0"
+        echo ""
+        echo "No phases have been run yet."
+        echo ""
+        echo "To get started:"
+        echo "  omni menu    # Interactive setup (recommended)"
+        echo "  omni run     # Run all phases directly"
+        echo "  omni list    # See available phases"
         return 0
     fi
 

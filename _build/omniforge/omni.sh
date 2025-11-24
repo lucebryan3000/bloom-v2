@@ -67,34 +67,45 @@ ${CODENAME} v${VERSION} - Infinite Architectures. Instant Foundation.
 Usage: omni [OPTIONS] [COMMAND]
 
 COMMANDS:
-    menu            Launch interactive menu (default if no command)
-    init            Initialize project with all phases
-    run             Run all phases using PHASE_METADATA from omniforge.conf
-    list            List all phases and scripts
-    status          Show completion status
-    forge           Build and verify project
+    run             Execute phase scripts from omniforge.conf
+                    - Runs tech_stack/*.sh scripts in phase order (0-5)
+                    - Tracks state to avoid re-running completed phases
+                    - Use --force to re-run previously completed phases
+
+    list            List all phases and their scripts without executing
+                    - Shows phase metadata from omniforge.conf
+                    - Displays execution order and dependencies
+
+    status          Show completion status and state file contents
+                    - Displays which phases/scripts have run
+                    - Shows success/failure status
+
+    build           Build and verify the project (post-initialization)
+                    - Runs: pnpm install, lint, typecheck, build
+                    - Use after 'run' completes to compile the project
+                    - Validates the initialized project works correctly
 
 OPTIONS:
     -h, --help      Show this help
-    -n, --dry-run   Preview without executing
-    -v, --verbose   Verbose output
-    -p, --phase N   Run specific phase number
+    -n, --dry-run   Preview without executing (show what would run)
+    -v, --verbose   Verbose output with detailed logging
+    -p, --phase N   Run only specific phase number (0-5)
     -f, --force     Force re-run (ignore previous success state)
 
-EXAMPLES:
-    omni --init                    # Initialize project (alias for run)
-    omni --help                    # Show this help
-    omni run                       # Run all phases
-    omni run --dry-run             # Preview execution
-    omni run --phase 0             # Run only phase 0
-    omni list                      # List all phases
-    omni status                    # Show progress
-    omni forge                     # Build and verify
+WORKFLOW:
+    1. omni menu     Interactive setup (recommended for first time)
+    2. omni run      Execute all phase scripts to initialize project
+    3. omni build    Build and verify the initialized project
 
-ENTRY POINTS:
-    ./bin/omni [options]     # Main execution
-    ./bin/forge [options]    # Build and verify
-    ./bin/status [options]   # Status and configuration
+EXAMPLES:
+    omni                           # Interactive menu (default)
+    omni run                       # Run all phases
+    omni run --dry-run             # Preview what would execute
+    omni run --phase 0             # Run only phase 0
+    omni run --force               # Re-run all, ignore state
+    omni list                      # List phases without running
+    omni status                    # Show completion progress
+    omni build                     # Build after initialization
 
 EOF
 }
@@ -137,10 +148,10 @@ while [[ $# -gt 0 ]]; do
             PHASE="$2"
             shift 2
             ;;
-        menu|init|run|list|status|forge|compile)
-            # Map 'compile' to 'forge' for backward compat
-            if [[ "$1" == "compile" ]]; then
-                COMMAND="forge"
+        menu|run|list|status|build|forge|compile)
+            # Map 'forge' and 'compile' to 'build' for backward compat
+            if [[ "$1" == "forge" || "$1" == "compile" ]]; then
+                COMMAND="build"
             else
                 COMMAND="$1"
             fi
@@ -192,7 +203,7 @@ case "${COMMAND:-}" in
         source "${SCRIPT_DIR}/lib/menu.sh"
         menu_main
         ;;
-    init|run)
+    run)
         show_logo
         exec "${SCRIPT_DIR}/bin/omni" $ARGS
         ;;
@@ -202,7 +213,7 @@ case "${COMMAND:-}" in
     status)
         exec "${SCRIPT_DIR}/bin/status" --state
         ;;
-    forge)
+    build)
         show_logo
         exec "${SCRIPT_DIR}/bin/forge" $ARGS
         ;;

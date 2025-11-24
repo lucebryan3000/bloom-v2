@@ -58,10 +58,13 @@ _menu_item() {
     local desc="${3:-}"
     local extra="${4:-}"
 
-    # Calculate spacing: label width is ~40 chars, then two tabs to description
+    # Calculate spacing: label width is ~30 chars, then one tab to description
     if [[ -n "$desc" ]]; then
-        printf "  %s. %-38s %s" "$num" "$label" "${LOG_GRAY:-}$desc"
+        printf "  %s. %-30s %s" "$num" "$label" "${LOG_GRAY:-}$desc"
         if [[ -n "$extra" ]]; then
+            # Color all bracket values [*] in yellow
+            extra="${extra//\[/${LOG_YELLOW}[}"
+            extra="${extra//\]/${LOG_NC}]}"
             printf " %s" "$extra"
         fi
         printf "%s\n" "${LOG_NC:-}"
@@ -111,15 +114,10 @@ menu_main() {
         echo ""
 
         _menu_item "1" "Bootstrap Project" "Select apps, configure, install"
-        echo ""
         _menu_item "2" "IDE Settings Manager" "Copy IDE/tool configs to project"
-        echo ""
-        _menu_item "3" "Purge Download Cache" "Clear cached packages [$cache_size]"
-        echo ""
-        _menu_item "4" "Options" "Preferences and defaults"
-        echo ""
+        _menu_item "3" "Purge Download Cache" "Clear cached packages" "[$cache_size]"
+        _menu_item "4" "OmniForge Options" "Preferences and defaults"
         _menu_item "5" "Help" "Usage guide and documentation"
-        echo ""
         _menu_item "0" "Exit"
 
         _menu_prompt "Select [0-5]"
@@ -608,6 +606,19 @@ menu_purge() {
 # =============================================================================
 
 menu_options() {
+    # Initialize log file if not already initialized
+    if [[ -z "${LOG_FILE:-}" ]]; then
+        if type phase_init_logging &>/dev/null; then
+            phase_init_logging
+        else
+            # Manual initialization if phase function not available
+            LOG_DIR="${LOG_DIR:-${TMPDIR:-/tmp}}"
+            mkdir -p "$LOG_DIR"
+            LOG_FILE="${LOG_DIR}/omniforge_$(date +%Y%m%d_%H%M%S).log"
+            touch "$LOG_FILE"
+        fi
+    fi
+
     while true; do
         _menu_header
         _menu_title "OPTIONS"
@@ -617,13 +628,15 @@ menu_options() {
         _menu_item "2" "Default Profile" "Feature set: minimal, api-only, or full stack" "[${STACK_PROFILE:-full}]"
         _menu_item "3" "Log Level" "Verbosity: quiet, status, or verbose" "[${LOG_LEVEL:-status}]"
         _menu_item "4" "Logo Style" "Display style: block, gradient, shadow, simple, minimal" "[${OMNI_LOGO:-block}]"
-        _menu_item "5" "Default Timeout" "Max seconds for operations" "[${MAX_CMD_SECONDS:-300}s]"
+        _menu_item "5" "Default Timeout" "Max minutes for operations" "[$(( (${MAX_CMD_SECONDS:-300} / 60) )).$(( (${MAX_CMD_SECONDS:-300} % 60) / 6 ))m]"
         _menu_item "6" "Git Safety" "Require clean git working tree before bootstrap" "[${GIT_SAFETY:-true}]"
-        _menu_item "7" "Reset to Defaults" "Restore all settings to factory defaults"
+        _menu_item "7" "View Logs" "Open log file with micro editor" "[$([ -f "${LOG_FILE:-}" ] && wc -l < "${LOG_FILE}" | tr -d ' ' || echo 'empty')]"
+        _menu_item "8" "Clear Logs" "Delete all log files" "[$([ -f "${LOG_FILE:-}" ] && basename "${LOG_FILE}" || echo 'empty')]"
+        _menu_item "9" "Reset to Defaults" "Restore: test target, full profile, status log, block logo, 5.0m timeout, git safety on"
         echo ""
         _menu_item "0" "Back"
 
-        _menu_prompt "Select [0-7]"
+        _menu_prompt "Select [0-9]"
 
         case "$_MENU_SELECTION" in
             1)
@@ -654,8 +667,11 @@ menu_options() {
                 [[ -n "$val" ]] && OMNI_LOGO="$val"
                 ;;
             5)
-                read -rp "  Timeout (seconds): " val
-                [[ -n "$val" ]] && MAX_CMD_SECONDS="$val"
+                read -rp "  Timeout (minutes, e.g., 5.5): " val
+                if [[ -n "$val" ]]; then
+                    # Convert minutes to seconds: multiply by 60
+                    MAX_CMD_SECONDS=$(echo "$val * 60" | bc 2>/dev/null || echo "300")
+                fi
                 ;;
             6)
                 if [[ "${GIT_SAFETY:-true}" == "true" ]]; then
@@ -665,6 +681,55 @@ menu_options() {
                 fi
                 ;;
             7)
+                # View Logs
+                if [[ -z "${LOG_FILE:-}" ]]; then
+                    echo ""
+                    echo "  [WARN] No log file initialized"
+                    read -rp "  Press Enter to continue: " _
+                else
+                    echo ""
+                    if [[ -f "$LOG_FILE" ]]; then
+                        if command -v micro &>/dev/null; then
+                            micro "$LOG_FILE"
+                        else
+                            # Fallback to default viewer
+                            if [[ "$OSTYPE" == "darwin"* ]]; then
+                                open "$LOG_FILE"
+                            elif command -v xdg-open &>/dev/null; then
+                                xdg-open "$LOG_FILE"
+                            else
+                                less "$LOG_FILE"
+                            fi
+                        fi
+                    else
+                        echo "  [WARN] Log file not found: $LOG_FILE"
+                        read -rp "  Press Enter to continue: " _
+                    fi
+                fi
+                ;;
+            8)
+                # Clear Logs
+                echo ""
+                if [[ -z "${LOG_DIR:-}" ]]; then
+                    LOG_DIR="${TMPDIR:-/tmp}"
+                fi
+
+                log_count=$(find "$LOG_DIR" -name "omniforge_*.log" 2>/dev/null | wc -l)
+                if [[ $log_count -eq 0 ]]; then
+                    echo "  [INFO] No log files to clear"
+                else
+                    echo "  Found $log_count log file(s) in $LOG_DIR"
+                    read -rp "  Delete all omniforge logs? (y/N): " confirm
+                    if [[ "${confirm,,}" == "y" ]]; then
+                        find "$LOG_DIR" -name "omniforge_*.log" -delete 2>/dev/null
+                        echo "  [OK] Log files cleared"
+                    else
+                        echo "  [SKIP] Operation cancelled"
+                    fi
+                fi
+                sleep 1
+                ;;
+            9)
                 INSTALL_TARGET="test"
                 STACK_PROFILE="full"
                 LOG_LEVEL="status"
