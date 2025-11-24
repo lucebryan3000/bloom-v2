@@ -33,6 +33,46 @@ readonly VERSION="1.1.0"
 readonly CODENAME="OmniForge"
 
 # =============================================================================
+# ERROR HANDLING
+# =============================================================================
+
+# Error handler for cleaner exit messages
+_error_exit() {
+    local msg="$1"
+    local code="${2:-1}"
+    echo "[ERROR] $msg" >&2
+    exit "$code"
+}
+
+# Validate required files exist before execution
+_validate_files() {
+    local required_files=(
+        "${SCRIPT_DIR}/lib/common.sh"
+        "${SCRIPT_DIR}/lib/menu.sh"
+        "${SCRIPT_DIR}/lib/ascii.sh"
+        "${SCRIPT_DIR}/bootstrap.conf"
+    )
+
+    for file in "${required_files[@]}"; do
+        if [[ ! -f "$file" ]]; then
+            _error_exit "Required file not found: $file" 1
+        fi
+    done
+}
+
+# Validate bin scripts exist
+_validate_bin() {
+    local script="$1"
+    if [[ ! -x "${SCRIPT_DIR}/bin/${script}" ]]; then
+        _error_exit "Executable not found: ${SCRIPT_DIR}/bin/${script}" 1
+    fi
+}
+
+# Set TERM if not set (prevents tput errors)
+: "${TERM:=xterm-256color}"
+export TERM
+
+# =============================================================================
 # LOGO
 # =============================================================================
 
@@ -157,14 +197,29 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -p|--phase)
+            if [[ -z "${2:-}" ]]; then
+                _error_exit "--phase requires a phase number (0-5)" 1
+            fi
+            if ! [[ "$2" =~ ^[0-5]$ ]]; then
+                _error_exit "Invalid phase number: $2. Must be 0-5" 1
+            fi
             PHASE="$2"
             shift 2
             ;;
         --path)
+            if [[ -z "${2:-}" ]]; then
+                _error_exit "--path requires a directory path" 1
+            fi
             CLEAN_PATH="$2"
             shift 2
             ;;
         --level)
+            if [[ -z "${2:-}" ]]; then
+                _error_exit "--level requires a level number (1-4)" 1
+            fi
+            if ! [[ "$2" =~ ^[1-4]$ ]]; then
+                _error_exit "Invalid clean level: $2. Must be 1-4" 1
+            fi
             CLEAN_LEVEL="$2"
             shift 2
             ;;
@@ -207,12 +262,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Build arguments for bin scripts
-ARGS=""
-[[ "$DRY_RUN" == "true" ]] && ARGS="$ARGS --dry-run"
-[[ "$VERBOSE" == "true" ]] && ARGS="$ARGS --verbose"
-[[ "$FORCE" == "true" ]] && ARGS="$ARGS --force"
-[[ -n "$PHASE" ]] && ARGS="$ARGS --phase $PHASE"
+# Build arguments for bin scripts (array to avoid quoting issues)
+ARGS=()
+[[ "$DRY_RUN" == "true" ]] && ARGS+=("--dry-run")
+[[ "$VERBOSE" == "true" ]] && ARGS+=("--verbose")
+[[ "$FORCE" == "true" ]] && ARGS+=("--force")
+[[ -n "$PHASE" ]] && ARGS+=("--phase" "$PHASE")
+
+# Validate required files before execution
+_validate_files
 
 # Execute command by delegating to bin scripts
 case "${COMMAND:-}" in
@@ -224,18 +282,22 @@ case "${COMMAND:-}" in
         menu_main
         ;;
     run)
+        _validate_bin "omni"
         show_logo
-        exec "${SCRIPT_DIR}/bin/omni" $ARGS
+        exec "${SCRIPT_DIR}/bin/omni" "${ARGS[@]}"
         ;;
     list)
+        _validate_bin "status"
         exec "${SCRIPT_DIR}/bin/status" --list
         ;;
     status)
+        _validate_bin "status"
         exec "${SCRIPT_DIR}/bin/status" --state
         ;;
     build)
+        _validate_bin "forge"
         show_logo
-        exec "${SCRIPT_DIR}/bin/forge" $ARGS
+        exec "${SCRIPT_DIR}/bin/forge" "${ARGS[@]}"
         ;;
     clean)
         # Load libraries for clean function

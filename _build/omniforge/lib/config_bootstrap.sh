@@ -176,13 +176,20 @@ config_validate() {
 # STACK PROFILES
 # =============================================================================
 
-# Apply stack profile settings (minimal, api-only, full)
+# Apply stack profile settings
+# Handles BOS profiles: ai_automation, fpa_dashboard, collab_editor,
+# erp_gateway, asset_manager, custom_bos
+# Note: The data-driven apply_stack_profile() from bootstrap.conf uses
+# associative arrays which don't survive being sourced inside a function.
+# This fallback provides the same functionality with explicit case handling.
 # Usage: config_apply_profile
 config_apply_profile() {
-    local profile="${STACK_PROFILE:-full}"
+    local profile="${STACK_PROFILE:-asset_manager}"
 
+    # Apply profile settings directly (associative arrays from bootstrap.conf
+    # are not available here due to function scoping of 'declare -A')
     case "$profile" in
-        minimal)
+        minimal|custom_bos)
             log_info "Applying minimal stack profile"
             export ENABLE_AUTHJS="${ENABLE_AUTHJS:-false}"
             export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
@@ -190,20 +197,43 @@ config_apply_profile() {
             export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
             export ENABLE_SHADCN="${ENABLE_SHADCN:-false}"
             ;;
-        api-only)
+        api-only|erp_gateway)
             log_info "Applying api-only stack profile"
-            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-false}"
+            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-true}"
             export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
-            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-false}"
+            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-true}"
             export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
             export ENABLE_SHADCN="${ENABLE_SHADCN:-false}"
-            export ENABLE_UI="${ENABLE_UI:-false}"
             ;;
-        full)
+        full|enterprise|asset_manager|fpa_dashboard)
             log_debug "Using full stack profile (all features enabled)"
+            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-true}"
+            export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
+            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-true}"
+            export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-true}"
+            export ENABLE_SHADCN="${ENABLE_SHADCN:-true}"
+            export ENABLE_ZUSTAND="${ENABLE_ZUSTAND:-true}"
+            ;;
+        ai_automation)
+            log_info "Applying AI Automation profile"
+            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-true}"
+            export ENABLE_AI_SDK="${ENABLE_AI_SDK:-true}"
+            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-true}"
+            export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
+            export ENABLE_SHADCN="${ENABLE_SHADCN:-true}"
+            export ENABLE_ZUSTAND="${ENABLE_ZUSTAND:-false}"
+            ;;
+        collab_editor)
+            log_info "Applying Collab Editor profile"
+            export ENABLE_AUTHJS="${ENABLE_AUTHJS:-true}"
+            export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
+            export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-true}"
+            export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
+            export ENABLE_SHADCN="${ENABLE_SHADCN:-true}"
+            export ENABLE_ZUSTAND="${ENABLE_ZUSTAND:-true}"
             ;;
         *)
-            log_warn "Unknown stack profile: $profile, using full"
+            log_warn "Unknown stack profile: $profile, using asset_manager defaults"
             ;;
     esac
 }

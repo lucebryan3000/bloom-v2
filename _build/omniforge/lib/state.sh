@@ -118,7 +118,10 @@ state_clear_all() {
 # Usage: completed=$(state_count_completed)
 state_count_completed() {
     state_init
-    grep -c "=success:" "${BOOTSTRAP_STATE_FILE}" 2>/dev/null || echo "0"
+    local count
+    count=$(grep -c "=success:" "${BOOTSTRAP_STATE_FILE}" 2>/dev/null || true)
+    # Ensure single integer output (grep -c can produce unexpected multi-line output)
+    printf '%d' "${count:-0}"
 }
 
 # List completed scripts
