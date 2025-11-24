@@ -72,6 +72,11 @@ COMMANDS:
                     - Tracks state to avoid re-running completed phases
                     - Use --force to re-run previously completed phases
 
+    clean           Clean/reset a previous installation
+                    - Deletes app folder, state files, and optionally Docker
+                    - Use --level 1-4 for quick/full/deep/nuclear clean
+                    - Use --path <dir> to specify installation path
+
     list            List all phases and their scripts without executing
                     - Shows phase metadata from omniforge.conf
                     - Displays execution order and dependencies
@@ -91,11 +96,14 @@ OPTIONS:
     -v, --verbose   Verbose output with detailed logging
     -p, --phase N   Run only specific phase number (0-5)
     -f, --force     Force re-run (ignore previous success state)
+    --path <dir>    Target installation path (for clean command)
+    --level <1-4>   Clean level: 1=quick, 2=full, 3=deep, 4=nuclear
 
 WORKFLOW:
     1. omni menu     Interactive setup (recommended for first time)
     2. omni run      Execute all phase scripts to initialize project
     3. omni build    Build and verify the initialized project
+    4. omni clean    Reset installation to test different configurations
 
 EXAMPLES:
     omni                           # Interactive menu (default)
@@ -106,6 +114,8 @@ EXAMPLES:
     omni list                      # List phases without running
     omni status                    # Show completion progress
     omni build                     # Build after initialization
+    omni clean                     # Interactive clean menu
+    omni clean --path ./test/install-1 --level 2  # Full clean specific path
 
 EOF
 }
@@ -120,6 +130,8 @@ DRY_RUN="${DRY_RUN:-false}"
 VERBOSE="${VERBOSE:-false}"
 FORCE=false
 PHASE=""
+CLEAN_PATH=""
+CLEAN_LEVEL=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -148,7 +160,15 @@ while [[ $# -gt 0 ]]; do
             PHASE="$2"
             shift 2
             ;;
-        menu|run|list|status|build|forge|compile)
+        --path)
+            CLEAN_PATH="$2"
+            shift 2
+            ;;
+        --level)
+            CLEAN_LEVEL="$2"
+            shift 2
+            ;;
+        menu|run|list|status|build|forge|compile|clean)
             # Map 'forge' and 'compile' to 'build' for backward compat
             if [[ "$1" == "forge" || "$1" == "compile" ]]; then
                 COMMAND="build"
@@ -216,6 +236,20 @@ case "${COMMAND:-}" in
     build)
         show_logo
         exec "${SCRIPT_DIR}/bin/forge" $ARGS
+        ;;
+    clean)
+        # Load libraries for clean function
+        source "${SCRIPT_DIR}/lib/common.sh"
+        source "${SCRIPT_DIR}/lib/ascii.sh"
+        source "${SCRIPT_DIR}/lib/menu.sh"
+
+        # If no path specified, launch interactive menu
+        if [[ -z "$CLEAN_PATH" ]]; then
+            menu_clean
+        else
+            # Non-interactive clean with --path and optional --level
+            _run_clean_noninteractive "$CLEAN_PATH" "${CLEAN_LEVEL:-1}"
+        fi
         ;;
     *)
         echo "Unknown command: $COMMAND"

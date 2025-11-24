@@ -243,20 +243,22 @@ menu_main() {
         echo ""
 
         _menu_item "1" "Bootstrap Project" "Select apps, configure, install"
-        _menu_item "2" "IDE Settings Manager" "Copy IDE/tool configs to project"
-        _menu_item "3" "Purge Download Cache" "Clear cached packages" "[$cache_size]"
-        _menu_item "4" "OmniForge Options" "Preferences and defaults"
-        _menu_item "5" "Help" "Usage guide and documentation"
+        _menu_item "2" "Clean Installation" "Delete/reset a previous deployment"
+        _menu_item "3" "IDE Settings Manager" "Copy IDE/tool configs to project"
+        _menu_item "4" "Purge Download Cache" "Clear cached packages" "[$cache_size]"
+        _menu_item "5" "OmniForge Options" "Preferences and defaults"
+        _menu_item "6" "Help" "Usage guide and documentation"
         _menu_item "0" "Exit"
 
-        _menu_prompt "Select [0-5]"
+        _menu_prompt "Select [0-6]"
 
         case "$_MENU_SELECTION" in
             1) menu_bootstrap ;;
-            2) menu_settings ;;
-            3) menu_purge ;;
-            4) menu_options ;;
-            5) menu_help ;;
+            2) menu_clean ;;
+            3) menu_settings ;;
+            4) menu_purge ;;
+            5) menu_options ;;
+            6) menu_help ;;
             *) _MENU_RUNNING=false ;;  # Any other key exits
         esac
     done
@@ -297,6 +299,17 @@ _bootstrap_step_select_profile() {
         source "$bootstrap_conf"
     fi
 
+    # Determine default profile number from STACK_PROFILE
+    local default_profile="${STACK_PROFILE:-standard}"
+    local default_num=3  # fallback to standard
+    case "$default_profile" in
+        minimal)    default_num=1 ;;
+        starter)    default_num=2 ;;
+        standard)   default_num=3 ;;
+        advanced)   default_num=4 ;;
+        enterprise) default_num=5 ;;
+    esac
+
     _menu_header
     _menu_title "BOOTSTRAP PROJECT - Step 1/7: Select Stack Profile"
     echo ""
@@ -312,9 +325,10 @@ _bootstrap_step_select_profile() {
         local time=$(get_profile_metadata "$profile" "time_estimate")
         local recommended=$(get_profile_metadata "$profile" "recommended")
 
-        # Format with recommendation indicator
+        # Format with current selection and recommendation indicators
         local marker=""
         [[ "$recommended" == "true" ]] && marker=" ⭐"
+        [[ "$profile" == "$default_profile" ]] && marker="${marker} ${LOG_GREEN}[current]${LOG_NC}"
 
         echo "  ${LOG_CYAN}${profile_num}) ${name}${marker}${LOG_NC} - ${tagline}"
         echo "     ${description}"
@@ -329,7 +343,7 @@ _bootstrap_step_select_profile() {
     echo "  You can customize individual features in the next step."
     echo ""
     _menu_line
-    read -rp "  Select profile [1-${#AVAILABLE_PROFILES[@]}] (default: 3): " choice
+    read -rp "  Select profile [1-${#AVAILABLE_PROFILES[@]}] (default: ${default_num}=${default_profile}): " choice
 
     case "$choice" in
         [1-5])
@@ -343,23 +357,23 @@ _bootstrap_step_select_profile() {
             export STACK_PROFILE="$selected_profile"
             apply_stack_profile "$selected_profile" || return 1
             ;;
-        minimal|api-only|full|ai-focused|enterprise)
+        minimal|starter|standard|advanced|enterprise)
             # Direct profile name input
             export STACK_PROFILE="$choice"
             apply_stack_profile "$choice" || return 1
             ;;
         "")
-            # Default to full profile
-            export STACK_PROFILE="full"
-            apply_stack_profile "full" || return 1
+            # Use current default from bootstrap.conf
+            export STACK_PROFILE="$default_profile"
+            apply_stack_profile "$default_profile" || return 1
             ;;
         b|back|q|quit)
             return 1
             ;;
         *)
-            log_warn "Invalid selection. Using full profile as default."
-            export STACK_PROFILE="full"
-            apply_stack_profile "full" || return 1
+            log_warn "Invalid selection. Using ${default_profile} profile as default."
+            export STACK_PROFILE="$default_profile"
+            apply_stack_profile "$default_profile" || return 1
             ;;
     esac
 
@@ -544,6 +558,65 @@ _bootstrap_step_configure() {
     BACKUP_LOCATION="${BACKUP_LOCATION:-./backups}"
     ENABLE_AUTO_BACKUP="${ENABLE_AUTO_BACKUP:-true}"
 
+    # Log configuration summary to log file (called when user confirms)
+    _log_config_summary() {
+        # Ensure log file is available
+        if [[ -z "${LOG_FILE:-}" ]]; then
+            local log_dir="${LOG_DIR:-${TMPDIR:-/tmp}}"
+            mkdir -p "$log_dir"
+            LOG_FILE="${log_dir}/omniforge_$(date +%Y%m%d_%H%M%S).log"
+        fi
+
+        {
+            echo "================================================================================"
+            echo "OMNIFORGE CONFIGURATION SUMMARY - $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "================================================================================"
+            echo ""
+            echo "APPLICATION"
+            echo "  Name:             ${APP_NAME}"
+            echo "  Root Directory:   ${PROJECT_ROOT:-.}"
+            echo "  Install Path:     ${INSTALL_DIR:-./test/install-1}"
+            echo "  Stack Profile:    ${STACK_PROFILE:-standard}"
+            echo ""
+            echo "POSTGRESQL DATABASE"
+            echo "  Name:             ${DB_NAME}"
+            echo "  User:             ${DB_USER}"
+            echo "  Host:             ${DB_HOST}"
+            echo "  Port:             ${DB_PORT}"
+            echo "  Connection:       postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+            echo ""
+            echo "BACKUPS"
+            echo "  Location:         ${BACKUP_LOCATION}"
+            echo "  Auto-Backup:      ${ENABLE_AUTO_BACKUP}"
+            echo ""
+            echo "ENABLED FEATURES"
+            [[ "${ENABLE_NEXTJS:-true}" == "true" ]] && echo "  ✓ ENABLE_NEXTJS"
+            [[ "${ENABLE_DATABASE:-true}" == "true" ]] && echo "  ✓ ENABLE_DATABASE"
+            [[ "${ENABLE_AUTHJS:-true}" == "true" ]] && echo "  ✓ ENABLE_AUTHJS (Authentication)"
+            [[ "${ENABLE_AI_SDK:-true}" == "true" ]] && echo "  ✓ ENABLE_AI_SDK (AI Integration)"
+            [[ "${ENABLE_PG_BOSS:-false}" == "true" ]] && echo "  ✓ ENABLE_PG_BOSS (Job Queue)"
+            [[ "${ENABLE_SHADCN:-true}" == "true" ]] && echo "  ✓ ENABLE_SHADCN (UI Components)"
+            [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && echo "  ✓ ENABLE_PDF_EXPORTS"
+            [[ "${ENABLE_TEST_INFRA:-true}" == "true" ]] && echo "  ✓ ENABLE_TEST_INFRA (Testing)"
+            [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && echo "  ✓ ENABLE_CODE_QUALITY (Linting)"
+            echo ""
+            echo "INSTALLATION PLAN"
+            echo "  Phase 0: Project Foundation (Next.js, TypeScript)"
+            [[ "${ENABLE_DATABASE:-true}" == "true" ]] && echo "  Phase 1: Infrastructure & Database (Docker, PostgreSQL, Drizzle)"
+            echo "  Phase 2: Core Features (Auth, AI, Jobs, State, Logging)"
+            [[ "${ENABLE_SHADCN:-true}" == "true" ]] && echo "  Phase 3: User Interface (shadcn/ui)"
+            echo "  Phase 4: Extensions & Quality (PDF, Testing, Linting)"
+            echo ""
+            local total_time="~80m"
+            [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && total_time="~110m"
+            echo "  Total Installation Time: ${total_time}"
+            echo ""
+            echo "================================================================================"
+        } >> "$LOG_FILE"
+
+        log_info "Configuration saved to log: $LOG_FILE"
+    }
+
     _show_config() {
         _menu_header
         _menu_title "BOOTSTRAP PROJECT - Step 4/7: Configure PostgreSQL & Application"
@@ -652,6 +725,7 @@ _bootstrap_step_configure() {
         echo "  ${LOG_GREEN}Total Installation Time: ${total_time}${LOG_NC}"
         echo ""
 
+        echo "  ${LOG_YELLOW}Install Path: ${INSTALL_DIR:-./test/install-1}${LOG_NC}"
         echo ""
         _menu_line "─" 66
         echo ""
@@ -813,6 +887,9 @@ _bootstrap_step_configure() {
                     mv "$temp_conf" "$bootstrap_conf"
                 fi
 
+                # Log the configuration summary to log file
+                _log_config_summary
+
                 return 0
                 ;;
             b|back)
@@ -831,96 +908,290 @@ _bootstrap_step_preflight() {
     _menu_title "BOOTSTRAP PROJECT - Step 5/7: Preflight Check"
     echo ""
 
-    # Run preflight checks
     local errors=0
+    local warnings=0
+    local scripts_dir="${SCRIPTS_DIR:-$(dirname "${BASH_SOURCE[0]}")/..}"
 
-    echo "  ${LOG_CYAN}Required Tools${LOG_NC}"
+    # -------------------------------------------------------------------------
+    # Section 1: Required Tools
+    # -------------------------------------------------------------------------
+    echo "  ${LOG_CYAN}1. Required Tools${LOG_NC}"
     echo ""
 
     # Check Node.js
     if command -v node &>/dev/null; then
         local node_ver=$(node --version)
-        echo "  [OK] Node.js ${node_ver}"
-        echo "       → Required for: Next.js framework"
+        echo "     ${LOG_GREEN}✓${LOG_NC} Node.js ${node_ver}"
     else
-        echo "  [FAIL] Node.js not found - Required (v${NODE_VERSION:-20}+)"
-        echo "       → Download: https://nodejs.org"
+        echo "     ${LOG_RED}✗${LOG_NC} Node.js not found (v${NODE_VERSION:-20}+ required)"
         ((errors++))
     fi
-    echo ""
 
     # Check pnpm
     if command -v pnpm &>/dev/null; then
         local pnpm_ver=$(pnpm --version)
-        echo "  [OK] pnpm ${pnpm_ver}"
-        echo "       → Required for: Package management (faster than npm)"
+        echo "     ${LOG_GREEN}✓${LOG_NC} pnpm ${pnpm_ver}"
     else
-        echo "  [FAIL] pnpm not found - Required"
-        echo "       → Install: npm install -g pnpm"
+        echo "     ${LOG_RED}✗${LOG_NC} pnpm not found (npm install -g pnpm)"
         ((errors++))
     fi
-    echo ""
 
     # Check git
     if command -v git &>/dev/null; then
-        echo "  [OK] git installed"
-        echo "       → Required for: Version control & .gitignore"
+        echo "     ${LOG_GREEN}✓${LOG_NC} git installed"
     else
-        echo "  [FAIL] git not found - Required"
-        echo "       → Download: https://git-scm.com"
+        echo "     ${LOG_RED}✗${LOG_NC} git not found"
+        ((errors++))
+    fi
+
+    # Check Docker (optional)
+    if command -v docker &>/dev/null; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} Docker installed"
+    else
+        echo "     ${LOG_YELLOW}○${LOG_NC} Docker not found (optional - for PostgreSQL container)"
+        ((warnings++))
+    fi
+    echo ""
+
+    # -------------------------------------------------------------------------
+    # Section 2: Framework Files
+    # -------------------------------------------------------------------------
+    echo "  ${LOG_CYAN}2. Framework Files${LOG_NC}"
+    echo ""
+
+    local framework_ok=0
+    local framework_total=0
+
+    # Check core libraries
+    local core_libs=("common.sh" "logging.sh" "config_bootstrap.sh" "phases.sh" "state.sh" "utils.sh" "ascii.sh" "menu.sh")
+    for lib in "${core_libs[@]}"; do
+        ((framework_total++))
+        if [[ -f "${scripts_dir}/lib/${lib}" ]]; then
+            ((framework_ok++))
+        fi
+    done
+
+    # Check bin scripts
+    local bin_scripts=("omni" "forge" "status")
+    for bin in "${bin_scripts[@]}"; do
+        ((framework_total++))
+        if [[ -f "${scripts_dir}/bin/${bin}" ]]; then
+            ((framework_ok++))
+        fi
+    done
+
+    if [[ $framework_ok -eq $framework_total ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} Core libraries: ${framework_ok}/${framework_total} files"
+    else
+        echo "     ${LOG_RED}✗${LOG_NC} Core libraries: ${framework_ok}/${framework_total} files (missing: $((framework_total - framework_ok)))"
+        ((errors++))
+    fi
+
+    # Check bootstrap.conf
+    if [[ -f "${scripts_dir}/bootstrap.conf" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} bootstrap.conf present"
+    else
+        echo "     ${LOG_RED}✗${LOG_NC} bootstrap.conf missing"
         ((errors++))
     fi
     echo ""
 
-    # Check Docker (optional)
-    if command -v docker &>/dev/null; then
-        echo "  [OK] Docker installed"
-        echo "       → Required for: PostgreSQL container (Phase 1)"
+    # -------------------------------------------------------------------------
+    # Section 3: Template & Settings Files
+    # -------------------------------------------------------------------------
+    echo "  ${LOG_CYAN}3. Template & Settings Files${LOG_NC}"
+    echo ""
+
+    # Count example files
+    local example_count=0
+    if [[ -d "${scripts_dir}/example-files" ]]; then
+        example_count=$(find "${scripts_dir}/example-files" -type f -name "*.example" 2>/dev/null | wc -l | tr -d ' ')
+    fi
+    if [[ $example_count -gt 0 ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} Example files: ${example_count} templates"
     else
-        echo "  [WARN] Docker not found - Optional"
-        echo "       → If skipped: install PostgreSQL 16 locally"
-        echo "       → Download: https://www.docker.com"
+        echo "     ${LOG_YELLOW}○${LOG_NC} Example files: none found"
+        ((warnings++))
+    fi
+
+    # Count settings files
+    local settings_count=0
+    if [[ -d "${scripts_dir}/settings-files" ]]; then
+        settings_count=$(find "${scripts_dir}/settings-files" -type f 2>/dev/null | wc -l | tr -d ' ')
+    fi
+    if [[ $settings_count -gt 0 ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} Settings files: ${settings_count} configs"
+    else
+        echo "     ${LOG_YELLOW}○${LOG_NC} Settings files: none found"
+        ((warnings++))
     fi
     echo ""
 
-    echo "  ${LOG_CYAN}Configuration Validation${LOG_NC}"
+    # -------------------------------------------------------------------------
+    # Section 4: Profile Scripts (based on selected profile)
+    # -------------------------------------------------------------------------
+    echo "  ${LOG_CYAN}4. Profile Scripts [${STACK_PROFILE:-standard}]${LOG_NC}"
+    echo ""
+
+    local tech_stack_dir="${scripts_dir}/tech_stack"
+    local profile="${STACK_PROFILE:-standard}"
+
+    # Define which scripts each profile needs
+    # Core scripts are always required, features depend on profile
+    local -a core_scripts=("core/00-nextjs.sh" "core/01-database.sh")
+    local -a feature_scripts=()
+
+    case "$profile" in
+        minimal)
+            # Core only
+            ;;
+        starter)
+            # + Auth + UI
+            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            ;;
+        standard)
+            # + State + Testing
+            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            feature_scripts=("features/state.sh" "features/testing.sh")
+            ;;
+        advanced)
+            # + AI SDK
+            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            feature_scripts=("features/state.sh" "features/testing.sh" "features/ai-sdk.sh")
+            ;;
+        enterprise)
+            # Full stack + Code Quality
+            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            feature_scripts=("features/state.sh" "features/testing.sh" "features/ai-sdk.sh" "features/code-quality.sh")
+            ;;
+    esac
+
+    # Check tech_stack directory exists
+    if [[ ! -d "$tech_stack_dir" ]]; then
+        echo "     ${LOG_RED}✗${LOG_NC} tech_stack/ directory missing"
+        ((errors++))
+    else
+        # Check core scripts
+        local core_ok=0
+        local core_missing=()
+        for script in "${core_scripts[@]}"; do
+            if [[ -f "${tech_stack_dir}/${script}" ]]; then
+                ((core_ok++))
+            else
+                core_missing+=("$script")
+            fi
+        done
+
+        if [[ $core_ok -eq ${#core_scripts[@]} ]]; then
+            echo "     ${LOG_GREEN}✓${LOG_NC} Core scripts: ${core_ok}/${#core_scripts[@]} ready"
+        else
+            echo "     ${LOG_RED}✗${LOG_NC} Core scripts: ${core_ok}/${#core_scripts[@]} (missing: ${core_missing[*]})"
+            ((errors++))
+        fi
+
+        # Check feature scripts (if any)
+        if [[ ${#feature_scripts[@]} -eq 0 ]]; then
+            echo "     ${LOG_GREEN}✓${LOG_NC} Feature scripts: none required"
+        else
+            local feat_ok=0
+            local feat_missing=()
+            for script in "${feature_scripts[@]}"; do
+                if [[ -f "${tech_stack_dir}/${script}" ]]; then
+                    ((feat_ok++))
+                else
+                    feat_missing+=("$script")
+                fi
+            done
+
+            if [[ $feat_ok -eq ${#feature_scripts[@]} ]]; then
+                echo "     ${LOG_GREEN}✓${LOG_NC} Feature scripts: ${feat_ok}/${#feature_scripts[@]} ready"
+            else
+                echo "     ${LOG_YELLOW}○${LOG_NC} Feature scripts: ${feat_ok}/${#feature_scripts[@]} (missing: ${feat_missing[*]})"
+                ((warnings++))
+            fi
+        fi
+
+        # Check package installer utility
+        if [[ -f "${tech_stack_dir}/_lib/pkg-install.sh" ]]; then
+            echo "     ${LOG_GREEN}✓${LOG_NC} Package installer: ready"
+        else
+            echo "     ${LOG_RED}✗${LOG_NC} Package installer: _lib/pkg-install.sh missing"
+            ((errors++))
+        fi
+    fi
+    echo ""
+
+    # -------------------------------------------------------------------------
+    # Section 5: Configuration Validation
+    # -------------------------------------------------------------------------
+    echo "  ${LOG_CYAN}5. Configuration Validation${LOG_NC}"
     echo ""
 
     # Validate config
     if type config_validate_all &>/dev/null; then
-        if config_validate_all; then
-            echo "  [OK] bootstrap.conf is valid"
-            echo "       → APP_NAME, DB config, features loaded"
+        if config_validate_all 2>/dev/null; then
+            echo "     ${LOG_GREEN}✓${LOG_NC} bootstrap.conf validated"
         else
-            echo "  [FAIL] Configuration errors in bootstrap.conf"
+            echo "     ${LOG_RED}✗${LOG_NC} bootstrap.conf has errors"
             ((errors++))
         fi
     else
-        echo "  [SKIP] Config validation not available"
+        echo "     ${LOG_YELLOW}○${LOG_NC} Config validation skipped"
     fi
 
-    echo ""
-    echo "  ${LOG_CYAN}Installation Summary${LOG_NC}"
-    _menu_line "─" 66
-    echo ""
-    echo "  Ready to install ${STACK_PROFILE:-full} stack:"
-    echo "    • App: ${APP_NAME} → ${INSTALL_DIR}"
-    echo "    • DB: ${DB_NAME} (${DB_USER}@${DB_HOST}:${DB_PORT})"
-    echo "    • Backups: ${BACKUP_LOCATION}"
-    echo ""
-    _menu_line
+    # Check key variables
+    if [[ -n "${APP_NAME:-}" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} APP_NAME: ${APP_NAME}"
+    else
+        echo "     ${LOG_RED}✗${LOG_NC} APP_NAME not set"
+        ((errors++))
+    fi
 
-    if [[ $errors -gt 0 ]]; then
+    if [[ -n "${INSTALL_DIR:-}" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} INSTALL_DIR: ${INSTALL_DIR}"
+    else
+        echo "     ${LOG_RED}✗${LOG_NC} INSTALL_DIR not set"
+        ((errors++))
+    fi
+    echo ""
+
+    # -------------------------------------------------------------------------
+    # Summary
+    # -------------------------------------------------------------------------
+    _menu_line "─" 66
+
+    local total_checks=$((errors + warnings))
+    if [[ $errors -eq 0 && $warnings -eq 0 ]]; then
         echo ""
-        echo "  ⚠️  ${errors} error(s) found. Please fix before continuing."
+        echo "  ${LOG_GREEN}PREFLIGHT COMPLETE${LOG_NC} - All systems ready"
+        echo ""
+        echo "  Ready to install ${LOG_CYAN}${STACK_PROFILE:-standard}${LOG_NC} stack:"
+        echo "    • App: ${APP_NAME} → ${INSTALL_DIR}"
+        echo "    • DB: ${DB_NAME} (${DB_USER}@${DB_HOST}:${DB_PORT})"
+        echo ""
+    elif [[ $errors -eq 0 ]]; then
+        echo ""
+        echo "  ${LOG_YELLOW}PREFLIGHT COMPLETE${LOG_NC} - ${warnings} warning(s)"
+        echo ""
+        echo "  Ready to install ${LOG_CYAN}${STACK_PROFILE:-standard}${LOG_NC} stack:"
+        echo "    • App: ${APP_NAME} → ${INSTALL_DIR}"
+        echo "    • DB: ${DB_NAME} (${DB_USER}@${DB_HOST}:${DB_PORT})"
+        echo ""
+    else
+        echo ""
+        echo "  ${LOG_RED}PREFLIGHT FAILED${LOG_NC} - ${errors} error(s), ${warnings} warning(s)"
+        echo ""
+        echo "  Please fix the errors above before continuing."
         echo ""
         read -rp "  Press Enter to retry, 'b' to go back: " choice
         [[ "$choice" == "b" ]] && return 1
         return 1  # Retry this step
     fi
 
+    _menu_line
+
     echo ""
-    read -rp "  ✓ All checks passed! Press Enter to begin installation, 'b' to go back: " choice
+    read -rp "  Press Enter to begin installation, 'b' to go back: " choice
     [[ "$choice" == "b" ]] && return 1
     return 0
 }
@@ -1134,6 +1405,342 @@ menu_purge() {
 }
 
 # =============================================================================
+# CLEAN INSTALLATION MENU
+# =============================================================================
+
+menu_clean() {
+    _menu_header
+    _menu_title "CLEAN INSTALLATION"
+    echo ""
+    echo "  ${LOG_CYAN}Select Installation to Clean${LOG_NC}"
+    echo ""
+
+    # Define known installation paths
+    local install_paths=(
+        "./test/install-1"
+        "./test/install-2"
+        "./test/install-3"
+        "./app"
+    )
+
+    # Check which paths exist and have content
+    local existing_paths=()
+    local path_num=1
+    for path in "${install_paths[@]}"; do
+        if [[ -d "$path" ]]; then
+            local size=$(du -sh "$path" 2>/dev/null | cut -f1 || echo "?")
+            local node_modules=""
+            [[ -d "$path/node_modules" ]] && node_modules=" (has node_modules)"
+            echo "  ${path_num}) ${LOG_YELLOW}${path}${LOG_NC} [${size}]${node_modules}"
+            existing_paths+=("$path")
+            ((path_num++))
+        fi
+    done
+
+    if [[ ${#existing_paths[@]} -eq 0 ]]; then
+        echo "  ${LOG_GRAY}No installations found.${LOG_NC}"
+        echo ""
+        read -rp "  Press Enter to return: " _
+        return
+    fi
+
+    echo ""
+    echo "  ${path_num}) Enter custom path"
+    echo ""
+    _menu_line
+
+    read -rp "  Select [1-${path_num}] or 'b' to go back: " choice
+
+    local target_path=""
+    if [[ "$choice" == "b" || "$choice" == "back" ]]; then
+        return
+    elif [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -lt $path_num ]]; then
+        target_path="${existing_paths[$((choice-1))]}"
+    elif [[ "$choice" == "$path_num" ]]; then
+        read -rp "  Enter path to clean: " target_path
+    else
+        echo "  [WARN] Invalid selection"
+        sleep 1
+        return
+    fi
+
+    if [[ -z "$target_path" || ! -d "$target_path" ]]; then
+        echo "  [WARN] Path does not exist: $target_path"
+        sleep 1
+        return
+    fi
+
+    # Show what will be cleaned
+    _menu_header
+    _menu_title "CLEAN: ${target_path}"
+    echo ""
+
+    echo "  ${LOG_CYAN}Installation Artifacts${LOG_NC}"
+    _menu_line "─" 66
+    echo ""
+
+    # App folder contents
+    echo "  ${LOG_YELLOW}[APP FOLDER]${LOG_NC} ${target_path}/"
+    if [[ -d "$target_path" ]]; then
+        local app_size=$(du -sh "$target_path" 2>/dev/null | cut -f1 || echo "?")
+        local file_count=$(find "$target_path" -type f 2>/dev/null | wc -l | tr -d ' ')
+        echo "    Size: ${app_size}, Files: ${file_count}"
+        [[ -d "$target_path/node_modules" ]] && echo "    ✓ node_modules/ present"
+        [[ -d "$target_path/.next" ]] && echo "    ✓ .next/ build cache present"
+        [[ -f "$target_path/package.json" ]] && echo "    ✓ package.json present"
+    fi
+    echo ""
+
+    # State file in project root
+    local state_file="${PROJECT_ROOT:-.}/.bootstrap_state"
+    echo "  ${LOG_YELLOW}[STATE FILES]${LOG_NC}"
+    if [[ -f "$state_file" ]]; then
+        local state_entries=$(grep -c "=success:" "$state_file" 2>/dev/null || echo "0")
+        echo "    ✓ .bootstrap_state (${state_entries} completed entries)"
+    else
+        echo "    ○ .bootstrap_state (not found)"
+    fi
+
+    # Index file
+    local index_file="${PROJECT_ROOT:-.}/.omniforge_index"
+    if [[ -f "$index_file" ]]; then
+        echo "    ✓ .omniforge_index present"
+    fi
+    echo ""
+
+    # Docker resources
+    echo "  ${LOG_YELLOW}[DOCKER RESOURCES]${LOG_NC}"
+    local docker_found=false
+    if command -v docker &>/dev/null; then
+        # Check for containers with app name
+        local app_name=$(basename "$target_path")
+        local containers=$(docker ps -a --filter "name=${app_name}" --format "{{.Names}}" 2>/dev/null | wc -l | tr -d ' ')
+        if [[ $containers -gt 0 ]]; then
+            echo "    ✓ ${containers} container(s) matching '${app_name}'"
+            docker_found=true
+        fi
+        # Check for postgres containers
+        local pg_containers=$(docker ps -a --filter "name=postgres" --format "{{.Names}}" 2>/dev/null | head -3)
+        if [[ -n "$pg_containers" ]]; then
+            echo "    ✓ PostgreSQL containers found:"
+            echo "$pg_containers" | while read -r name; do echo "      - $name"; done
+            docker_found=true
+        fi
+        # Check for volumes
+        local volumes=$(docker volume ls --filter "name=${app_name}" --format "{{.Name}}" 2>/dev/null | wc -l | tr -d ' ')
+        if [[ $volumes -gt 0 ]]; then
+            echo "    ✓ ${volumes} volume(s) matching '${app_name}'"
+            docker_found=true
+        fi
+    fi
+    [[ "$docker_found" == "false" ]] && echo "    ○ No Docker resources found"
+    echo ""
+
+    # OmniForge cache (always in omniforge dir)
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local omniforge_dir="$(cd "${script_dir}/.." && pwd)"
+    echo "  ${LOG_YELLOW}[OMNIFORGE CACHE]${LOG_NC}"
+    if [[ -d "${omniforge_dir}/.download-cache" ]]; then
+        local cache_size=$(du -sh "${omniforge_dir}/.download-cache" 2>/dev/null | cut -f1 || echo "?")
+        echo "    ✓ .download-cache/ [${cache_size}]"
+    else
+        echo "    ○ .download-cache/ (not found)"
+    fi
+    if [[ -d "${omniforge_dir}/logs" ]]; then
+        local log_count=$(find "${omniforge_dir}/logs" -name "*.log" 2>/dev/null | wc -l | tr -d ' ')
+        echo "    ✓ logs/ [${log_count} files]"
+    fi
+    echo ""
+
+    _menu_line "─" 66
+    echo ""
+    echo "  ${LOG_CYAN}Clean Options${LOG_NC}"
+    echo ""
+    echo "    1) Quick Clean  - Delete app folder only"
+    echo "    2) Full Clean   - App folder + state files + index"
+    echo "    3) Deep Clean   - Full + Docker containers/volumes"
+    echo "    4) Nuclear      - Everything including download cache"
+    echo ""
+    echo "    b) Back"
+    echo ""
+
+    read -rp "  Select clean level [1-4]: " clean_level
+
+    case "$clean_level" in
+        1)
+            echo ""
+            echo "  ${LOG_YELLOW}Quick Clean: Deleting ${target_path}/${LOG_NC}"
+            read -rp "  Confirm? (y/N): " confirm
+            if [[ "${confirm,,}" == "y" ]]; then
+                rm -rf "$target_path"
+                echo "  [OK] Deleted ${target_path}/"
+            else
+                echo "  [SKIP] Cancelled"
+            fi
+            ;;
+        2)
+            echo ""
+            echo "  ${LOG_YELLOW}Full Clean:${LOG_NC}"
+            echo "    - ${target_path}/"
+            echo "    - .bootstrap_state"
+            echo "    - .omniforge_index"
+            read -rp "  Confirm? (y/N): " confirm
+            if [[ "${confirm,,}" == "y" ]]; then
+                rm -rf "$target_path"
+                rm -f "${PROJECT_ROOT:-.}/.bootstrap_state"
+                rm -f "${PROJECT_ROOT:-.}/.omniforge_index"
+                echo "  [OK] Full clean completed"
+            else
+                echo "  [SKIP] Cancelled"
+            fi
+            ;;
+        3)
+            echo ""
+            echo "  ${LOG_YELLOW}Deep Clean (includes Docker):${LOG_NC}"
+            echo "    - ${target_path}/"
+            echo "    - .bootstrap_state"
+            echo "    - .omniforge_index"
+            echo "    - Docker containers/volumes"
+            read -rp "  Confirm? (y/N): " confirm
+            if [[ "${confirm,,}" == "y" ]]; then
+                rm -rf "$target_path"
+                rm -f "${PROJECT_ROOT:-.}/.bootstrap_state"
+                rm -f "${PROJECT_ROOT:-.}/.omniforge_index"
+                # Docker cleanup
+                if command -v docker &>/dev/null; then
+                    local app_name=$(basename "$target_path")
+                    echo "  Stopping containers..."
+                    docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                    docker ps -a --filter "name=postgres" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                    echo "  Removing containers..."
+                    docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker rm 2>/dev/null || true
+                    echo "  Removing volumes..."
+                    docker volume ls --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker volume rm 2>/dev/null || true
+                fi
+                echo "  [OK] Deep clean completed"
+            else
+                echo "  [SKIP] Cancelled"
+            fi
+            ;;
+        4)
+            echo ""
+            echo "  ${LOG_RED}Nuclear Clean (EVERYTHING):${LOG_NC}"
+            echo "    - ${target_path}/"
+            echo "    - .bootstrap_state"
+            echo "    - .omniforge_index"
+            echo "    - Docker containers/volumes"
+            echo "    - Download cache"
+            echo "    - OmniForge logs"
+            read -rp "  Type 'NUKE' to confirm: " confirm
+            if [[ "$confirm" == "NUKE" ]]; then
+                rm -rf "$target_path"
+                rm -f "${PROJECT_ROOT:-.}/.bootstrap_state"
+                rm -f "${PROJECT_ROOT:-.}/.omniforge_index"
+                rm -rf "${PROJECT_ROOT:-.}/.omniforge-backup"
+                # Docker cleanup
+                if command -v docker &>/dev/null; then
+                    local app_name=$(basename "$target_path")
+                    docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                    docker ps -a --filter "name=postgres" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                    docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker rm 2>/dev/null || true
+                    docker volume ls --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker volume rm 2>/dev/null || true
+                fi
+                # Cache and logs
+                rm -rf "${omniforge_dir}/.download-cache"
+                rm -rf "${omniforge_dir}/logs"
+                echo "  [OK] Nuclear clean completed - all artifacts removed"
+            else
+                echo "  [SKIP] Cancelled (did not type NUKE)"
+            fi
+            ;;
+        b|back|*)
+            return
+            ;;
+    esac
+
+    echo ""
+    read -rp "  Press Enter to continue: " _
+}
+
+# Non-interactive clean for CLI usage
+# Usage: _run_clean_noninteractive <path> <level>
+# Levels: 1=quick (app only), 2=full (+state), 3=deep (+docker), 4=nuclear (+cache)
+_run_clean_noninteractive() {
+    local target_path="$1"
+    local clean_level="${2:-1}"
+
+    # Validate path
+    if [[ -z "$target_path" ]]; then
+        echo "[ERR] No path specified. Use --path <dir>"
+        exit 1
+    fi
+
+    if [[ ! -d "$target_path" ]]; then
+        echo "[ERR] Path does not exist: $target_path"
+        exit 1
+    fi
+
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local omniforge_dir="$(cd "${script_dir}/.." && pwd)"
+
+    echo "[INFO] Clean level: $clean_level"
+    echo "[INFO] Target: $target_path"
+
+    case "$clean_level" in
+        1)
+            echo "[INFO] Quick Clean: Deleting app folder only"
+            rm -rf "$target_path"
+            echo "[OK] Deleted $target_path/"
+            ;;
+        2)
+            echo "[INFO] Full Clean: App folder + state files"
+            rm -rf "$target_path"
+            rm -f "${PROJECT_ROOT:-.}/.bootstrap_state"
+            rm -f "${PROJECT_ROOT:-.}/.omniforge_index"
+            echo "[OK] Full clean completed"
+            ;;
+        3)
+            echo "[INFO] Deep Clean: Full + Docker resources"
+            rm -rf "$target_path"
+            rm -f "${PROJECT_ROOT:-.}/.bootstrap_state"
+            rm -f "${PROJECT_ROOT:-.}/.omniforge_index"
+            if command -v docker &>/dev/null; then
+                local app_name=$(basename "$target_path")
+                echo "[INFO] Stopping Docker containers..."
+                docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                docker ps -a --filter "name=postgres" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                echo "[INFO] Removing Docker containers..."
+                docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker rm 2>/dev/null || true
+                echo "[INFO] Removing Docker volumes..."
+                docker volume ls --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker volume rm 2>/dev/null || true
+            fi
+            echo "[OK] Deep clean completed"
+            ;;
+        4)
+            echo "[INFO] Nuclear Clean: Everything"
+            rm -rf "$target_path"
+            rm -f "${PROJECT_ROOT:-.}/.bootstrap_state"
+            rm -f "${PROJECT_ROOT:-.}/.omniforge_index"
+            rm -rf "${PROJECT_ROOT:-.}/.omniforge-backup"
+            if command -v docker &>/dev/null; then
+                local app_name=$(basename "$target_path")
+                docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                docker ps -a --filter "name=postgres" -q 2>/dev/null | xargs -r docker stop 2>/dev/null || true
+                docker ps -a --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker rm 2>/dev/null || true
+                docker volume ls --filter "name=${app_name}" -q 2>/dev/null | xargs -r docker volume rm 2>/dev/null || true
+            fi
+            rm -rf "${omniforge_dir}/.download-cache"
+            rm -rf "${omniforge_dir}/logs"
+            echo "[OK] Nuclear clean completed"
+            ;;
+        *)
+            echo "[ERR] Invalid clean level: $clean_level (use 1-4)"
+            exit 1
+            ;;
+    esac
+}
+
+# =============================================================================
 # OPTIONS MENU
 # =============================================================================
 
@@ -1151,20 +1758,34 @@ menu_options() {
         fi
     fi
 
+    # Get bootstrap.conf path for updates
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local omniforge_dir="$(cd "${script_dir}/.." && pwd)"
+    local bootstrap_conf="${omniforge_dir}/bootstrap.conf"
+
     while true; do
         _menu_header
         _menu_title "OPTIONS"
         echo ""
 
-        _menu_item "1" "Install Target" "Choose test (./test/install-1) or prod (./app)" "[${INSTALL_TARGET:-test}]"
-        _menu_item "2" "Default Profile" "Feature set: minimal, api-only, or full stack" "[${STACK_PROFILE:-full}]"
+        # Show install target with path in yellow
+        local target_display="${INSTALL_TARGET:-test}"
+        local path_display
+        if [[ "$target_display" == "prod" ]]; then
+            path_display="${LOG_YELLOW}${INSTALL_DIR_PROD:-./app}${LOG_NC}"
+        else
+            path_display="${LOG_YELLOW}${INSTALL_DIR_TEST:-./test/install-1}${LOG_NC}"
+        fi
+        echo -e "  1. Install Target              ${target_display} → ${path_display}"
+
+        _menu_item "2" "Default Profile" "minimal, starter, standard, advanced, enterprise" "[${STACK_PROFILE:-standard}]"
         _menu_item "3" "Log Level" "Verbosity: quiet, status, or verbose" "[${LOG_LEVEL:-status}]"
         _menu_item "4" "Logo Style" "Display style: block, gradient, shadow, simple, minimal" "[${OMNI_LOGO:-block}]"
         _menu_item "5" "Default Timeout" "Max minutes for operations" "[$(( (${MAX_CMD_SECONDS:-300} / 60) )).$(( (${MAX_CMD_SECONDS:-300} % 60) / 6 ))m]"
         _menu_item "6" "Git Safety" "Require clean git working tree before bootstrap" "[${GIT_SAFETY:-true}]"
         _menu_item "7" "View Logs" "Open log file with micro editor" "[$([ -f "${LOG_FILE:-}" ] && wc -l < "${LOG_FILE}" | tr -d ' ' || echo 'empty')]"
         _menu_item "8" "Clear Logs" "Delete all log files" "[$([ -f "${LOG_FILE:-}" ] && basename "${LOG_FILE}" || echo 'empty')]"
-        _menu_item "9" "Reset to Defaults" "Restore: test target, full profile, status log, block logo, 5.0m timeout, git safety on"
+        _menu_item "9" "Reset to Defaults" "Restore: test target, standard profile, status log, block logo, 5.0m timeout"
         echo ""
         _menu_item "0" "Back"
 
@@ -1173,102 +1794,317 @@ menu_options() {
         case "$_MENU_SELECTION" in
             1)
                 echo ""
-                echo "  Targets: test (./test/install-1), prod (./app)"
-                read -rp "  New target: " val
-                if [[ "$val" == "test" || "$val" == "prod" ]]; then
-                    INSTALL_TARGET="$val"
-                    [[ "$val" == "prod" ]] && INSTALL_DIR="./app" || INSTALL_DIR="./test/install-1"
-                fi
+                echo "  Current: ${INSTALL_TARGET:-test}"
+                echo ""
+                echo "  ${LOG_CYAN}1)${LOG_NC} test → ${LOG_YELLOW}${INSTALL_DIR_TEST:-./test/install-1}${LOG_NC}"
+                echo "  ${LOG_CYAN}2)${LOG_NC} prod → ${LOG_YELLOW}${INSTALL_DIR_PROD:-./app}${LOG_NC}"
+                echo ""
+                read -rp "  Select [1-2]: " val
+                case "$val" in
+                    1|test)
+                        INSTALL_TARGET="test"
+                        INSTALL_DIR="${INSTALL_DIR_TEST:-./test/install-1}"
+                        # Update bootstrap.conf
+                        if [[ -f "$bootstrap_conf" ]]; then
+                            sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="test"/' "$bootstrap_conf"
+                            rm -f "${bootstrap_conf}.bak"
+                        fi
+                        echo "  [OK] Install target set to test"
+                        ;;
+                    2|prod)
+                        INSTALL_TARGET="prod"
+                        INSTALL_DIR="${INSTALL_DIR_PROD:-./app}"
+                        # Update bootstrap.conf
+                        if [[ -f "$bootstrap_conf" ]]; then
+                            sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="prod"/' "$bootstrap_conf"
+                            rm -f "${bootstrap_conf}.bak"
+                        fi
+                        echo "  [OK] Install target set to prod"
+                        ;;
+                    *)
+                        echo "  [SKIP] No change"
+                        ;;
+                esac
+                sleep 1
                 ;;
             2)
                 echo ""
-                echo "  Profiles: minimal, api-only, full"
-                read -rp "  New profile: " val
-                [[ -n "$val" ]] && STACK_PROFILE="$val"
+                echo "  Current: ${STACK_PROFILE:-standard}"
+                echo ""
+                echo "  ${LOG_CYAN}1)${LOG_NC} minimal    - Fast & Focused (Next.js + TS + PostgreSQL)"
+                echo "  ${LOG_CYAN}2)${LOG_NC} starter    - Quick Start (+ Auth + UI)"
+                echo "  ${LOG_CYAN}3)${LOG_NC} standard   - Complete & Recommended (+ Jobs + Testing)"
+                echo "  ${LOG_CYAN}4)${LOG_NC} advanced   - AI-Powered (+ AI/LLM integration)"
+                echo "  ${LOG_CYAN}5)${LOG_NC} enterprise - Production Ready (+ Exports + Code Quality)"
+                echo ""
+                read -rp "  Select [1-5]: " val
+                case "$val" in
+                    1) STACK_PROFILE="minimal" ;;
+                    2) STACK_PROFILE="starter" ;;
+                    3) STACK_PROFILE="standard" ;;
+                    4) STACK_PROFILE="advanced" ;;
+                    5) STACK_PROFILE="enterprise" ;;
+                    *) echo "  [SKIP] No change"; sleep 1; continue ;;
+                esac
+                # Update bootstrap.conf
+                if [[ -f "$bootstrap_conf" ]]; then
+                    sed -i.bak "s/^STACK_PROFILE=.*/STACK_PROFILE=\"${STACK_PROFILE}\"/" "$bootstrap_conf"
+                    rm -f "${bootstrap_conf}.bak"
+                fi
+                echo "  [OK] Profile set to ${STACK_PROFILE}"
+                sleep 1
                 ;;
             3)
                 echo ""
-                echo "  Levels: quiet, status, verbose"
-                read -rp "  New level: " val
-                [[ -n "$val" ]] && LOG_LEVEL="$val"
+                echo "  Current: ${LOG_LEVEL:-status}"
+                echo ""
+                echo "  ${LOG_CYAN}1)${LOG_NC} quiet   - Errors only"
+                echo "  ${LOG_CYAN}2)${LOG_NC} status  - Progress updates"
+                echo "  ${LOG_CYAN}3)${LOG_NC} verbose - Detailed output"
+                echo ""
+                read -rp "  Select [1-3]: " val
+                case "$val" in
+                    1) LOG_LEVEL="quiet" ;;
+                    2) LOG_LEVEL="status" ;;
+                    3) LOG_LEVEL="verbose" ;;
+                    *) echo "  [SKIP] No change"; sleep 1; continue ;;
+                esac
+                if [[ -f "$bootstrap_conf" ]]; then
+                    sed -i.bak "s/^LOG_LEVEL=.*/LOG_LEVEL=\"${LOG_LEVEL}\"/" "$bootstrap_conf"
+                    rm -f "${bootstrap_conf}.bak"
+                fi
+                echo "  [OK] Log level set to ${LOG_LEVEL}"
+                sleep 1
                 ;;
             4)
                 echo ""
-                echo "  Styles: block, gradient, shadow, simple, minimal, none"
-                read -rp "  New style: " val
-                [[ -n "$val" ]] && OMNI_LOGO="$val"
+                echo "  Current: ${OMNI_LOGO:-block}"
+                echo ""
+                echo "  ${LOG_CYAN}1)${LOG_NC} block    - Full ASCII art"
+                echo "  ${LOG_CYAN}2)${LOG_NC} gradient - Gradient effect"
+                echo "  ${LOG_CYAN}3)${LOG_NC} shadow   - Shadow effect"
+                echo "  ${LOG_CYAN}4)${LOG_NC} simple   - Simple text"
+                echo "  ${LOG_CYAN}5)${LOG_NC} minimal  - Minimal text"
+                echo "  ${LOG_CYAN}6)${LOG_NC} none     - No logo"
+                echo ""
+                read -rp "  Select [1-6]: " val
+                case "$val" in
+                    1) OMNI_LOGO="block" ;;
+                    2) OMNI_LOGO="gradient" ;;
+                    3) OMNI_LOGO="shadow" ;;
+                    4) OMNI_LOGO="simple" ;;
+                    5) OMNI_LOGO="minimal" ;;
+                    6) OMNI_LOGO="none" ;;
+                    *) echo "  [SKIP] No change"; sleep 1; continue ;;
+                esac
+                if [[ -f "$bootstrap_conf" ]]; then
+                    sed -i.bak "s/^OMNI_LOGO=.*/OMNI_LOGO=\"${OMNI_LOGO}\"/" "$bootstrap_conf"
+                    rm -f "${bootstrap_conf}.bak"
+                fi
+                echo "  [OK] Logo style set to ${OMNI_LOGO}"
+                sleep 1
                 ;;
             5)
-                read -rp "  Timeout (minutes, e.g., 5.5): " val
-                if [[ -n "$val" ]]; then
-                    # Convert minutes to seconds: multiply by 60
-                    MAX_CMD_SECONDS=$(echo "$val * 60" | bc 2>/dev/null || echo "300")
+                echo ""
+                echo "  Current: $(( (${MAX_CMD_SECONDS:-300} / 60) )) minutes"
+                echo ""
+                echo "  ${LOG_CYAN}1)${LOG_NC} 2 min   - Quick operations"
+                echo "  ${LOG_CYAN}2)${LOG_NC} 5 min   - Standard (default)"
+                echo "  ${LOG_CYAN}3)${LOG_NC} 10 min  - Extended"
+                echo "  ${LOG_CYAN}4)${LOG_NC} 15 min  - Long running"
+                echo "  ${LOG_CYAN}5)${LOG_NC} Custom  - Enter value"
+                echo ""
+                read -rp "  Select [1-5]: " val
+                case "$val" in
+                    1) MAX_CMD_SECONDS=120 ;;
+                    2) MAX_CMD_SECONDS=300 ;;
+                    3) MAX_CMD_SECONDS=600 ;;
+                    4) MAX_CMD_SECONDS=900 ;;
+                    5)
+                        read -rp "  Enter minutes (e.g., 7.5): " mins
+                        if [[ -n "$mins" ]]; then
+                            MAX_CMD_SECONDS=$(echo "$mins * 60" | bc 2>/dev/null || echo "300")
+                        fi
+                        ;;
+                    *) echo "  [SKIP] No change"; sleep 1; continue ;;
+                esac
+                if [[ -f "$bootstrap_conf" ]]; then
+                    sed -i.bak "s/^MAX_CMD_SECONDS=.*/MAX_CMD_SECONDS=\"${MAX_CMD_SECONDS}\"/" "$bootstrap_conf"
+                    rm -f "${bootstrap_conf}.bak"
                 fi
+                echo "  [OK] Timeout set to $(( MAX_CMD_SECONDS / 60 )) min"
+                sleep 1
                 ;;
             6)
-                if [[ "${GIT_SAFETY:-true}" == "true" ]]; then
-                    GIT_SAFETY="false"
-                else
-                    GIT_SAFETY="true"
+                echo ""
+                echo "  Current: ${GIT_SAFETY:-true}"
+                echo ""
+                echo "  ${LOG_CYAN}1)${LOG_NC} true  - Require clean git state"
+                echo "  ${LOG_CYAN}2)${LOG_NC} false - Skip git check"
+                echo ""
+                read -rp "  Select [1-2]: " val
+                case "$val" in
+                    1) GIT_SAFETY="true" ;;
+                    2) GIT_SAFETY="false" ;;
+                    *) echo "  [SKIP] No change"; sleep 1; continue ;;
+                esac
+                if [[ -f "$bootstrap_conf" ]]; then
+                    sed -i.bak "s/^GIT_SAFETY=.*/GIT_SAFETY=\"${GIT_SAFETY}\"/" "$bootstrap_conf"
+                    rm -f "${bootstrap_conf}.bak"
                 fi
+                echo "  [OK] Git safety set to ${GIT_SAFETY}"
+                sleep 1
                 ;;
             7)
-                # View Logs
-                if [[ -z "${LOG_FILE:-}" ]]; then
-                    echo ""
-                    echo "  [WARN] No log file initialized"
+                # View Logs - submenu to select log file
+                echo ""
+                echo "  ${LOG_CYAN}Select Log File${LOG_NC}"
+                echo ""
+
+                # Collect all log files from various locations
+                local log_files=()
+                local log_num=1
+
+                # Current session log
+                if [[ -n "${LOG_FILE:-}" && -f "$LOG_FILE" ]]; then
+                    local lines=$(wc -l < "$LOG_FILE" | tr -d ' ')
+                    echo "  ${LOG_CYAN}${log_num})${LOG_NC} ${LOG_GREEN}[current]${LOG_NC} $(basename "$LOG_FILE") (${lines} lines)"
+                    log_files+=("$LOG_FILE")
+                    ((log_num++))
+                fi
+
+                # OmniForge logs directory
+                if [[ -d "${omniforge_dir}/logs" ]]; then
+                    while IFS= read -r -d '' logfile; do
+                        # Skip if it's the current log (already listed)
+                        [[ "$logfile" == "${LOG_FILE:-}" ]] && continue
+                        local fname=$(basename "$logfile")
+                        local flines=$(wc -l < "$logfile" 2>/dev/null | tr -d ' ')
+                        local fsize=$(du -h "$logfile" 2>/dev/null | cut -f1)
+                        echo "  ${LOG_CYAN}${log_num})${LOG_NC} ${fname} (${flines} lines, ${fsize})"
+                        log_files+=("$logfile")
+                        ((log_num++))
+                    done < <(find "${omniforge_dir}/logs" -name "*.log" -type f -print0 2>/dev/null | sort -z)
+                fi
+
+                # Temp directory logs
+                local temp_log_dir="${LOG_DIR:-${TMPDIR:-/tmp}}"
+                if [[ -d "$temp_log_dir" ]]; then
+                    while IFS= read -r -d '' logfile; do
+                        # Skip if already listed
+                        [[ " ${log_files[*]} " == *" $logfile "* ]] && continue
+                        local fname=$(basename "$logfile")
+                        local flines=$(wc -l < "$logfile" 2>/dev/null | tr -d ' ')
+                        echo "  ${LOG_CYAN}${log_num})${LOG_NC} ${LOG_YELLOW}[temp]${LOG_NC} ${fname} (${flines} lines)"
+                        log_files+=("$logfile")
+                        ((log_num++))
+                    done < <(find "$temp_log_dir" -maxdepth 1 -name "omniforge_*.log" -type f -print0 2>/dev/null | sort -z)
+                fi
+
+                if [[ ${#log_files[@]} -eq 0 ]]; then
+                    echo "  ${LOG_GRAY}No log files found.${LOG_NC}"
                     read -rp "  Press Enter to continue: " _
                 else
                     echo ""
-                    if [[ -f "$LOG_FILE" ]]; then
+                    echo "  b) Back"
+                    echo ""
+                    read -rp "  Select [1-$((log_num-1))]: " val
+
+                    if [[ "$val" =~ ^[0-9]+$ ]] && [[ $val -ge 1 ]] && [[ $val -lt $log_num ]]; then
+                        local selected_log="${log_files[$((val-1))]}"
                         if command -v micro &>/dev/null; then
-                            micro "$LOG_FILE"
+                            micro "$selected_log"
+                        elif [[ "$OSTYPE" == "darwin"* ]]; then
+                            open "$selected_log"
+                        elif command -v xdg-open &>/dev/null; then
+                            xdg-open "$selected_log"
                         else
-                            # Fallback to default viewer
-                            if [[ "$OSTYPE" == "darwin"* ]]; then
-                                open "$LOG_FILE"
-                            elif command -v xdg-open &>/dev/null; then
-                                xdg-open "$LOG_FILE"
-                            else
-                                less "$LOG_FILE"
-                            fi
+                            less "$selected_log"
                         fi
-                    else
-                        echo "  [WARN] Log file not found: $LOG_FILE"
-                        read -rp "  Press Enter to continue: " _
                     fi
                 fi
                 ;;
             8)
-                # Clear Logs
+                # Clear Logs - all log types
                 echo ""
-                if [[ -z "${LOG_DIR:-}" ]]; then
-                    LOG_DIR="${TMPDIR:-/tmp}"
+                echo "  ${LOG_CYAN}Clear Log Files${LOG_NC}"
+                echo ""
+
+                # Count logs in each location
+                local temp_log_dir="${LOG_DIR:-${TMPDIR:-/tmp}}"
+                local temp_count=$(find "$temp_log_dir" -maxdepth 1 -name "omniforge_*.log" 2>/dev/null | wc -l | tr -d ' ')
+                local omni_count=0
+                local download_count=0
+
+                if [[ -d "${omniforge_dir}/logs" ]]; then
+                    omni_count=$(find "${omniforge_dir}/logs" -name "*.log" 2>/dev/null | wc -l | tr -d ' ')
                 fi
 
-                log_count=$(find "$LOG_DIR" -name "omniforge_*.log" 2>/dev/null | wc -l)
-                if [[ $log_count -eq 0 ]]; then
-                    echo "  [INFO] No log files to clear"
+                # Check for download logs in various locations
+                if [[ -d "${omniforge_dir}/.download-cache" ]]; then
+                    download_count=$(find "${omniforge_dir}/.download-cache" -name "*.log" 2>/dev/null | wc -l | tr -d ' ')
+                fi
+
+                local total=$((temp_count + omni_count + download_count))
+
+                if [[ $total -eq 0 ]]; then
+                    echo "  ${LOG_GRAY}No log files found.${LOG_NC}"
+                    read -rp "  Press Enter to continue: " _
                 else
-                    echo "  Found $log_count log file(s) in $LOG_DIR"
-                    read -rp "  Delete all omniforge logs? (y/N): " confirm
-                    if [[ "${confirm,,}" == "y" ]]; then
-                        find "$LOG_DIR" -name "omniforge_*.log" -delete 2>/dev/null
-                        echo "  [OK] Log files cleared"
-                    else
-                        echo "  [SKIP] Operation cancelled"
-                    fi
+                    echo "  Found log files:"
+                    [[ $temp_count -gt 0 ]] && echo "    - ${temp_count} session log(s) in temp"
+                    [[ $omni_count -gt 0 ]] && echo "    - ${omni_count} log(s) in omniforge/logs/"
+                    [[ $download_count -gt 0 ]] && echo "    - ${download_count} download log(s)"
+                    echo ""
+                    echo "  ${LOG_CYAN}1)${LOG_NC} Clear session logs only (${temp_count})"
+                    echo "  ${LOG_CYAN}2)${LOG_NC} Clear omniforge logs only (${omni_count})"
+                    echo "  ${LOG_CYAN}3)${LOG_NC} Clear download logs only (${download_count})"
+                    echo "  ${LOG_CYAN}4)${LOG_NC} Clear ALL logs (${total})"
+                    echo ""
+                    echo "  b) Back"
+                    echo ""
+                    read -rp "  Select [1-4]: " val
+
+                    case "$val" in
+                        1)
+                            find "$temp_log_dir" -maxdepth 1 -name "omniforge_*.log" -delete 2>/dev/null
+                            echo "  [OK] Session logs cleared"
+                            ;;
+                        2)
+                            [[ -d "${omniforge_dir}/logs" ]] && find "${omniforge_dir}/logs" -name "*.log" -delete 2>/dev/null
+                            echo "  [OK] OmniForge logs cleared"
+                            ;;
+                        3)
+                            [[ -d "${omniforge_dir}/.download-cache" ]] && find "${omniforge_dir}/.download-cache" -name "*.log" -delete 2>/dev/null
+                            echo "  [OK] Download logs cleared"
+                            ;;
+                        4)
+                            find "$temp_log_dir" -maxdepth 1 -name "omniforge_*.log" -delete 2>/dev/null
+                            [[ -d "${omniforge_dir}/logs" ]] && find "${omniforge_dir}/logs" -name "*.log" -delete 2>/dev/null
+                            [[ -d "${omniforge_dir}/.download-cache" ]] && find "${omniforge_dir}/.download-cache" -name "*.log" -delete 2>/dev/null
+                            echo "  [OK] All logs cleared"
+                            ;;
+                        *)
+                            echo "  [SKIP] No change"
+                            ;;
+                    esac
                 fi
                 sleep 1
                 ;;
             9)
                 INSTALL_TARGET="test"
-                STACK_PROFILE="full"
+                STACK_PROFILE="standard"
                 LOG_LEVEL="status"
                 OMNI_LOGO="block"
                 MAX_CMD_SECONDS="300"
                 GIT_SAFETY="true"
-                INSTALL_DIR="./test/install-1"
+                INSTALL_DIR="${INSTALL_DIR_TEST:-./test/install-1}"
+                # Update bootstrap.conf with defaults
+                if [[ -f "$bootstrap_conf" ]]; then
+                    sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="test"/' "$bootstrap_conf"
+                    sed -i.bak 's/^STACK_PROFILE=.*/STACK_PROFILE="standard"/' "$bootstrap_conf"
+                    rm -f "${bootstrap_conf}.bak"
+                fi
                 echo "  [OK] Reset to defaults"
                 sleep 1
                 ;;
