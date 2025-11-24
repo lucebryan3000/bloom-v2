@@ -29,20 +29,45 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-readonly VERSION="3.0.0"
+readonly VERSION="1.1.0"
 readonly CODENAME="OmniForge"
+
+# =============================================================================
+# LOGO
+# =============================================================================
+
+show_logo() {
+    clear
+    cat << 'EOF'
+    ███████                                ███
+  ███░░░░░███                             ░░░
+ ███     ░░███ █████████████   ████████   ████
+░███      ░███░░███░░███░░███ ░░███░░███ ░░███
+░███      ░███ ░███ ░███ ░███  ░███ ░███  ░███
+░░███     ███  ░███ ░███ ░███  ░███ ░███  ░███
+ ░░░███████░   █████░███ █████ ████ █████ █████
+   ░░░░░░░    ░░░░░ ░░░ ░░░░░ ░░░░ ░░░░░ ░░░░░
+                     ___  __   __   __   ___
+                    |__  /  \ |__) / _` |__
+                    |    \__/ |  \ \__> |___
+
+EOF
+    echo "  Infinite Architectures. Instant Foundation. v${VERSION}"
+}
 
 # =============================================================================
 # USAGE
 # =============================================================================
 
 usage() {
+    show_logo
     cat <<EOF
 ${CODENAME} v${VERSION} - Infinite Architectures. Instant Foundation.
 
 Usage: omni [OPTIONS] [COMMAND]
 
 COMMANDS:
+    menu            Launch interactive menu (default if no command)
     init            Initialize project with all phases
     run             Run all phases using PHASE_METADATA from omniforge.conf
     list            List all phases and scripts
@@ -112,7 +137,7 @@ while [[ $# -gt 0 ]]; do
             PHASE="$2"
             shift 2
             ;;
-        init|run|list|status|forge|compile)
+        menu|init|run|list|status|forge|compile)
             # Map 'compile' to 'forge' for backward compat
             if [[ "$1" == "compile" ]]; then
                 COMMAND="forge"
@@ -160,7 +185,15 @@ ARGS=""
 
 # Execute command by delegating to bin scripts
 case "${COMMAND:-}" in
+    menu|"")
+        # Launch interactive menu (default when no command given)
+        source "${SCRIPT_DIR}/lib/common.sh"
+        source "${SCRIPT_DIR}/lib/ascii.sh"
+        source "${SCRIPT_DIR}/lib/menu.sh"
+        menu_main
+        ;;
     init|run)
+        show_logo
         exec "${SCRIPT_DIR}/bin/omni" $ARGS
         ;;
     list)
@@ -170,11 +203,8 @@ case "${COMMAND:-}" in
         exec "${SCRIPT_DIR}/bin/status" --state
         ;;
     forge)
+        show_logo
         exec "${SCRIPT_DIR}/bin/forge" $ARGS
-        ;;
-    "")
-        usage
-        exit 0
         ;;
     *)
         echo "Unknown command: $COMMAND"

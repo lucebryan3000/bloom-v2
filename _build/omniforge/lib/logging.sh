@@ -24,17 +24,17 @@
 _LIB_LOGGING_LOADED=1
 
 # =============================================================================
-# COLORS
+# COLORS (using $'...' syntax for interpreted escape sequences)
 # =============================================================================
 
-readonly LOG_RED='\033[0;31m'
-readonly LOG_GREEN='\033[0;32m'
-readonly LOG_YELLOW='\033[0;33m'
-readonly LOG_BLUE='\033[0;34m'
-readonly LOG_CYAN='\033[0;36m'
-readonly LOG_GRAY='\033[0;90m'
-readonly LOG_BOLD='\033[1m'
-readonly LOG_NC='\033[0m' # No Color
+readonly LOG_RED=$'\033[0;31m'
+readonly LOG_GREEN=$'\033[0;32m'
+readonly LOG_YELLOW=$'\033[0;33m'
+readonly LOG_BLUE=$'\033[0;34m'
+readonly LOG_CYAN=$'\033[0;36m'
+readonly LOG_GRAY=$'\033[0;90m'
+readonly LOG_BOLD=$'\033[1m'
+readonly LOG_NC=$'\033[0m' # No Color
 
 # =============================================================================
 # LOGGING CONFIGURATION

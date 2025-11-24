@@ -84,6 +84,8 @@ _menu_prompt() {
     else
         read -rp "  $prompt: " _MENU_SELECTION
     fi
+
+    echo "  ${LOG_GRAY}(press any other key to go back)${LOG_NC}"
 }
 
 # =============================================================================
@@ -101,17 +103,19 @@ menu_main() {
         local cache_size=""
         if type downloads_get_cache_size &>/dev/null; then
             cache_size=$(downloads_get_cache_size 2>/dev/null || echo "0")
-            [[ "$cache_size" != "0" ]] && cache_size="[${cache_size} MB]"
+            [[ "$cache_size" != "0" ]] && cache_size="${cache_size} MB" || cache_size="empty"
         fi
 
-        _menu_title "MAIN MENU"
+        echo ""
+        echo -e "  ${LOG_CYAN}MAIN MENU${LOG_NC}"
+        _menu_line "─" 66
         echo ""
 
         _menu_item "1" "Bootstrap Project" "Select apps, configure, install"
         echo ""
         _menu_item "2" "Settings Manager" "Copy IDE/tool configs to project"
         echo ""
-        _menu_item "3" "Purge Download Cache" "Clear cached packages" "$cache_size"
+        _menu_item "3" "Purge Download Cache" "Clear cached packages [$cache_size]"
         echo ""
         _menu_item "4" "Options" "Preferences and defaults"
         echo ""
@@ -127,8 +131,7 @@ menu_main() {
             3) menu_purge ;;
             4) menu_options ;;
             5) menu_help ;;
-            0|q|Q|exit) _MENU_RUNNING=false ;;
-            *) ;;
+            *) _MENU_RUNNING=false ;;  # Any other key exits
         esac
     done
 
@@ -492,7 +495,7 @@ menu_settings() {
                 _settings_copy "$id"
             done
             ;;
-        0|b|back) return ;;
+        *) return ;;  # Any other key returns to parent
     esac
 
     read -rp "  Press Enter to continue: " _
@@ -609,7 +612,7 @@ menu_options() {
                 echo "  [OK] Reset to defaults"
                 sleep 1
                 ;;
-            0|b|back) return ;;
+            *) return ;;  # Any other key returns to parent
         esac
     done
 }
