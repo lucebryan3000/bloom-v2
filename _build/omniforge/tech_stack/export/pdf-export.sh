@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/export/pdf-export.sh - PDF Export Formatter
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up PDF export formatter
 # Phase: 4

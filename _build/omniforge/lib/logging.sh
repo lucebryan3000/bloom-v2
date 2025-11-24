@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/logging.sh - Logging Functions
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Pure functions for logging. No execution on source.
 #

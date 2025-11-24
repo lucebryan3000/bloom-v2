@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/config_bootstrap.sh - Configuration Loading & Validation
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Pure functions for loading bootstrap.conf. No execution on source.
 #

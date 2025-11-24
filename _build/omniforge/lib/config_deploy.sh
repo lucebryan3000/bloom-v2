@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/config_deploy.sh - Configuration Deployment & Template Management
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Handles the copying of .example templates to live configuration files,
 # performing variable substitution, and updating .gitignore.

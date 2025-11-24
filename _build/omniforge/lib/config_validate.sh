@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/config_validate.sh - Enhanced Configuration Validation
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Provides comprehensive validation of bootstrap.conf settings before
 # execution. Validates types, ranges, required fields, and cross-field

@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/export/json-export.sh - JSON Export Formatter
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up JSON export formatter
 # Phase: 4

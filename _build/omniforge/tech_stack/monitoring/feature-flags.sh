@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/monitoring/feature-flags.sh - Feature Flag System
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up feature flag system for controlled rollout and A/B testing
 # Phase: 4

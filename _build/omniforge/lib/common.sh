@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/common.sh - Master Loader for All Library Modules
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # This file sources all modular library files in the correct order.
 # Usage: source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
@@ -88,6 +88,9 @@ source "${_COMMON_LIB_DIR}/bakes.sh"
 
 # 13. Script indexer (depends on logging) - for background script discovery
 source "${_COMMON_LIB_DIR}/indexer.sh"
+
+# 14. ASCII art and branding (depends on logging)
+source "${_COMMON_LIB_DIR}/ascii.sh"
 
 # =============================================================================
 # BACKWARD COMPATIBILITY ALIASES

@@ -3,7 +3,7 @@
 ## Project Overview
 OmniForge is a sophisticated phase-based project initialization framework that orchestrates the setup of a Next.js + TypeScript + PostgreSQL + AI stack. The system uses a centralized configuration file (`bootstrap.conf`) as the single source of truth.
 
-**Codename**: OmniForge - "The Factory That Builds Universes"
+**Codename**: OmniForge - "Infinite Architectures. Instant Foundation."
 **CLI**: `omni`
 
 ## Current Architecture

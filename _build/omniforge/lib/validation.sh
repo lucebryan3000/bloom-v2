@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/validation.sh - Validation Helper Functions
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Pure functions for validating commands, files, versions. No execution on source.
 #

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# OmniForge - The Factory That Builds Universes
+# OmniForge - Infinite Architectures. Instant Foundation.
 # Thin wrapper that delegates to modular bin/ entry points
 # =============================================================================
 #
@@ -38,7 +38,7 @@ readonly CODENAME="OmniForge"
 
 usage() {
     cat <<EOF
-${CODENAME} v${VERSION} - The Factory That Builds Universes
+${CODENAME} v${VERSION} - Infinite Architectures. Instant Foundation.
 
 Usage: omni [OPTIONS] [COMMAND]
 

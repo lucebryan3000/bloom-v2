@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/intelligence/roi-engine.sh - ROI Calculation Engine
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up ROI calculation engine
 # Phase: 4

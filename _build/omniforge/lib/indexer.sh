@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/indexer.sh - Background Script Indexer
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Scans tech_stack scripts and builds an index for:
 #   - Script discovery and validation

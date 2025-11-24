@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/export/excel-export.sh - Excel Export Formatter
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up Excel export formatter
 # Phase: 4

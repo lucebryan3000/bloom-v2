@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/setup_wizard.sh - First-Run Setup Wizard
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Handles first-run configuration with multiple modes:
 #   - Editor mode (micro, sublime, vscode, nano)

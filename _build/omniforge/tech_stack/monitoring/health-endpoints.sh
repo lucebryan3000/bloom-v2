@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/monitoring/health-endpoints.sh - Health Check Endpoints
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up monitoring and health check endpoints
 # Phase: 4

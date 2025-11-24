@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/monitoring/settings-ui.sh - User Settings & Preferences UI
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up user settings and preferences UI
 # Phase: 4

@@ -1,4 +1,4 @@
-# OmniForge v3.0 - The Factory That Builds Universes
+# OmniForge v3.0 - Infinite Architectures. Instant Foundation.
 
 **Current Status**: PRODUCTION READY
 **Last Updated**: November 23, 2025

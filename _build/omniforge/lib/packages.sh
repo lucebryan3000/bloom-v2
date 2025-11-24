@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/packages.sh - Package Management & PKG_* Expansion
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Pure functions for package.json operations and PKG_* variable expansion.
 # No execution on source.

@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/intelligence/confidence-engine.sh - Confidence & Uncertainty Engine
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up confidence scoring and uncertainty quantification
 # Phase: 4

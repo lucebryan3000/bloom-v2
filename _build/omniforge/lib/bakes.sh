@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/bakes.sh - Configuration Presets ("Bakes")
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Bakes are pre-configured profiles that set up bootstrap.conf for common
 # use cases. Users can select a bake during first-run setup.

@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/utils.sh - General Utility Functions
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Pure functions for file operations, command execution. No execution on source.
 #

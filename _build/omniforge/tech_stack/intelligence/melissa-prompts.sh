@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/intelligence/melissa-prompts.sh - Melissa.ai Prompt System
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up Melissa.ai prompt system (phase-driven prompts)
 # Phase: 4

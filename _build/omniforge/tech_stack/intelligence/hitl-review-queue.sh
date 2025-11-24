@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/intelligence/hitl-review-queue.sh - HITL Review Queue
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up Human-in-the-Loop review queue and governance
 # Phase: 4

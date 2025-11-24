@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/git.sh - Git Safety Checks
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Pure functions for git operations. No execution on source.
 #

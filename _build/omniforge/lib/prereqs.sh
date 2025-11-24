@@ -2,7 +2,7 @@
 # =============================================================================
 # lib/prereqs.sh - Prerequisite Package Installer
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Checks and installs required package managers/tools in the background.
 # Can run while config validation proceeds in parallel.

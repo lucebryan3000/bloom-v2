@@ -2,7 +2,7 @@
 # =============================================================================
 # tech_stack/export/export-system.sh - Export System Infrastructure
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Purpose: Set up export system infrastructure (PDF, Excel, JSON, Markdown)
 # Phase: 4
