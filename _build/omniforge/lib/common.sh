@@ -74,6 +74,9 @@ source "${_COMMON_LIB_DIR}/packages.sh"
 # 8. Phase management (depends on logging, state, packages)
 source "${_COMMON_LIB_DIR}/phases.sh"
 
+# 9. Prerequisites (depends on logging) - for background installation
+source "${_COMMON_LIB_DIR}/prereqs.sh"
+
 # =============================================================================
 # BACKWARD COMPATIBILITY ALIASES
 # =============================================================================

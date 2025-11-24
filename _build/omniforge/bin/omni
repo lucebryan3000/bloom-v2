@@ -132,7 +132,7 @@ done
 main() {
     local exit_code=0
 
-    # Load configuration
+    # Load configuration first (needed for prereq versions)
     config_load
     config_validate
     config_apply_profile
@@ -143,7 +143,7 @@ main() {
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 
-    # Handle special modes
+    # Handle special modes (don't need prereqs)
     if [[ "$LIST_ONLY" == "true" ]]; then
         phase_list_all
         exit 0
@@ -154,7 +154,15 @@ main() {
         exit 0
     fi
 
-    # Banner
+    # =========================================================================
+    # STEP 1: Start prereq installation in background (if needed)
+    # =========================================================================
+    # This runs WHILE we show banner and validate config, saving time
+    if ! prereqs_all_met; then
+        prereqs_install_background
+    fi
+
+    # Banner (shows while prereqs install in background)
     log_info "=========================================="
     log_info "  OMNIFORGE - The Factory That Builds Universes"
     log_info "=========================================="
@@ -168,9 +176,30 @@ main() {
     # Initialize execution statistics
     phase_stats_init
 
-    # Run preflight checks (validates all prerequisites upfront)
+    # =========================================================================
+    # STEP 2: Run preflight checks (validates config while prereqs install)
+    # =========================================================================
     if ! phase_preflight_check "$tech_stack_dir"; then
         log_error "Preflight check failed. Please fix the issues above."
+        exit 1
+    fi
+    echo ""
+
+    # =========================================================================
+    # STEP 3: Wait for background prereq installation to complete
+    # =========================================================================
+    if prereqs_is_running; then
+        log_info "Waiting for prerequisite installation to complete..."
+        if ! prereqs_wait; then
+            log_error "Prerequisite installation failed."
+            prereqs_show_progress
+            exit 1
+        fi
+    fi
+
+    # Verify prerequisites are actually installed
+    if ! prereqs_verify; then
+        log_error "Prerequisites not met. Please install manually."
         exit 1
     fi
     echo ""
