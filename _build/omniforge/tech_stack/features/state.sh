@@ -56,21 +56,21 @@ cd "$PROJECT_ROOT"
 
 log_step "Installing Zustand"
 
-DEPS=("zustand")
+DEPS=("${PKG_ZUSTAND}")
 
 # Show cache status
 pkg_preflight_check "${DEPS[@]}"
 
 # Install dependencies
-log_info "Installing zustand..."
+log_info "Installing ${PKG_ZUSTAND}..."
 pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install zustand"
+    log_error "Failed to install ${PKG_ZUSTAND}"
     exit 1
 }
 
 # Verify installation
 log_info "Verifying installation..."
-pkg_verify "zustand" || {
+pkg_verify "${PKG_ZUSTAND}" || {
     log_error "Package verification failed"
     exit 1
 }
@@ -83,11 +83,11 @@ log_ok "Zustand installed"
 
 log_step "Creating store structure"
 
-mkdir -p src/stores
+mkdir -p "${SRC_STORES_DIR}"
 
 # Example store with typed state
-if [[ ! -f "src/stores/index.ts" ]]; then
-    cat > src/stores/index.ts <<'EOF'
+if [[ ! -f "${SRC_STORES_DIR}/index.ts" ]]; then
+    cat > "${SRC_STORES_DIR}/index.ts" <<'EOF'
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
@@ -154,9 +154,9 @@ export const selectTheme = (state: AppState) => state.theme;
 export const selectUser = (state: AppState) => state.user;
 export const selectIsAuthenticated = (state: AppState) => state.user !== null;
 EOF
-    log_ok "Created src/stores/index.ts"
+    log_ok "Created ${SRC_STORES_DIR}/index.ts"
 else
-    log_skip "src/stores/index.ts already exists"
+    log_skip "${SRC_STORES_DIR}/index.ts already exists"
 fi
 
 # =============================================================================

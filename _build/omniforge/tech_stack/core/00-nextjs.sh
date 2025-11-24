@@ -70,8 +70,8 @@ log_step "Initializing package.json"
 if [[ ! -f "package.json" ]]; then
     cat > package.json <<EOF
 {
-  "name": "${APP_NAME:-my-app}",
-  "version": "0.1.0",
+  "name": "${APP_NAME}",
+  "version": "${APP_VERSION}",
   "private": true,
   "type": "module",
   "scripts": {
@@ -82,7 +82,7 @@ if [[ ! -f "package.json" ]]; then
     "typecheck": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=${NODE_VERSION}.0.0"
   }
 }
 EOF
@@ -213,13 +213,13 @@ mkdir -p src/app
 
 # Root layout
 if [[ ! -f "src/app/layout.tsx" ]]; then
-    cat > src/app/layout.tsx <<'EOF'
+    cat > src/app/layout.tsx <<EOF
 import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'My App',
-  description: 'Built with OmniForge',
+  title: '${APP_NAME}',
+  description: '${APP_DESCRIPTION}',
 };
 
 export default function RootLayout({

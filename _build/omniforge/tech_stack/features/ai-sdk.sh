@@ -59,7 +59,7 @@ cd "$PROJECT_ROOT"
 
 log_step "Installing Vercel AI SDK"
 
-DEPS=("ai" "@ai-sdk/openai" "@ai-sdk/anthropic")
+DEPS=("${PKG_VERCEL_AI}" "${PKG_AI_SDK_OPENAI}" "${PKG_AI_SDK_ANTHROPIC}")
 
 # Show cache status
 pkg_preflight_check "${DEPS[@]}"
@@ -73,7 +73,7 @@ pkg_install "${DEPS[@]}" || {
 
 # Verify installation
 log_info "Verifying installation..."
-pkg_verify_all "ai" "@ai-sdk/openai" "@ai-sdk/anthropic" || {
+pkg_verify_all "${PKG_VERCEL_AI}" "${PKG_AI_SDK_OPENAI}" "${PKG_AI_SDK_ANTHROPIC}" || {
     log_error "Package verification failed"
     exit 1
 }
@@ -86,10 +86,10 @@ log_ok "AI SDK installed"
 
 log_step "Creating AI library"
 
-mkdir -p src/lib
+mkdir -p "${SRC_LIB_DIR}"
 
-if [[ ! -f "src/lib/ai.ts" ]]; then
-    cat > src/lib/ai.ts <<'EOF'
+if [[ ! -f "${SRC_LIB_DIR}/ai.ts" ]]; then
+    cat > "${SRC_LIB_DIR}/ai.ts" <<'EOF'
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 
@@ -140,9 +140,9 @@ export const models = {
 
 export type ModelKey = keyof typeof models;
 EOF
-    log_ok "Created src/lib/ai.ts"
+    log_ok "Created ${SRC_LIB_DIR}/ai.ts"
 else
-    log_skip "src/lib/ai.ts already exists"
+    log_skip "${SRC_LIB_DIR}/ai.ts already exists"
 fi
 
 # =============================================================================

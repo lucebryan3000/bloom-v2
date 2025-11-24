@@ -300,14 +300,15 @@ _bootstrap_step_select_profile() {
     fi
 
     # Determine default profile number from STACK_PROFILE
-    local default_profile="${STACK_PROFILE:-standard}"
-    local default_num=3  # fallback to standard
+    local default_profile="${STACK_PROFILE:-asset_manager}"
+    local default_num=5  # fallback to asset_manager (recommended)
     case "$default_profile" in
-        minimal)    default_num=1 ;;
-        starter)    default_num=2 ;;
-        standard)   default_num=3 ;;
-        advanced)   default_num=4 ;;
-        enterprise) default_num=5 ;;
+        ai_automation)  default_num=1 ;;
+        fpa_dashboard)  default_num=2 ;;
+        collab_editor)  default_num=3 ;;
+        erp_gateway)    default_num=4 ;;
+        asset_manager)  default_num=5 ;;
+        custom_bos)     default_num=6 ;;
     esac
 
     _menu_header
@@ -346,7 +347,7 @@ _bootstrap_step_select_profile() {
     read -rp "  Select profile [1-${#AVAILABLE_PROFILES[@]}] (default: ${default_num}=${default_profile}): " choice
 
     case "$choice" in
-        [1-5])
+        [1-6])
             # Numeric input: convert to profile name and apply
             local selected_profile
             selected_profile=$(get_profile_by_number "$choice")
@@ -357,7 +358,7 @@ _bootstrap_step_select_profile() {
             export STACK_PROFILE="$selected_profile"
             apply_stack_profile "$selected_profile" || return 1
             ;;
-        minimal|starter|standard|advanced|enterprise)
+        ai_automation|fpa_dashboard|collab_editor|erp_gateway|asset_manager|custom_bos)
             # Direct profile name input
             export STACK_PROFILE="$choice"
             apply_stack_profile "$choice" || return 1
@@ -1778,14 +1779,14 @@ menu_options() {
         fi
         echo -e "  1. Install Target              ${target_display} → ${path_display}"
 
-        _menu_item "2" "Default Profile" "minimal, starter, standard, advanced, enterprise" "[${STACK_PROFILE:-standard}]"
+        _menu_item "2" "Default Profile" "BOS profiles: ai_automation, fpa_dashboard, asset_manager..." "[${STACK_PROFILE:-asset_manager}]"
         _menu_item "3" "Log Level" "Verbosity: quiet, status, or verbose" "[${LOG_LEVEL:-status}]"
         _menu_item "4" "Logo Style" "Display style: block, gradient, shadow, simple, minimal" "[${OMNI_LOGO:-block}]"
         _menu_item "5" "Default Timeout" "Max minutes for operations" "[$(( (${MAX_CMD_SECONDS:-300} / 60) )).$(( (${MAX_CMD_SECONDS:-300} % 60) / 6 ))m]"
         _menu_item "6" "Git Safety" "Require clean git working tree before bootstrap" "[${GIT_SAFETY:-true}]"
         _menu_item "7" "View Logs" "Open log file with micro editor" "[$([ -f "${LOG_FILE:-}" ] && wc -l < "${LOG_FILE}" | tr -d ' ' || echo 'empty')]"
         _menu_item "8" "Clear Logs" "Delete all log files" "[$([ -f "${LOG_FILE:-}" ] && basename "${LOG_FILE}" || echo 'empty')]"
-        _menu_item "9" "Reset to Defaults" "Restore: test target, standard profile, status log, block logo, 5.0m timeout"
+        _menu_item "9" "Reset to Defaults" "Restore: test target, asset_manager profile, status log, block logo, 5.0m timeout"
         echo ""
         _menu_item "0" "Back"
 
@@ -1829,21 +1830,23 @@ menu_options() {
                 ;;
             2)
                 echo ""
-                echo "  Current: ${STACK_PROFILE:-standard}"
+                echo "  Current: ${STACK_PROFILE:-asset_manager}"
                 echo ""
-                echo "  ${LOG_CYAN}1)${LOG_NC} minimal    - Fast & Focused (Next.js + TS + PostgreSQL)"
-                echo "  ${LOG_CYAN}2)${LOG_NC} starter    - Quick Start (+ Auth + UI)"
-                echo "  ${LOG_CYAN}3)${LOG_NC} standard   - Complete & Recommended (+ Jobs + Testing)"
-                echo "  ${LOG_CYAN}4)${LOG_NC} advanced   - AI-Powered (+ AI/LLM integration)"
-                echo "  ${LOG_CYAN}5)${LOG_NC} enterprise - Production Ready (+ Exports + Code Quality)"
+                echo "  ${LOG_CYAN}1)${LOG_NC} ai_automation - Intelligent Process Automation (AI + Jobs)"
+                echo "  ${LOG_CYAN}2)${LOG_NC} fpa_dashboard - Financial Reporting (Auth + Exports)"
+                echo "  ${LOG_CYAN}3)${LOG_NC} collab_editor - Real-Time Documents (Jobs + State)"
+                echo "  ${LOG_CYAN}4)${LOG_NC} erp_gateway   - API Data Sync Layer (ETL Jobs)"
+                echo "  ${LOG_CYAN}5)${LOG_NC} asset_manager - Excel Replacement/CRUD (Recommended)"
+                echo "  ${LOG_CYAN}6)${LOG_NC} custom_bos    - Modular Builder (Minimal Start)"
                 echo ""
-                read -rp "  Select [1-5]: " val
+                read -rp "  Select [1-6]: " val
                 case "$val" in
-                    1) STACK_PROFILE="minimal" ;;
-                    2) STACK_PROFILE="starter" ;;
-                    3) STACK_PROFILE="standard" ;;
-                    4) STACK_PROFILE="advanced" ;;
-                    5) STACK_PROFILE="enterprise" ;;
+                    1) STACK_PROFILE="ai_automation" ;;
+                    2) STACK_PROFILE="fpa_dashboard" ;;
+                    3) STACK_PROFILE="collab_editor" ;;
+                    4) STACK_PROFILE="erp_gateway" ;;
+                    5) STACK_PROFILE="asset_manager" ;;
+                    6) STACK_PROFILE="custom_bos" ;;
                     *) echo "  [SKIP] No change"; sleep 1; continue ;;
                 esac
                 # Update bootstrap.conf

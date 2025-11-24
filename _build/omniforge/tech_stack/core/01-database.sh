@@ -182,8 +182,8 @@ if [[ ! -f "docker-compose.yml" ]]; then
 
 services:
   postgres:
-    image: postgres:16-alpine
-    container_name: ${APP_NAME:-app}_postgres
+    image: postgres:${POSTGRES_VERSION}-alpine
+    container_name: ${APP_NAME}_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}

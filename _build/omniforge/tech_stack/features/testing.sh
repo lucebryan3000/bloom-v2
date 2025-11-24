@@ -60,7 +60,7 @@ cd "$PROJECT_ROOT"
 
 log_step "Installing testing dependencies"
 
-DEV_DEPS=("vitest" "@testing-library/react" "playwright" "@playwright/test")
+DEV_DEPS=("${PKG_VITEST}" "${PKG_TESTING_LIBRARY_REACT}" "${PKG_PLAYWRIGHT}")
 
 # Show cache status
 pkg_preflight_check "${DEV_DEPS[@]}"
@@ -74,7 +74,7 @@ pkg_install_dev "${DEV_DEPS[@]}" || {
 
 # Verify installation
 log_info "Verifying installation..."
-pkg_verify_all "vitest" "@testing-library/react" "playwright" "@playwright/test" || {
+pkg_verify_all "${PKG_VITEST}" "${PKG_TESTING_LIBRARY_REACT}" "${PKG_PLAYWRIGHT}" || {
     log_error "Package verification failed"
     exit 1
 }
@@ -103,13 +103,13 @@ export default defineConfig({
     globals: true,
 
     // Setup files
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./${SRC_TEST_DIR}/setup.ts'],
 
     // Include patterns
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
 
     // Exclude patterns
-    exclude: ['node_modules', 'e2e/**/*'],
+    exclude: ['node_modules', '${E2E_DIR}/**/*'],
 
     // Coverage
     coverage: {
@@ -117,7 +117,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
-        'src/test/',
+        '${SRC_TEST_DIR}/',
         '**/*.d.ts',
         '**/*.config.{ts,js}',
       ],
@@ -136,10 +136,10 @@ else
 fi
 
 # Create test setup file
-mkdir -p src/test
+mkdir -p "${SRC_TEST_DIR}"
 
-if [[ ! -f "src/test/setup.ts" ]]; then
-    cat > src/test/setup.ts <<'EOF'
+if [[ ! -f "${SRC_TEST_DIR}/setup.ts" ]]; then
+    cat > "${SRC_TEST_DIR}/setup.ts" <<'EOF'
 import '@testing-library/jest-dom/vitest';
 
 // Global test setup
@@ -166,7 +166,7 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 EOF
-    log_ok "Created src/test/setup.ts"
+    log_ok "Created ${SRC_TEST_DIR}/setup.ts"
 fi
 
 # =============================================================================
@@ -181,7 +181,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   // Test directory
-  testDir: './e2e',
+  testDir: './${E2E_DIR}',
 
   // Run tests in parallel
   fullyParallel: true,
@@ -201,7 +201,7 @@ export default defineConfig({
   // Shared settings
   use: {
     // Base URL
-    baseURL: 'http://localhost:3000',
+    baseURL: '${DEV_SERVER_URL}',
 
     // Trace on first retry
     trace: 'on-first-retry',
@@ -238,7 +238,7 @@ export default defineConfig({
   // Development server
   webServer: {
     command: 'pnpm dev',
-    url: 'http://localhost:3000',
+    url: '${DEV_SERVER_URL}',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
@@ -250,10 +250,10 @@ else
 fi
 
 # Create e2e directory with example test
-mkdir -p e2e
+mkdir -p "${E2E_DIR}"
 
-if [[ ! -f "e2e/home.spec.ts" ]]; then
-    cat > e2e/home.spec.ts <<'EOF'
+if [[ ! -f "${E2E_DIR}/home.spec.ts" ]]; then
+    cat > "${E2E_DIR}/home.spec.ts" <<'EOF'
 import { test, expect } from '@playwright/test';
 
 test.describe('Home Page', () => {
@@ -268,7 +268,7 @@ test.describe('Home Page', () => {
   });
 });
 EOF
-    log_ok "Created e2e/home.spec.ts"
+    log_ok "Created ${E2E_DIR}/home.spec.ts"
 fi
 
 # =============================================================================

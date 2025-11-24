@@ -73,10 +73,10 @@ cd "$PROJECT_ROOT"
 log_step "Installing Tailwind CSS dependencies"
 
 # Dev dependencies for Tailwind/PostCSS
-DEV_DEPS=("tailwindcss" "postcss" "autoprefixer")
+DEV_DEPS=("${PKG_TAILWINDCSS}" "${PKG_POSTCSS}" "${PKG_AUTOPREFIXER}")
 
 # Production dependencies for shadcn utilities
-DEPS=("lucide-react" "class-variance-authority" "clsx" "tailwind-merge")
+DEPS=("${PKG_LUCIDE_REACT}" "${PKG_CLASS_VARIANCE_AUTHORITY}" "${PKG_CLSX}" "${PKG_TAILWIND_MERGE}")
 
 # Show cache status
 pkg_preflight_check "${DEPS[@]}" "${DEV_DEPS[@]}"

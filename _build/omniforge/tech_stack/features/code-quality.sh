@@ -64,12 +64,12 @@ cd "$PROJECT_ROOT"
 log_step "Installing code quality dependencies"
 
 DEV_DEPS=(
-    "eslint"
-    "prettier"
-    "lint-staged"
-    "husky"
-    "@typescript-eslint/eslint-plugin"
-    "@typescript-eslint/parser"
+    "${PKG_ESLINT}"
+    "${PKG_PRETTIER}"
+    "${PKG_LINT_STAGED}"
+    "${PKG_HUSKY}"
+    "${PKG_TYPESCRIPT_ESLINT_PLUGIN}"
+    "${PKG_TYPESCRIPT_ESLINT_PARSER}"
 )
 
 # Show cache status
@@ -84,7 +84,7 @@ pkg_install_dev "${DEV_DEPS[@]}" || {
 
 # Verify installation
 log_info "Verifying installation..."
-pkg_verify_all "eslint" "prettier" "lint-staged" "husky" || {
+pkg_verify_all "${PKG_ESLINT}" "${PKG_PRETTIER}" "${PKG_LINT_STAGED}" "${PKG_HUSKY}" || {
     log_error "Package verification failed"
     exit 1
 }
