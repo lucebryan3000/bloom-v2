@@ -176,6 +176,11 @@ log_success() {
     _log "OK" "$LOG_GREEN" "✓ $1"
 }
 
+# Alias for log_success (used by some tech_stack scripts)
+log_ok() {
+    log_success "$1"
+}
+
 log_dry() {
     _log "DRY" "$LOG_CYAN" "Would execute: $1"
 }
