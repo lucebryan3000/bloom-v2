@@ -47,8 +47,7 @@ _menu_line() {
 # Show menu title
 _menu_title() {
     local title="$1"
-    echo ""
-    echo -e "${LOG_BOLD:-}  $title${LOG_NC:-}"
+    echo -e "  ${LOG_CYAN}${title}${LOG_NC}"
     _menu_line "─" 66
 }
 
@@ -106,7 +105,6 @@ menu_main() {
             [[ "$cache_size" != "0" ]] && cache_size="${cache_size} MB" || cache_size="empty"
         fi
 
-        echo ""
         echo -e "  ${LOG_CYAN}MAIN MENU${LOG_NC}"
         _menu_line "─" 66
         echo ""
