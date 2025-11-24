@@ -178,14 +178,18 @@ _bootstrap_step_select_apps() {
     )
 
     while true; do
-        # Display current selections
-        for key in $(echo "${!features[@]}" | tr ' ' '\n' | sort); do
-            local num="${key%%:*}"
-            local label="${key#*:}"
-            local enabled="${features[$key]}"
-            local marker="[ ]"
-            [[ "$enabled" == "true" ]] && marker="[x]"
-            echo "    $marker $num. $label"
+        # Display current selections (iterate by number 1-9 to maintain order)
+        for num in 1 2 3 4 5 6 7 8 9; do
+            for key in "${!features[@]}"; do
+                if [[ "${key%%:*}" == "$num" ]]; then
+                    local label="${key#*:}"
+                    local enabled="${features[$key]}"
+                    local marker="[ ]"
+                    [[ "$enabled" == "true" ]] && marker="[x]"
+                    echo "    $marker $num. $label"
+                    break
+                fi
+            done
         done
 
         echo ""
