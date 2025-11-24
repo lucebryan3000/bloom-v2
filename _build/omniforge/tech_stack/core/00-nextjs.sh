@@ -54,12 +54,12 @@ if [[ -z "${PROJECT_ROOT:-}" ]]; then
 fi
 
 # Verify project directory exists
-if [[ ! -d "$PROJECT_ROOT" ]]; then
-    log_info "Creating project directory: $PROJECT_ROOT"
-    mkdir -p "$PROJECT_ROOT"
+if [[ ! -d "$INSTALL_DIR" ]]; then
+    log_info "Creating project directory: $INSTALL_DIR"
+    mkdir -p "$INSTALL_DIR"
 fi
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # =============================================================================
 # PACKAGE.JSON SETUP

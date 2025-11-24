@@ -34,7 +34,7 @@ log_step "${SCRIPT_NAME}"
 # CREATE LIB DIRECTORY & ROI CALCULATOR
 # =============================================================================
 
-LIB_DIR="${PROJECT_ROOT}/src/lib"
+LIB_DIR="${INSTALL_DIR}/src/lib"
 ensure_dir "${LIB_DIR}" "Library directory"
 
 # ROI Engine Main File

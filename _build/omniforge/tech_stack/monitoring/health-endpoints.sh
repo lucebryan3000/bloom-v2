@@ -34,7 +34,7 @@ log_step "${SCRIPT_NAME}"
 # CREATE MONITORING DIRECTORY
 # =============================================================================
 
-MONITORING_DIR="${PROJECT_ROOT}/src/api/monitoring"
+MONITORING_DIR="${INSTALL_DIR}/src/api/monitoring"
 ensure_dir "${MONITORING_DIR}" "Monitoring API directory"
 
 # =============================================================================

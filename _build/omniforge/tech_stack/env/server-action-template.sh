@@ -29,7 +29,7 @@ fi
 log_step "${SCRIPT_NAME}"
 
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 mkdir -p "${SRC_LIB_DIR:-src/lib}"
 

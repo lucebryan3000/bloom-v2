@@ -35,7 +35,7 @@ log_step "${SCRIPT_NAME}"
 # CREATE PROMPTS DIRECTORY STRUCTURE
 # =============================================================================
 
-PROMPTS_DIR="${PROJECT_ROOT}/src/prompts"
+PROMPTS_DIR="${INSTALL_DIR}/src/prompts"
 ensure_dir "${PROMPTS_DIR}" "Prompts directory"
 
 # =============================================================================

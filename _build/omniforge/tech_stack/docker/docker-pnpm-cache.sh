@@ -47,7 +47,7 @@ fi
 : "${NODE_VERSION:=20}"
 : "${PNPM_VERSION:=9}"
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Container name/image prefix
 IMAGE_NAME="${APP_NAME,,}"

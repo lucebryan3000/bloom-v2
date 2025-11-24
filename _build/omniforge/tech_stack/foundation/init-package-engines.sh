@@ -30,7 +30,7 @@ log_step "${SCRIPT_NAME}"
 
 # Verify PROJECT_ROOT
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Verify package.json exists
 if [[ ! -f "package.json" ]]; then

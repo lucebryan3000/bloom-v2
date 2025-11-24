@@ -52,7 +52,7 @@ fi
 : "${DB_HOST:=localhost}"
 : "${DB_PORT:=5432}"
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # =============================================================================
 # DEPENDENCY INSTALLATION

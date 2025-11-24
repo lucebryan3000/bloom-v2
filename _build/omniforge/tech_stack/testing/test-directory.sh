@@ -26,7 +26,7 @@ fi
 log_step "${SCRIPT_NAME}"
 
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Default test directory (configurable via bootstrap.conf)
 SRC_TEST_DIR="${SRC_TEST_DIR:-__tests__}"

@@ -34,7 +34,7 @@ log_step "${SCRIPT_NAME}"
 
 log_info "Running TypeScript type check..."
 
-if pnpm typecheck 2>&1 | tee "${PROJECT_ROOT}/logs/typecheck.log"; then
+if pnpm typecheck 2>&1 | tee "${INSTALL_DIR}/logs/typecheck.log"; then
     log_ok "TypeScript type check passed"
 else
     log_error "TypeScript type check failed"
@@ -48,7 +48,7 @@ fi
 
 log_info "Building production bundle..."
 
-if pnpm build 2>&1 | tee "${PROJECT_ROOT}/logs/build.log"; then
+if pnpm build 2>&1 | tee "${INSTALL_DIR}/logs/build.log"; then
     log_ok "Production build succeeded"
 else
     log_error "Production build failed"
@@ -62,10 +62,10 @@ fi
 
 log_info "Checking for test suite..."
 
-if [[ -d "${PROJECT_ROOT}/src/test" ]] || [[ -d "${PROJECT_ROOT}/__tests__" ]]; then
+if [[ -d "${INSTALL_DIR}/src/test" ]] || [[ -d "${INSTALL_DIR}/__tests__" ]]; then
     log_info "Running baseline unit tests..."
 
-    if pnpm test --run 2>&1 | tee "${PROJECT_ROOT}/logs/test.log"; then
+    if pnpm test --run 2>&1 | tee "${INSTALL_DIR}/logs/test.log"; then
         log_ok "Unit tests passed"
     else
         log_warn "Some unit tests failed (non-blocking)"
@@ -79,7 +79,7 @@ fi
 # Step 4: E2E Smoke Test (if Playwright installed)
 # =============================================================================
 
-if [[ -d "${PROJECT_ROOT}/e2e" ]] && command -v playwright &>/dev/null; then
+if [[ -d "${INSTALL_DIR}/e2e" ]] && command -v playwright &>/dev/null; then
     log_info "Running E2E smoke test..."
 
     # Install Playwright browsers if needed
@@ -89,7 +89,7 @@ if [[ -d "${PROJECT_ROOT}/e2e" ]] && command -v playwright &>/dev/null; then
     fi
 
     # Run E2E tests (allow failure as non-blocking)
-    if pnpm test:e2e 2>&1 | tee "${PROJECT_ROOT}/logs/e2e.log"; then
+    if pnpm test:e2e 2>&1 | tee "${INSTALL_DIR}/logs/e2e.log"; then
         log_ok "E2E smoke tests passed"
     else
         log_warn "Some E2E tests failed (non-blocking)"
@@ -105,7 +105,7 @@ fi
 
 log_info "Generating verification report..."
 
-cat > "${PROJECT_ROOT}/logs/verification-report.md" <<EOF
+cat > "${INSTALL_DIR}/logs/verification-report.md" <<EOF
 # OmniForge Build Verification Report
 
 **Generated**: $(date +'%Y-%m-%d %H:%M:%S')
@@ -123,11 +123,11 @@ cat > "${PROJECT_ROOT}/logs/verification-report.md" <<EOF
 - Build artifacts: .next/
 
 ### Unit Tests
-- Status: $([ -f "${PROJECT_ROOT}/logs/test.log" ] && echo "COMPLETED" || echo "SKIPPED")
+- Status: $([ -f "${INSTALL_DIR}/logs/test.log" ] && echo "COMPLETED" || echo "SKIPPED")
 - Log: logs/test.log
 
 ### E2E Tests
-- Status: $([ -f "${PROJECT_ROOT}/logs/e2e.log" ] && echo "COMPLETED" || echo "SKIPPED")
+- Status: $([ -f "${INSTALL_DIR}/logs/e2e.log" ] && echo "COMPLETED" || echo "SKIPPED")
 - Log: logs/e2e.log
 
 ## Next Steps

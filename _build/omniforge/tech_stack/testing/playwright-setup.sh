@@ -26,7 +26,7 @@ fi
 log_step "${SCRIPT_NAME}"
 
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Default e2e directory
 E2E_DIR="${E2E_DIR:-e2e}"

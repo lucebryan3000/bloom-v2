@@ -34,10 +34,10 @@ log_step "${SCRIPT_NAME}"
 # CREATE SETTINGS DIRECTORY
 # =============================================================================
 
-SETTINGS_DIR="${PROJECT_ROOT}/src/lib/settings"
+SETTINGS_DIR="${INSTALL_DIR}/src/lib/settings"
 ensure_dir "${SETTINGS_DIR}" "Settings library directory"
 
-SETTINGS_COMPONENTS="${PROJECT_ROOT}/src/components/settings"
+SETTINGS_COMPONENTS="${INSTALL_DIR}/src/components/settings"
 ensure_dir "${SETTINGS_COMPONENTS}" "Settings components directory"
 
 # =============================================================================
@@ -289,7 +289,7 @@ log_success "Created settings manager"
 # SETTINGS API ROUTE
 # =============================================================================
 
-write_file "${PROJECT_ROOT}/src/api/settings/route.ts" <<'EOF'
+write_file "${INSTALL_DIR}/src/api/settings/route.ts" <<'EOF'
 /**
  * Settings API Endpoint
  * GET /api/settings - Retrieve user settings

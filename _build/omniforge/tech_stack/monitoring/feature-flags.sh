@@ -34,7 +34,7 @@ log_step "${SCRIPT_NAME}"
 # CREATE FEATURE FLAGS DIRECTORY
 # =============================================================================
 
-FLAGS_DIR="${PROJECT_ROOT}/src/lib/flags"
+FLAGS_DIR="${INSTALL_DIR}/src/lib/flags"
 ensure_dir "${FLAGS_DIR}" "Feature flags library directory"
 
 # =============================================================================
@@ -399,7 +399,7 @@ log_success "Created feature flag manager"
 # FEATURE FLAG API ROUTE
 # =============================================================================
 
-write_file "${PROJECT_ROOT}/src/api/flags/route.ts" <<'EOF'
+write_file "${INSTALL_DIR}/src/api/flags/route.ts" <<'EOF'
 /**
  * Feature Flags API
  * GET /api/flags - List all flags
@@ -467,7 +467,7 @@ log_success "Created feature flags API endpoint"
 # REACT HOOK FOR FLAG EVALUATION
 # =============================================================================
 
-write_file "${PROJECT_ROOT}/src/hooks/useFeatureFlag.ts" <<'EOF'
+write_file "${INSTALL_DIR}/src/hooks/useFeatureFlag.ts" <<'EOF'
 /**
  * useFeatureFlag Hook
  * Client-side hook for evaluating feature flags

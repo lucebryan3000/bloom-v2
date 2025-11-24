@@ -40,12 +40,12 @@ if [[ -z "${PROJECT_ROOT:-}" ]]; then
 fi
 
 # Verify project directory exists
-if [[ ! -d "$PROJECT_ROOT" ]]; then
-    log_error "Project directory does not exist: $PROJECT_ROOT"
+if [[ ! -d "$INSTALL_DIR" ]]; then
+    log_error "Project directory does not exist: $INSTALL_DIR"
     exit 1
 fi
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # =============================================================================
 # DIRECTORY SETUP
@@ -53,7 +53,7 @@ cd "$PROJECT_ROOT"
 
 log_step "Creating session state structure"
 
-STATE_LIB_DIR="${PROJECT_ROOT}/src/lib/state"
+STATE_LIB_DIR="${INSTALL_DIR}/src/lib/state"
 mkdir -p "${STATE_LIB_DIR}"
 
 # =============================================================================

@@ -30,7 +30,7 @@ fi
 
 log_step "${SCRIPT_NAME}"
 
-EXPORT_DIR="${PROJECT_ROOT}/src/lib/export"
+EXPORT_DIR="${INSTALL_DIR}/src/lib/export"
 ensure_dir "${EXPORT_DIR}" "Export directory"
 
 # Create Excel export module

@@ -30,7 +30,7 @@ fi
 
 log_step "${SCRIPT_NAME}"
 
-EXPORT_DIR="${PROJECT_ROOT}/src/lib/export"
+EXPORT_DIR="${INSTALL_DIR}/src/lib/export"
 ensure_dir "${EXPORT_DIR}" "Export directory"
 
 # =============================================================================
@@ -210,7 +210,7 @@ log_success "Created PDF export formatter"
 # PDF EXPORT COMPONENT (React)
 # =============================================================================
 
-write_file "${PROJECT_ROOT}/src/components/export/PDFExport.tsx" 2>/dev/null || true <<'EOF'
+write_file "${INSTALL_DIR}/src/components/export/PDFExport.tsx" 2>/dev/null || true <<'EOF'
 /**
  * PDF Export React Component
  * Renders business case for printing/PDF export

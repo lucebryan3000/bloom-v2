@@ -57,7 +57,7 @@ fi
 : "${PGVECTOR_IMAGE:=pgvector/pgvector:pg${POSTGRES_VERSION}}"
 : "${ENABLE_REDIS:=false}"
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Container name prefix (lowercase, no special chars)
 CONTAINER_PREFIX="${APP_NAME,,}"

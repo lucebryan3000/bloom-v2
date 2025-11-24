@@ -26,7 +26,7 @@ fi
 log_step "${SCRIPT_NAME}"
 
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Create chat components directory
 CHAT_COMPONENTS_DIR="src/components/chat"

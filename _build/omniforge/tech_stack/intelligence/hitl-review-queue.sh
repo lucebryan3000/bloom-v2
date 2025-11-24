@@ -30,7 +30,7 @@ fi
 
 log_step "${SCRIPT_NAME}"
 
-LIB_DIR="${PROJECT_ROOT}/src/lib"
+LIB_DIR="${INSTALL_DIR}/src/lib"
 ensure_dir "${LIB_DIR}" "Library directory"
 
 # =============================================================================

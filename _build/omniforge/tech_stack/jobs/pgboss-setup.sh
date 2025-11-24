@@ -41,12 +41,12 @@ if [[ -z "${PROJECT_ROOT:-}" ]]; then
 fi
 
 # Verify project directory exists
-if [[ ! -d "$PROJECT_ROOT" ]]; then
-    log_error "Project directory does not exist: $PROJECT_ROOT"
+if [[ ! -d "$INSTALL_DIR" ]]; then
+    log_error "Project directory does not exist: $INSTALL_DIR"
     exit 1
 fi
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # =============================================================================
 # DEPENDENCY INSTALLATION
@@ -84,7 +84,7 @@ log_ok "pg-boss installed"
 
 log_step "Creating jobs structure"
 
-JOBS_DIR="${PROJECT_ROOT}/src/jobs"
+JOBS_DIR="${INSTALL_DIR}/src/jobs"
 mkdir -p "${JOBS_DIR}"
 mkdir -p "${JOBS_DIR}/workers"
 

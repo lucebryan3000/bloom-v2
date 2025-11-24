@@ -61,7 +61,7 @@ fi
 # CREATE EXPORT LIB DIRECTORY
 # =============================================================================
 
-EXPORT_DIR="${PROJECT_ROOT}/src/lib/export"
+EXPORT_DIR="${INSTALL_DIR}/src/lib/export"
 ensure_dir "${EXPORT_DIR}" "Export utilities directory"
 
 # =============================================================================

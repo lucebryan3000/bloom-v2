@@ -30,7 +30,7 @@ log_step "${SCRIPT_NAME}"
 # TypeScript is configured by core/00-nextjs.sh
 # This script validates and enhances the configuration
 
-if [[ ! -f "${PROJECT_ROOT}/tsconfig.json" ]]; then
+if [[ ! -f "${INSTALL_DIR}/tsconfig.json" ]]; then
     log_warn "tsconfig.json not found - run init-nextjs.sh first"
     exit 1
 fi
@@ -49,8 +49,8 @@ if command -v jq &>/dev/null; then
         "**/archive/**/*",
         "**/backup/**/*"
     ] | .exclude |= unique' \
-    "${PROJECT_ROOT}/tsconfig.json" > "${PROJECT_ROOT}/tsconfig.json.tmp" \
-    && mv "${PROJECT_ROOT}/tsconfig.json.tmp" "${PROJECT_ROOT}/tsconfig.json"
+    "${INSTALL_DIR}/tsconfig.json" > "${INSTALL_DIR}/tsconfig.json.tmp" \
+    && mv "${INSTALL_DIR}/tsconfig.json.tmp" "${INSTALL_DIR}/tsconfig.json"
 
     log_ok "Added exclusion patterns using jq"
 else
@@ -58,11 +58,11 @@ else
     log_warn "jq not found - using fallback method"
 
     # Check if exclude already has our patterns
-    if ! grep -q "_AppModules-Luce" "${PROJECT_ROOT}/tsconfig.json"; then
+    if ! grep -q "_AppModules-Luce" "${INSTALL_DIR}/tsconfig.json"; then
         # Add exclusions before the closing bracket of exclude array
         sed -i '/"exclude": \[/,/\]/ {
             /\]/ i\    "_AppModules-Luce/**/*",\n    "_build/**/*",\n    "**/*.backup.ts",\n    "**/*.old.ts",\n    "**/archive/**/*",\n    "**/backup/**/*",
-        }' "${PROJECT_ROOT}/tsconfig.json"
+        }' "${INSTALL_DIR}/tsconfig.json"
 
         log_ok "Added exclusion patterns using sed"
     else

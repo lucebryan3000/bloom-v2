@@ -30,7 +30,7 @@ fi
 log_step "${SCRIPT_NAME}"
 
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Create migrations directory
 mkdir -p drizzle

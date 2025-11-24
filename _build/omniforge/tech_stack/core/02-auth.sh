@@ -53,7 +53,7 @@ if ! has_script_succeeded "core/01-database"; then
     exit 1
 fi
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Verify package.json exists
 if [[ ! -f "package.json" ]]; then

@@ -29,7 +29,7 @@ log_step "${SCRIPT_NAME}"
 
 # Verify PROJECT_ROOT
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Create directories from bootstrap.conf PROJECT_DIRECTORIES
 log_info "Creating project directories..."

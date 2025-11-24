@@ -27,7 +27,7 @@ fi
 log_step "${SCRIPT_NAME}"
 
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # Check if tsconfig.json exists
 if [[ ! -f "tsconfig.json" ]]; then

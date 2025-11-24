@@ -53,18 +53,18 @@ if [[ -z "${PROJECT_ROOT:-}" ]]; then
 fi
 
 # Verify project directory exists
-if [[ ! -d "$PROJECT_ROOT" ]]; then
-    log_error "PROJECT_ROOT does not exist: $PROJECT_ROOT"
+if [[ ! -d "$INSTALL_DIR" ]]; then
+    log_error "PROJECT_ROOT does not exist: $INSTALL_DIR"
     exit 1
 fi
 
 # Verify package.json exists (dependency on 00-nextjs.sh)
-if [[ ! -f "${PROJECT_ROOT}/package.json" ]]; then
+if [[ ! -f "${INSTALL_DIR}/package.json" ]]; then
     log_error "package.json not found. Run 00-nextjs.sh first."
     exit 1
 fi
 
-cd "$PROJECT_ROOT"
+cd "$INSTALL_DIR"
 
 # =============================================================================
 # DEPENDENCY INSTALLATION
