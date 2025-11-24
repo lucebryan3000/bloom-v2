@@ -307,14 +307,18 @@ phase_execute() {
         return 0
     fi
 
-    # Check dependencies
+    # Check dependencies (skip in dry-run mode)
     local deps prereq
+    local dry_run_mode="${DRY_RUN:-false}"
     deps=$(phase_get_config_field "$phase_num" "deps") || true
     prereq=$(phase_get_config_field "$phase_num" "prereq") || true
     prereq="${prereq:-warn}"
     if [[ -n "$deps" ]]; then
         if ! check_phase_deps "$deps" "$prereq"; then
-            if [[ "$prereq" == "strict" ]]; then
+            # In dry-run mode, treat dependency failures as warnings and continue
+            if [[ "$dry_run_mode" == "true" ]]; then
+                log_warn "Phase $phase_num ($phase_name) dependency check failed (continuing in dry-run mode)"
+            elif [[ "$prereq" == "strict" ]]; then
                 log_error "Phase $phase_num ($phase_name) dependency check failed"
                 return 1
             fi
@@ -532,13 +536,16 @@ check_phase_deps() {
 
 # Run all preflight checks before any phase execution
 # Usage: phase_preflight_check "/path/to/tech_stack"
+# In DRY_RUN mode, dependency errors are reported as warnings instead of errors
 phase_preflight_check() {
     local tech_stack_dir="$1"
     local errors=0
     local warnings=0
+    local dry_run_mode="${DRY_RUN:-false}"
 
     log_info "=========================================="
     log_info "  PREFLIGHT CHECK"
+    [[ "$dry_run_mode" == "true" ]] && log_info "  (dry-run: dependency errors reported as warnings)"
     log_info "=========================================="
     echo ""
 
@@ -566,7 +573,10 @@ phase_preflight_check() {
             log_debug "Checking Phase $phase_num ($phase_name) dependencies..."
 
             if ! check_phase_deps "$deps" "$prereq"; then
-                if [[ "$prereq" == "strict" ]]; then
+                # In dry-run mode, treat all dependency issues as warnings
+                if [[ "$dry_run_mode" == "true" ]]; then
+                    warnings=$((warnings + 1))
+                elif [[ "$prereq" == "strict" ]]; then
                     errors=$((errors + 1))
                 else
                     warnings=$((warnings + 1))

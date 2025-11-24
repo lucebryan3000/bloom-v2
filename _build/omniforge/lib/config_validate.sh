@@ -101,14 +101,19 @@ _validate_stack_profile() {
     local value="${STACK_PROFILE:-}"
 
     case "$value" in
+        # Legacy profiles
         minimal|api-only|full)
             return 0
             ;;
+        # New BOS-tailored profiles (from bootstrap.conf AVAILABLE_PROFILES)
+        ai_automation|fpa_dashboard|collab_editor|erp_gateway|asset_manager|custom_bos)
+            return 0
+            ;;
         "")
-            _validation_warn "STACK_PROFILE" "Not set, defaulting to 'full'"
+            _validation_warn "STACK_PROFILE" "Not set, defaulting to 'asset_manager'"
             ;;
         *)
-            _validation_error "STACK_PROFILE" "Invalid value '$value'. Must be: minimal, api-only, or full"
+            _validation_error "STACK_PROFILE" "Invalid value '$value'. Must be: ai_automation, fpa_dashboard, collab_editor, erp_gateway, asset_manager, custom_bos (or legacy: minimal, api-only, full)"
             return 1
             ;;
     esac

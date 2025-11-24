@@ -23,9 +23,11 @@ _LIB_GIT_LOADED=1
 
 # Ensure git working directory is clean (if GIT_SAFETY is enabled)
 # Usage: git_ensure_clean
+# Skipped in DRY_RUN mode since no changes are made
 git_ensure_clean() {
     local git_safety="${GIT_SAFETY:-false}"
     local allow_dirty="${ALLOW_DIRTY:-false}"
+    local dry_run="${DRY_RUN:-false}"
 
     if [[ "$git_safety" != "true" ]]; then
         log_debug "Git safety check disabled"
@@ -34,6 +36,11 @@ git_ensure_clean() {
 
     if [[ "$allow_dirty" == "true" ]]; then
         log_debug "Git safety check skipped (ALLOW_DIRTY=true)"
+        return 0
+    fi
+
+    if [[ "$dry_run" == "true" ]]; then
+        log_debug "Git safety check skipped (DRY_RUN=true)"
         return 0
     fi
 
