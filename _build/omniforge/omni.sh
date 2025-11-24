@@ -130,6 +130,11 @@ COMMANDS:
                     - Use after 'run' completes to compile the project
                     - Validates the initialized project works correctly
 
+    reset           Reset last deployment
+                    - Deletes deployment artifacts while preserving OmniForge system
+                    - Creates backup before deletion
+                    - Use --yes for non-interactive mode
+
 OPTIONS:
     -h, --help      Show this help
     -n, --dry-run   Preview without executing (show what would run)
@@ -143,7 +148,8 @@ WORKFLOW:
     1. omni menu     Interactive setup (recommended for first time)
     2. omni run      Execute all phase scripts to initialize project
     3. omni build    Build and verify the initialized project
-    4. omni clean    Reset installation to test different configurations
+    4. omni reset    Reset deployment for fresh start
+    5. omni clean    Reset installation to test different configurations
 
 EXAMPLES:
     omni                           # Interactive menu (default)
@@ -154,6 +160,8 @@ EXAMPLES:
     omni list                      # List phases without running
     omni status                    # Show completion progress
     omni build                     # Build after initialization
+    omni reset                     # Reset last deployment (interactive)
+    omni reset --yes               # Reset without confirmation
     omni clean                     # Interactive clean menu
     omni clean --path ./test/install-1 --level 2  # Full clean specific path
 
@@ -172,6 +180,7 @@ FORCE=false
 PHASE=""
 CLEAN_PATH=""
 CLEAN_LEVEL=""
+RESET_YES=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -223,7 +232,11 @@ while [[ $# -gt 0 ]]; do
             CLEAN_LEVEL="$2"
             shift 2
             ;;
-        menu|run|list|status|build|forge|compile|clean)
+        --yes)
+            RESET_YES=true
+            shift
+            ;;
+        menu|run|list|status|build|forge|compile|clean|reset)
             # Map 'forge' and 'compile' to 'build' for backward compat
             if [[ "$1" == "forge" || "$1" == "compile" ]]; then
                 COMMAND="build"
@@ -312,6 +325,16 @@ case "${COMMAND:-}" in
             # Non-interactive clean with --path and optional --level
             _run_clean_noninteractive "$CLEAN_PATH" "${CLEAN_LEVEL:-1}"
         fi
+        ;;
+    reset)
+        _validate_bin "reset"
+        show_logo
+
+        # Build args for reset command
+        RESET_ARGS=()
+        [[ "$RESET_YES" == "true" ]] && RESET_ARGS+=("--yes")
+
+        exec "${SCRIPT_DIR}/bin/reset" "${RESET_ARGS[@]}"
         ;;
     *)
         echo "Unknown command: $COMMAND"

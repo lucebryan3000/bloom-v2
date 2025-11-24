@@ -1,0 +1,375 @@
+# Reset OmniForge Deployment Plan
+
+**Purpose**: Delete files created by OmniForge deployment while preserving all improvements made to the OmniForge system itself.
+
+**Date**: 2025-11-24
+**Status**: Ready to execute
+
+---
+
+## Summary
+
+This plan will **DELETE** 28 files created by the original OmniForge deployment (commit `5a4441b`) while **PRESERVING** 10 files with OmniForge system improvements.
+
+---
+
+## Files to DELETE (28 files from deployment)
+
+These are the files created by `omni --init` that should be removed for a clean reset:
+
+### Root Configuration Files (7 files)
+```bash
+docker-compose.yml              # Docker Compose configuration
+drizzle.config.ts               # Drizzle ORM configuration
+next.config.ts                  # Next.js configuration
+package.json                    # NPM package manifest
+playwright.config.ts            # Playwright E2E test config
+tsconfig.json                   # TypeScript configuration (will be regenerated)
+vitest.config.ts                # Vitest unit test config (will be regenerated)
+```
+
+### Source Files - src/ directory (19 files)
+```bash
+src/app/globals.css             # Global CSS
+src/app/layout.tsx              # Next.js root layout
+src/app/page.tsx                # Home page
+src/components/.gitkeep         # Empty directory marker
+src/db/.gitkeep                 # Empty directory marker
+src/db/index.ts                 # Database client
+src/db/schema/index.ts          # Drizzle schema
+src/hooks/.gitkeep              # Empty directory marker
+src/prompts/discovery.ts        # AI prompt (will be regenerated)
+src/prompts/phaseRouter.ts      # Phase router (will be regenerated)
+src/prompts/quantification.ts   # AI prompt
+src/prompts/synthesis.ts        # AI prompt
+src/prompts/system.ts           # System prompt (will be regenerated)
+src/prompts/validation.ts       # AI prompt
+src/schemas/roi.ts              # ROI schemas
+src/stores/index.ts             # Zustand store
+src/styles/.gitkeep             # Empty directory marker
+src/test/setup.ts               # Test setup (will be regenerated)
+src/types/.gitkeep              # Empty directory marker
+```
+
+### Test Files (1 file)
+```bash
+e2e/home.spec.ts                # E2E test example
+```
+
+### Public Directory (1 file)
+```bash
+public/.gitkeep                 # Empty directory marker
+```
+
+---
+
+## Files to PRESERVE (10 files - OmniForge improvements)
+
+These files were created/modified AFTER the deployment to fix issues and enhance OmniForge:
+
+### OmniForge System Improvements
+```bash
+_build/omniforge/tech_stack/foundation/init-typescript.sh   # ✅ Enhanced with auto-exclusions
+_build/omniforge/tech_stack/quality/verify-build.sh         # ✅ NEW: Build verification script
+_build/omniforge/bootstrap.conf                             # ✅ Modified: Added verify-build.sh
+_build/omniforge/bin/test-deploy.sh                         # ✅ NEW: Test deployment wrapper
+_build/omniforge/bin/test-cleanup.sh                        # ✅ NEW: Test cleanup utility
+```
+
+### Documentation
+```bash
+_build/omniforge/DEPLOYMENT-FIXES.md    # ✅ NEW: Deployment fixes documentation
+_build/omniforge/INSTALL-DIR-ISSUE.md   # ✅ NEW: Install directory bug report
+```
+
+### Runtime Files (can be deleted but will regenerate)
+```bash
+src/lib/confidence.ts           # ✅ NEW: Created to fix missing module
+src/lib/sessionState.ts         # ✅ NEW: Created to fix missing module
+src/lib/export/narrative.ts     # ✅ FIXED: TypeScript error fixed
+```
+
+---
+
+## Additional Files to Consider
+
+### Generated/Build Artifacts (DELETE)
+```bash
+.bootstrap_state                # OmniForge state tracking
+node_modules/                   # NPM packages (will be reinstalled)
+pnpm-lock.yaml                  # Lock file (will be regenerated)
+.next/                          # Next.js build cache
+tsconfig.tsbuildinfo            # TypeScript build cache
+next-env.d.ts                   # Next.js type definitions
+logs/build.log                  # Build logs
+logs/test.log                   # Test logs
+logs/typecheck.log              # Type check logs
+logs/verification-report.md     # Verification report
+```
+
+### OmniForge Cache (PRESERVE - saves download time)
+```bash
+_build/omniforge/.download-cache/   # ✅ KEEP: Package cache (saves time)
+_build/omniforge/logs/              # ✅ KEEP: Deployment logs (useful)
+```
+
+---
+
+## Execution Plan
+
+### Option 1: Manual Deletion (Safest)
+
+Execute these commands to manually delete deployment files:
+
+```bash
+cd /home/luce/apps/bloom2
+
+# Delete root config files
+rm -f docker-compose.yml
+rm -f drizzle.config.ts
+rm -f next.config.ts
+rm -f package.json
+rm -f playwright.config.ts
+rm -f tsconfig.json
+rm -f vitest.config.ts
+
+# Delete source directories (this removes everything including our fixes)
+# NOTE: This will delete src/lib/confidence.ts and src/lib/sessionState.ts
+# They will need to be regenerated by the next deployment
+rm -rf src/
+
+# Delete test files
+rm -rf e2e/
+
+# Delete public directory
+rm -rf public/
+
+# Delete generated files
+rm -f .bootstrap_state
+rm -f tsconfig.tsbuildinfo
+rm -f next-env.d.ts
+rm -f pnpm-lock.yaml
+
+# Delete build artifacts
+rm -rf .next/
+rm -rf node_modules/
+
+# Optional: Clear logs
+rm -rf logs/
+
+# Git status to verify
+git status
+```
+
+**Warning**: This deletes `src/lib/confidence.ts` and `src/lib/sessionState.ts`. These will need to be recreated by the next OmniForge deployment OR you can preserve them manually.
+
+---
+
+### Option 2: Git Reset (Cleanest)
+
+Reset to the commit before OmniForge deployment, then reapply OmniForge improvements:
+
+```bash
+cd /home/luce/apps/bloom2
+
+# Save OmniForge improvements
+git stash push -m "OmniForge system improvements" \
+    _build/omniforge/tech_stack/foundation/init-typescript.sh \
+    _build/omniforge/tech_stack/quality/verify-build.sh \
+    _build/omniforge/bootstrap.conf \
+    _build/omniforge/bin/test-deploy.sh \
+    _build/omniforge/bin/test-cleanup.sh \
+    _build/omniforge/DEPLOYMENT-FIXES.md \
+    _build/omniforge/INSTALL-DIR-ISSUE.md
+
+# Reset to before deployment
+git reset --hard 16dc779
+
+# Reapply OmniForge improvements
+git stash pop
+
+# Clean untracked files (node_modules, .next, etc.)
+git clean -fdx -e _build/omniforge/.download-cache
+
+# Verify state
+git status
+```
+
+**Result**: Clean slate with OmniForge improvements preserved.
+
+---
+
+### Option 3: Scripted Reset (Recommended)
+
+Create a reset script that preserves OmniForge improvements:
+
+```bash
+#!/usr/bin/env bash
+# reset-deployment.sh
+
+set -euo pipefail
+
+echo "Resetting OmniForge deployment..."
+
+# Delete deployment files
+rm -f docker-compose.yml drizzle.config.ts next.config.ts package.json
+rm -f playwright.config.ts tsconfig.json vitest.config.ts
+rm -f .bootstrap_state tsconfig.tsbuildinfo next-env.d.ts pnpm-lock.yaml
+
+# Delete directories
+rm -rf src/ e2e/ public/ .next/ node_modules/ logs/
+
+# Verify OmniForge improvements are still present
+if [[ -f "_build/omniforge/tech_stack/quality/verify-build.sh" ]]; then
+    echo "✓ OmniForge improvements preserved"
+else
+    echo "✗ ERROR: OmniForge improvements lost!"
+    exit 1
+fi
+
+echo "✓ Deployment reset complete"
+echo "  Run: omni --init (to redeploy)"
+```
+
+---
+
+## Post-Reset Verification
+
+After reset, you should have:
+
+```bash
+# Check what's left
+ls -la
+
+# Should see:
+_build/           # ✓ OmniForge system (with improvements)
+.claude/          # ✓ Claude Code config
+.git/             # ✓ Git repository
+docs/             # ✓ Documentation
+scripts/          # ✓ Scripts
+_AppModules-Luce/ # ✓ Legacy modules
+
+# Should NOT see:
+src/              # ✗ Deleted
+package.json      # ✗ Deleted
+node_modules/     # ✗ Deleted
+.next/            # ✗ Deleted
+```
+
+---
+
+## What Happens on Next Deployment
+
+When you run `omni --init` again after reset:
+
+### Will Be Regenerated Correctly
+- ✅ `tsconfig.json` - Will include auto-exclusions (thanks to our fix)
+- ✅ `package.json` - Fresh package manifest
+- ✅ `src/` directory - All source files recreated
+- ✅ Build verification - Will run automatically (thanks to our enhancement)
+
+### May Need Manual Fix
+- ⚠️ `src/lib/confidence.ts` - Might not be generated (was our fix)
+- ⚠️ `src/lib/sessionState.ts` - Might not be generated (was our fix)
+- ⚠️ `src/lib/export/narrative.ts` - Type error might return (was our fix)
+
+**Solution**: Keep a backup of these three files, or be ready to recreate them if build fails.
+
+---
+
+## Backup Strategy (Recommended Before Reset)
+
+```bash
+# Create backup of files we manually created/fixed
+mkdir -p _backup/manual-fixes
+
+cp src/lib/confidence.ts _backup/manual-fixes/
+cp src/lib/sessionState.ts _backup/manual-fixes/
+cp src/lib/export/narrative.ts _backup/manual-fixes/
+
+# After next deployment fails (if it does), restore:
+cp _backup/manual-fixes/*.ts src/lib/
+```
+
+---
+
+## Quick Reset Script
+
+Save this as `_build/omniforge/bin/reset-deployment.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /home/luce/apps/bloom2
+
+echo "🗑️  Resetting OmniForge deployment..."
+
+# Backup manual fixes
+mkdir -p _backup/manual-fixes
+[[ -f src/lib/confidence.ts ]] && cp src/lib/confidence.ts _backup/manual-fixes/
+[[ -f src/lib/sessionState.ts ]] && cp src/lib/sessionState.ts _backup/manual-fixes/
+[[ -f src/lib/export/narrative.ts ]] && cp src/lib/export/narrative.ts _backup/manual-fixes/
+
+# Delete deployment files
+rm -f docker-compose.yml drizzle.config.ts next.config.ts package.json
+rm -f playwright.config.ts tsconfig.json vitest.config.ts .env.example
+rm -f .bootstrap_state tsconfig.tsbuildinfo next-env.d.ts pnpm-lock.yaml
+
+# Delete directories
+rm -rf src/ e2e/ public/ .next/ node_modules/ logs/ test-results/ playwright-report/
+
+# Verify improvements preserved
+if [[ -f "_build/omniforge/tech_stack/quality/verify-build.sh" ]]; then
+    echo "✅ OmniForge improvements preserved"
+else
+    echo "❌ ERROR: OmniForge improvements lost!"
+    exit 1
+fi
+
+echo "✅ Reset complete"
+echo ""
+echo "Manual fixes backed up to: _backup/manual-fixes/"
+echo "Next steps:"
+echo "  1. Run: omni --init"
+echo "  2. If build fails, restore: cp _backup/manual-fixes/*.ts src/lib/"
+```
+
+---
+
+## Recommendation
+
+**Use Option 3 (Scripted Reset)** with the reset script:
+
+1. Creates the reset script above
+2. Makes it executable: `chmod +x _build/omniforge/bin/reset-deployment.sh`
+3. Run it: `./_build/omniforge/bin/reset-deployment.sh`
+4. Run new deployment: `omni --init`
+5. Restore manual fixes if needed: `cp _backup/manual-fixes/*.ts src/lib/`
+
+This approach is:
+- ✅ Safe (backs up manual fixes)
+- ✅ Clean (removes all deployment files)
+- ✅ Preserves OmniForge improvements
+- ✅ Reversible (backup available)
+
+---
+
+## Summary Table
+
+| File/Directory | Source | Action | Reason |
+|----------------|--------|--------|--------|
+| `src/` | OmniForge | **DELETE** | Will be regenerated |
+| `package.json` | OmniForge | **DELETE** | Will be regenerated |
+| `tsconfig.json` | OmniForge | **DELETE** | Will be regenerated (with our fixes) |
+| `node_modules/` | npm/pnpm | **DELETE** | Will be reinstalled |
+| `_build/omniforge/tech_stack/` | Our fixes | **PRESERVE** | Enhanced scripts |
+| `_build/omniforge/bin/test-*.sh` | Our fixes | **PRESERVE** | New utilities |
+| `_build/omniforge/*.md` | Our docs | **PRESERVE** | Documentation |
+| `_build/omniforge/.download-cache/` | Cache | **PRESERVE** | Saves time |
+
+---
+
+**Status**: Ready to execute
+**Risk**: Low (backup strategy in place)
+**Recommendation**: Use scripted reset with manual fix backup

@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# =============================================================================
+# OmniForge Reset - Delete Last Deployment
+# =============================================================================
+# Resets the last deployment while preserving OmniForge system improvements
+# Creates backup before deletion for safety
+# =============================================================================
+
+set -euo pipefail
+IFS=$'\n\t'
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OMNIFORGE_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="$(cd "${OMNIFORGE_ROOT}/../.." && pwd)"
+
+# Export for library functions
+export PROJECT_ROOT
+
+# =============================================================================
+# Load Libraries
+# =============================================================================
+
+if [[ ! -f "${OMNIFORGE_ROOT}/lib/common.sh" ]]; then
+    echo "[ERROR] Required library not found: lib/common.sh" >&2
+    exit 1
+fi
+
+source "${OMNIFORGE_ROOT}/lib/common.sh"
+
+if [[ ! -f "${OMNIFORGE_ROOT}/lib/reset.sh" ]]; then
+    log_error "Required library not found: lib/reset.sh"
+    exit 1
+fi
+
+source "${OMNIFORGE_ROOT}/lib/reset.sh"
+
+# =============================================================================
+# Usage
+# =============================================================================
+
+usage() {
+    cat <<EOF
+OmniForge Reset - Delete Last Deployment
+
+Usage: omni reset [OPTIONS]
+
+Resets the last deployment while preserving OmniForge system improvements.
+Creates a backup before deletion for safety.
+
+OPTIONS:
+    --yes           Non-interactive mode (auto-confirm deletion)
+    --manifest      Use deployment manifest for precise reset (future)
+    -h, --help      Show this help
+
+WHAT GETS DELETED:
+    • Root config files (package.json, tsconfig.json, etc.)
+    • Source directory (src/)
+    • Test directories (e2e/)
+    • Build artifacts (.next/, node_modules/)
+    • State files (.bootstrap_state)
+
+WHAT GETS PRESERVED:
+    • OmniForge system (_build/omniforge/)
+    • Claude Code config (.claude/)
+    • Documentation (docs/)
+    • Git repository (.git/)
+    • Backups (_backup/)
+
+BACKUP:
+    Before deletion, a backup is created at:
+    _backup/deployment-YYYYMMDD-HHMMSS/
+
+EXAMPLES:
+    omni reset              # Interactive mode (confirm before delete)
+    omni reset --yes        # Non-interactive mode (auto-confirm)
+    omni reset --manifest   # Use deployment manifest (if available)
+
+WORKFLOW:
+    1. omni reset           # Reset deployment
+    2. omni run             # Initialize new deployment
+    3. omni build           # Verify build
+
+EOF
+}
+
+# =============================================================================
+# Parse Arguments
+# =============================================================================
+
+FORCE=false
+USE_MANIFEST=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --yes)
+            FORCE=true
+            shift
+            ;;
+        --manifest)
+            USE_MANIFEST=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# =============================================================================
+# Execute Reset
+# =============================================================================
+
+# Change to project root
+cd "$PROJECT_ROOT"
+
+# Execute appropriate reset method
+if [[ "$USE_MANIFEST" == "true" ]]; then
+    log_info "Using manifest-based reset..."
+    execute_manifest_reset "$FORCE"
+else
+    log_info "Using standard reset..."
+    execute_reset "$FORCE"
+fi
+
+exit_code=$?
+
+if [[ $exit_code -eq 0 ]]; then
+    log_ok "Reset completed successfully"
+else
+    log_error "Reset failed with code: $exit_code"
+fi
+
+exit $exit_code

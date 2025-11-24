@@ -216,5 +216,37 @@ get_os_type() {
     uname -s | tr '[:upper:]' '[:lower:]'
 }
 
+# =============================================================================
+# LOG MANAGEMENT
+# =============================================================================
+
+# Cleanup old logs, keep only the last N most recent
+# Usage: cleanup_old_logs "/path/to/logs" "pattern" 3
+cleanup_old_logs() {
+    local log_dir="$1"
+    local pattern="${2:-*.log}"
+    local keep_count="${3:-3}"
+
+    if [[ ! -d "$log_dir" ]]; then
+        return 0
+    fi
+
+    # Count existing logs
+    local log_count
+    log_count=$(find "$log_dir" -maxdepth 1 -type f -name "$pattern" 2>/dev/null | wc -l)
+
+    if [[ $log_count -le $keep_count ]]; then
+        return 0
+    fi
+
+    # Delete all but the last N logs (by modification time)
+    local delete_count=$((log_count - keep_count))
+    find "$log_dir" -maxdepth 1 -type f -name "$pattern" -printf '%T@ %p\n' 2>/dev/null | \
+        sort -n | head -n "$delete_count" | cut -d' ' -f2- | \
+        while read -r file; do
+            rm -f "$file" 2>/dev/null
+        done
+}
+
 # Export for subshells
 export DRY_RUN MAX_CMD_SECONDS

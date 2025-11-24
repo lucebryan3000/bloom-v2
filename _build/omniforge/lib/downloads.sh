@@ -30,8 +30,9 @@ _DOWNLOADS_OMNIFORGE_DIR="$(cd "${_DOWNLOADS_SCRIPT_DIR}/.." && pwd)"
 
 # Cache and logs stay inside omniforge directory (self-contained)
 : "${OMNIFORGE_CACHE_DIR:=${_DOWNLOADS_OMNIFORGE_DIR}/.download-cache}"
-: "${OMNIFORGE_LOG_DIR:=${_DOWNLOADS_OMNIFORGE_DIR}/logs}"
+: "${OMNIFORGE_LOG_DIR:=${_DOWNLOADS_OMNIFORGE_DIR}/.download-cache/logs_download-cache}"
 : "${OMNIFORGE_CACHE_MAX_AGE:=604800}"  # 7 days in seconds
+: "${OMNIFORGE_LOG_KEEP:=3}"  # Keep only last 3 logs
 
 # Package managers
 declare -g _DOWNLOADS_PID=""
@@ -54,6 +55,11 @@ downloads_init() {
     # Set up logging (logs stay in omniforge dir)
     _DOWNLOADS_LOG="${OMNIFORGE_LOG_DIR}/download_$(date +%Y%m%d_%H%M%S).log"
     touch "$_DOWNLOADS_LOG"
+
+    # Cleanup old logs (keep only last N)
+    if command -v cleanup_old_logs &>/dev/null; then
+        cleanup_old_logs "${OMNIFORGE_LOG_DIR}" "download_*.log" "${OMNIFORGE_LOG_KEEP}"
+    fi
 
     # Clean old cached packages
     _downloads_cleanup_old

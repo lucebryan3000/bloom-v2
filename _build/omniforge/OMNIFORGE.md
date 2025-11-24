@@ -129,7 +129,9 @@ omni run --phase 0             # Run only phase 0
 omni run --force               # Ignore state, re-run all
 omni list                      # List phases
 omni status                    # Show status
-omni forge                     # Build and verify
+omni build                     # Build and verify (alias: forge)
+omni reset                     # Reset last deployment
+omni reset --yes               # Reset without confirmation
 
 # Direct bin/ access
 ./bin/omni                     # Main execution
@@ -145,6 +147,10 @@ omni forge                     # Build and verify
 
 ./bin/forge                    # Build and verify
 ./bin/forge --skip-build       # Skip build step
+
+./bin/reset                    # Reset deployment
+./bin/reset --yes              # Non-interactive reset
+./bin/reset --help             # Reset help
 ```
 
 ### Environment Variables
@@ -180,11 +186,83 @@ NON_INTERACTIVE=true omni run
 LOG_FORMAT=json omni run > omniforge.json 2>&1
 ```
 
-**Reset and restart:**
+**Reset and redeploy:**
 ```bash
-omni status --clear
-omni --init
+omni reset --yes    # Reset deployment
+omni run            # Fresh initialization
+omni build          # Verify build
 ```
+
+---
+
+## Resetting Deployments
+
+OmniForge provides a safe reset system that deletes deployment artifacts while preserving the OmniForge system and all improvements.
+
+### Reset Commands
+
+```bash
+omni reset              # Interactive mode (confirm before delete)
+omni reset --yes        # Non-interactive mode (auto-confirm)
+omni reset --help       # Show reset help
+```
+
+### What Gets Deleted
+
+- **Root config files**: `package.json`, `tsconfig.json`, `next.config.ts`, etc.
+- **Source directory**: `src/` (all source files)
+- **Test directories**: `e2e/`
+- **Build artifacts**: `.next/`, `node_modules/`
+- **State files**: `.bootstrap_state`, lock files
+
+### What Gets Preserved
+
+- **OmniForge system**: `_build/omniforge/` (entire OmniForge system)
+- **OmniForge improvements**: All enhancements and fixes
+- **Claude Code config**: `.claude/`
+- **Documentation**: `docs/`
+- **Git repository**: `.git/`
+- **Backups**: `_backup/`
+
+### Automatic Backup
+
+Before deletion, `omni reset` automatically creates a timestamped backup:
+
+```
+_backup/deployment-YYYYMMDD-HHMMSS/
+├── manual-fixes/           # Manually created files
+├── package.json            # Package manifest
+├── tsconfig.json           # TypeScript config
+└── .bootstrap_state        # Bootstrap state
+```
+
+### Restore from Backup
+
+If needed, restore from the latest backup:
+
+```bash
+# Find latest backup
+ls -lt _backup/
+
+# Restore manual fixes
+cp _backup/deployment-YYYYMMDD-HHMMSS/manual-fixes/*.ts src/lib/
+```
+
+### Full Reset Cycle
+
+1. **Reset**: `omni reset --yes`
+2. **Deploy**: `omni run`
+3. **Build**: `omni build`
+4. **Test**: `pnpm dev`
+
+### Use Cases
+
+- **Test different configurations**: Reset, modify `bootstrap.conf`, redeploy
+- **Fix build errors**: Reset, redeploy with fixes
+- **Clean slate**: Reset and start fresh
+- **Development iteration**: Quick reset for testing
+
+See [RESET-QUICKREF.md](docs/RESET-QUICKREF.md) for complete reset documentation.
 
 ---
 
