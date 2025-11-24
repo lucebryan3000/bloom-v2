@@ -206,3 +206,87 @@ check_phase_deps() {
 
     return $failed
 }
+
+# =============================================================================
+# DEPENDENCY REMEDIATION (Auto-install missing dependencies)
+# =============================================================================
+
+# Install pnpm globally using npm
+# Usage: install_pnpm
+install_pnpm() {
+    if command -v pnpm &>/dev/null; then
+        log_ok "pnpm already installed"
+        return 0
+    fi
+
+    log_step "Installing pnpm..."
+    if npm install -g pnpm 2>/dev/null; then
+        log_ok "pnpm installed successfully"
+        return 0
+    else
+        log_error "Failed to install pnpm"
+        return 1
+    fi
+}
+
+# Attempt to download packages to cache before phase execution
+# Usage: preflight_download_packages
+preflight_download_packages() {
+    local omniforge_root="${1:-}"
+
+    if [[ -z "$omniforge_root" ]]; then
+        return 0
+    fi
+
+    local cache_dir="${omniforge_root}/.download-cache"
+    if [[ ! -d "$cache_dir" ]]; then
+        return 0
+    fi
+
+    log_step "Pre-downloading packages to cache..."
+    if command -v downloads_init &>/dev/null; then
+        downloads_init
+        log_ok "Package cache initialized"
+        return 0
+    else
+        log_debug "downloads.sh not loaded, skipping package cache"
+        return 0
+    fi
+}
+
+# Check and remediate all critical missing dependencies
+# Usage: preflight_remediate_missing
+# Returns: 0 if all critical deps available, 1 if critical missing
+preflight_remediate_missing() {
+    local remediate="${PREFLIGHT_REMEDIATE:-false}"
+    local skip_missing="${PREFLIGHT_SKIP_MISSING:-false}"
+    local critical_missing=0
+
+    if [[ "$remediate" != "true" ]]; then
+        return 0
+    fi
+
+    log_info "Attempting to remediate missing dependencies..."
+    echo ""
+
+    # Critical dependency: pnpm
+    if ! command -v pnpm &>/dev/null; then
+        log_warn "pnpm not found - attempting installation..."
+        if install_pnpm; then
+            log_ok "pnpm remediation successful"
+        else
+            log_error "pnpm remediation failed"
+            critical_missing=1
+        fi
+    fi
+
+    # Pre-download packages if possible
+    preflight_download_packages "${OMNIFORGE_ROOT:-}"
+
+    if [[ "$skip_missing" == "true" ]] && [[ $critical_missing -eq 1 ]]; then
+        log_warn "Critical dependencies still missing but continuing (PREFLIGHT_SKIP_MISSING=true)"
+        return 0
+    fi
+
+    return $critical_missing
+}
