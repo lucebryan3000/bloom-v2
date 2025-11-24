@@ -217,6 +217,32 @@ main() {
     log_rotate_if_needed "${LOG_DIR}" || true
     log_cleanup_if_needed "${LOG_DIR}" || true
 
+    # =========================================================================
+    # LOCAL TOOLS SETUP (Self-Contained Environment)
+    # =========================================================================
+    # Check if local Node.js/pnpm exist, install if missing
+    # This ensures project is fully self-contained
+
+    if ! prereqs_local_node_exists || ! prereqs_local_pnpm_exists; then
+        log_info "Setting up project-local development tools..."
+        echo ""
+
+        if ! prereqs_local_setup_all; then
+            log_error "Failed to setup local tools"
+            log_info "See error details above"
+            exit 1
+        fi
+
+        echo ""
+    fi
+
+    # Activate local tools environment (prepend .tools/node/bin to PATH)
+    if [[ -f "${TOOLS_ACTIVATE_SCRIPT}" ]]; then
+        # shellcheck source=/dev/null
+        source "${TOOLS_ACTIVATE_SCRIPT}" > /dev/null 2>&1
+        log_debug "Local tools activated: Node.js $(node --version 2>/dev/null), pnpm $(pnpm --version 2>/dev/null)"
+    fi
+
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 

@@ -80,6 +80,9 @@ source "${_COMMON_LIB_DIR}/phases.sh"
 # 10. Prerequisites (depends on logging) - for background installation
 source "${_COMMON_LIB_DIR}/prereqs.sh"
 
+# 10b. Local Prerequisites (depends on logging) - for project-local tool installation
+source "${_COMMON_LIB_DIR}/prereqs-local.sh"
+
 # 11. Configuration validation (depends on logging)
 source "${_COMMON_LIB_DIR}/config_validate.sh"
 
