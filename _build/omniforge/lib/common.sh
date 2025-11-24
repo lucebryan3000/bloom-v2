@@ -77,6 +77,18 @@ source "${_COMMON_LIB_DIR}/phases.sh"
 # 9. Prerequisites (depends on logging) - for background installation
 source "${_COMMON_LIB_DIR}/prereqs.sh"
 
+# 10. Configuration validation (depends on logging)
+source "${_COMMON_LIB_DIR}/config_validate.sh"
+
+# 11. Setup wizard (depends on logging, config_bootstrap)
+source "${_COMMON_LIB_DIR}/setup_wizard.sh"
+
+# 12. Configuration bakes/presets (depends on logging)
+source "${_COMMON_LIB_DIR}/bakes.sh"
+
+# 13. Script indexer (depends on logging) - for background script discovery
+source "${_COMMON_LIB_DIR}/indexer.sh"
+
 # =============================================================================
 # BACKWARD COMPATIBILITY ALIASES
 # =============================================================================

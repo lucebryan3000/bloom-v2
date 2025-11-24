@@ -86,6 +86,9 @@ FORCE=false
 SINGLE_PHASE=""
 LIST_ONLY=false
 SHOW_STATUS=false
+SHOW_CONFIG=false
+FAIL_FAST=false
+QUIET_MODE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -99,10 +102,25 @@ while [[ $# -gt 0 ]]; do
             ;;
         -v|--verbose)
             VERBOSE=true
+            LOG_LEVEL="verbose"
+            shift
+            ;;
+        -q|--quiet)
+            QUIET_MODE=true
+            LOG_LEVEL="quiet"
             shift
             ;;
         -f|--force)
             FORCE=true
+            shift
+            ;;
+        --fail-fast)
+            FAIL_FAST=true
+            EXECUTION_MODE="fail-fast"
+            shift
+            ;;
+        --continue)
+            EXECUTION_MODE="continue"
             shift
             ;;
         -p|--phase)
@@ -115,6 +133,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -s|--status)
             SHOW_STATUS=true
+            shift
+            ;;
+        -c|--config)
+            SHOW_CONFIG=true
             shift
             ;;
         *)
@@ -154,15 +176,33 @@ main() {
         exit 0
     fi
 
+    if [[ "$SHOW_CONFIG" == "true" ]]; then
+        config_show_summary
+        exit 0
+    fi
+
+    # Run enhanced configuration validation
+    if ! config_validate_all; then
+        log_error "Configuration validation failed"
+        config_suggest_fixes
+        log_show_file_hint
+        exit 1
+    fi
+
     # =========================================================================
-    # STEP 1: Start prereq installation in background (if needed)
+    # STEP 1: Start background processes (prereqs + indexer)
     # =========================================================================
-    # This runs WHILE we show banner and validate config, saving time
+    # These run WHILE we show banner and validate config, saving time
+
+    # Start prereq installation if needed
     if ! prereqs_all_met; then
         prereqs_install_background
     fi
 
-    # Banner (shows while prereqs install in background)
+    # Start script indexer in background (for requirements validation)
+    indexer_start_background "$tech_stack_dir"
+
+    # Banner (shows while background processes run)
     log_info "=========================================="
     log_info "  OMNIFORGE - The Factory That Builds Universes"
     log_info "=========================================="
@@ -186,8 +226,10 @@ main() {
     echo ""
 
     # =========================================================================
-    # STEP 3: Wait for background prereq installation to complete
+    # STEP 3: Wait for background processes to complete
     # =========================================================================
+
+    # Wait for prereq installation
     if prereqs_is_running; then
         log_info "Waiting for prerequisite installation to complete..."
         if ! prereqs_wait; then
@@ -201,6 +243,26 @@ main() {
     if ! prereqs_verify; then
         log_error "Prerequisites not met. Please install manually."
         exit 1
+    fi
+
+    # Wait for indexer and validate requirements
+    if indexer_is_running; then
+        indexer_wait
+    fi
+
+    # Check if all required variables are set
+    if ! indexer_validate_requirements; then
+        log_warn "Some required variables are not set in bootstrap.conf"
+        # Offer to inject missing variables
+        if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+            echo ""
+            read -rp "Would you like to add missing variables to bootstrap.conf? [y/N] " inject_choice
+            if [[ "${inject_choice,,}" == "y" ]]; then
+                indexer_inject_missing_vars "${BOOTSTRAP_CONF}"
+                log_warn "Please update the added variables and run omni again"
+                exit 1
+            fi
+        fi
     fi
     echo ""
 

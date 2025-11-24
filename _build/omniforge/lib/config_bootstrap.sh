@@ -30,9 +30,43 @@ _LIB_CONFIG_LOADED=1
 # FIRST-RUN CONFIGURATION
 # =============================================================================
 
-# Interactive prompt for config value
-# Usage: _config_prompt "VAR_NAME" "Prompt text" "default_value"
-_config_prompt() {
+# Run first-time setup using the setup wizard
+# This is called when no bootstrap.conf exists
+_config_first_run() {
+    # Check if setup wizard is available
+    if type setup_run_first_time &>/dev/null; then
+        setup_run_first_time "${BOOTSTRAP_CONF}" "${BOOTSTRAP_CONF_EXAMPLE}"
+        return $?
+    fi
+
+    # Fallback: basic prompts if wizard not loaded
+    _config_first_run_basic
+}
+
+# Basic first-run prompts (fallback if wizard unavailable)
+_config_first_run_basic() {
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    echo ""
+    log_info "=== First-Run Configuration ==="
+    log_info "Customize your project settings (press Enter to keep defaults):"
+    echo ""
+
+    _config_prompt_basic "APP_NAME" "Application name" "bloom2"
+    _config_prompt_basic "PROJECT_ROOT" "Project root directory" "."
+    _config_prompt_basic "DB_NAME" "Database name" "bloom2_db"
+    _config_prompt_basic "DB_USER" "Database user" "bloom2"
+    _config_prompt_basic "DB_PASSWORD" "Database password" "change_me"
+
+    echo ""
+    log_info "Configuration saved to bootstrap.conf"
+    echo ""
+}
+
+# Basic prompt helper (used by fallback)
+_config_prompt_basic() {
     local var_name="$1"
     local prompt_text="$2"
     local default_val="$3"
@@ -45,31 +79,10 @@ _config_prompt() {
     read -rp "${prompt_text} [${default_val}]: " new_val
 
     if [[ -n "${new_val}" ]]; then
-        sed -i.bak "s|^${var_name}=.*|${var_name}=\"${new_val}\"|" "${BOOTSTRAP_CONF}"
-        rm -f "${BOOTSTRAP_CONF}.bak"
+        local sed_cmd="sed -i"
+        [[ "$(uname)" == "Darwin" ]] && sed_cmd="sed -i ''"
+        $sed_cmd "s|^${var_name}=.*|${var_name}=\"${new_val}\"|" "${BOOTSTRAP_CONF}"
     fi
-}
-
-# Run first-time configuration prompts
-_config_first_run() {
-    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
-        return 0
-    fi
-
-    echo ""
-    log_info "=== First-Run Configuration ==="
-    log_info "Customize your project settings (press Enter to keep defaults):"
-    echo ""
-
-    _config_prompt "APP_NAME" "Application name" "bloom2"
-    _config_prompt "PROJECT_ROOT" "Project root directory" "."
-    _config_prompt "DB_NAME" "Database name" "bloom2_db"
-    _config_prompt "DB_USER" "Database user" "bloom2"
-    _config_prompt "DB_PASSWORD" "Database password" "change_me"
-
-    echo ""
-    log_info "Configuration saved to bootstrap.conf"
-    echo ""
 }
 
 # =============================================================================

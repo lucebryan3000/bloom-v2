@@ -20,6 +20,61 @@
 _LIB_PHASES_LOADED=1
 
 # =============================================================================
+# ERROR TRACKING FOR DEFERRED HANDLING
+# =============================================================================
+
+# Error collection mode: "fail-fast" (default) or "continue"
+: "${EXECUTION_MODE:=continue}"
+
+# Track execution errors for deferred handling
+declare -g -a _EXECUTION_ERRORS=()
+declare -g -a _EXECUTION_WARNINGS=()
+declare -g -a _FAILED_SCRIPTS=()
+declare -g -a _COMPLETED_SCRIPTS=()
+declare -g -a _SKIPPED_SCRIPTS=()
+
+# Reset error tracking
+_execution_reset() {
+    _EXECUTION_ERRORS=()
+    _EXECUTION_WARNINGS=()
+    _FAILED_SCRIPTS=()
+    _COMPLETED_SCRIPTS=()
+    _SKIPPED_SCRIPTS=()
+}
+
+# Record a script failure
+_execution_record_failure() {
+    local script="$1"
+    local error_msg="$2"
+    local exit_code="${3:-1}"
+
+    _FAILED_SCRIPTS+=("$script")
+    _EXECUTION_ERRORS+=("$script: $error_msg (exit $exit_code)")
+    log_file "FAILURE: $script - $error_msg (exit $exit_code)" "ERROR"
+}
+
+# Record a script success
+_execution_record_success() {
+    local script="$1"
+    local duration="${2:-}"
+    _COMPLETED_SCRIPTS+=("$script")
+    log_file "SUCCESS: $script ${duration:+(${duration})}" "OK"
+}
+
+# Record a script skip
+_execution_record_skip() {
+    local script="$1"
+    local reason="${2:-already completed}"
+    _SKIPPED_SCRIPTS+=("$script")
+    log_file "SKIP: $script - $reason" "SKIP"
+}
+
+# Check if we should continue after an error
+_execution_should_continue() {
+    [[ "${EXECUTION_MODE}" == "continue" ]]
+}
+
+# =============================================================================
 # PHASE DISCOVERY
 # =============================================================================
 
@@ -172,26 +227,67 @@ phase_get_timeout() {
 # PHASE EXECUTION
 # =============================================================================
 
-# Run a single script
+# Run a single script with timing and status tracking
 # Usage: phase_run_script "tech_stack/foundation/init-nextjs.sh"
 phase_run_script() {
     local script_path="$1"
     local script_name
     script_name=$(basename "$script_path")
+    local script_rel="${script_path##*/tech_stack/}"
 
-    log_step "Running: $script_name"
+    # Show running status
+    log_status "RUN" "$script_name"
 
     if [[ "${DRY_RUN:-false}" == "true" ]]; then
-        log_dry "bash $script_path"
+        log_status "SKIP" "$script_name" "dry-run"
+        _execution_record_skip "$script_rel" "dry-run"
         return 0
     fi
 
-    if bash "$script_path"; then
-        log_success "$script_name completed"
+    # Track execution time
+    local start_time
+    start_time=$(date +%s)
+
+    # Run script, capturing output to log file
+    local exit_code=0
+    if [[ -n "${LOG_FILE:-}" && -f "${LOG_FILE}" ]]; then
+        bash "$script_path" >> "$LOG_FILE" 2>&1
+        exit_code=$?
+    else
+        bash "$script_path"
+        exit_code=$?
+    fi
+
+    local end_time
+    end_time=$(date +%s)
+    local duration="$((end_time - start_time))s"
+
+    if [[ $exit_code -eq 0 ]]; then
+        log_status "OK" "$script_name" "$duration"
+        _execution_record_success "$script_rel" "$duration"
         return 0
     else
-        log_error "$script_name failed"
-        return 1
+        log_status "FAIL" "$script_name" "$duration"
+        _execution_record_failure "$script_rel" "script failed" "$exit_code"
+        return $exit_code
+    fi
+}
+
+# Run a script with deferred error handling (continues on failure)
+# Usage: phase_run_script_safe "tech_stack/foundation/init-nextjs.sh"
+phase_run_script_safe() {
+    local script_path="$1"
+
+    if phase_run_script "$script_path"; then
+        return 0
+    else
+        # Error already recorded, check if we should continue
+        if _execution_should_continue; then
+            log_warn "Continuing despite failure (deferred error mode)"
+            return 0  # Return success to continue execution
+        else
+            return 1  # Fail fast
+        fi
     fi
 }
 
@@ -225,10 +321,8 @@ phase_execute() {
         fi
     fi
 
-    local timeout
-    timeout=$(phase_get_timeout "$phase_num")
-
-    log_info "=== Phase $phase_num: $phase_name (timeout: ${timeout}s) ==="
+    # Use new phase start logging
+    log_phase_start "$phase_num" "$phase_name"
 
     # Get and run scripts
     local scripts
@@ -238,6 +332,8 @@ phase_execute() {
         log_warn "No scripts defined for phase $phase_num"
         return 0
     fi
+
+    local phase_failed=false
 
     while IFS= read -r script_rel; do
         # Skip empty lines
@@ -251,27 +347,41 @@ phase_execute() {
         # Check resume mode
         if [[ "$force" != "true" && "${BOOTSTRAP_RESUME_MODE:-skip}" == "skip" ]]; then
             if state_has_succeeded "$script_rel"; then
-                log_skip "$script_rel (already completed)"
+                log_status "SKIP" "$(basename "$script_rel")" "already done"
+                _execution_record_skip "$script_rel" "already completed"
                 continue
             fi
         fi
 
         # Check script exists
         if [[ ! -f "$full_path" ]]; then
-            log_error "Script not found: $full_path"
-            return 1
+            log_status "FAIL" "$(basename "$script_rel")" "not found"
+            _execution_record_failure "$script_rel" "script not found"
+            if ! _execution_should_continue; then
+                return 1
+            fi
+            phase_failed=true
+            continue
         fi
 
-        # Run script
-        if phase_run_script "$full_path"; then
+        # Run script with deferred error handling
+        if phase_run_script_safe "$full_path"; then
             state_mark_success "$script_rel"
         else
-            log_error "Phase $phase_num failed at: $script_rel"
-            return 1
+            phase_failed=true
+            if ! _execution_should_continue; then
+                log_error "Phase $phase_num failed at: $script_rel"
+                return 1
+            fi
         fi
     done <<< "$scripts"
 
-    log_success "Phase $phase_num ($phase_name) completed"
+    if [[ "$phase_failed" == "true" ]]; then
+        log_warn "Phase $phase_num completed with errors"
+        return 1
+    fi
+
+    log_debug "Phase $phase_num ($phase_name) completed"
     return 0
 }
 
@@ -280,6 +390,9 @@ phase_execute() {
 phase_execute_all() {
     local tech_stack_dir="$1"
     local force="${2:-false}"
+
+    # Initialize error tracking
+    _execution_reset
 
     local phases
     # Save IFS and restore to default for word splitting
@@ -293,17 +406,38 @@ phase_execute_all() {
         return 1
     fi
 
-    log_info "Discovered ${#phases[@]} phases: ${phases[*]}"
-    echo ""
+    log_debug "Discovered ${#phases[@]} phases: ${phases[*]}"
+
+    local any_failed=false
 
     for phase_num in "${phases[@]}"; do
         if ! phase_execute "$phase_num" "$tech_stack_dir" "$force"; then
-            return 1
+            any_failed=true
+            if ! _execution_should_continue; then
+                return 1
+            fi
         fi
-        echo ""
     done
 
-    return 0
+    # Return based on whether any phases failed
+    [[ "$any_failed" == "false" ]]
+}
+
+# Get execution summary for recap
+execution_get_summary() {
+    echo "completed:${#_COMPLETED_SCRIPTS[@]}"
+    echo "failed:${#_FAILED_SCRIPTS[@]}"
+    echo "skipped:${#_SKIPPED_SCRIPTS[@]}"
+}
+
+# Get list of failed scripts
+execution_get_failed() {
+    printf '%s\n' "${_FAILED_SCRIPTS[@]}"
+}
+
+# Get list of errors
+execution_get_errors() {
+    printf '%s\n' "${_EXECUTION_ERRORS[@]}"
 }
 
 # =============================================================================
@@ -573,7 +707,23 @@ phase_show_recap() {
     log_info "=========================================="
     echo ""
 
-    if [[ $_PHASE_STATS_FAILED -eq 0 ]]; then
+    # Show script-level statistics from execution tracking
+    echo "Scripts completed: ${#_COMPLETED_SCRIPTS[@]}"
+    echo "Scripts skipped: ${#_SKIPPED_SCRIPTS[@]}"
+    if [[ ${#_FAILED_SCRIPTS[@]} -gt 0 ]]; then
+        echo "Scripts failed: ${#_FAILED_SCRIPTS[@]}"
+    fi
+    echo ""
+
+    # Check for failures (either phase-level or script-level)
+    local has_failures=false
+    [[ $_PHASE_STATS_FAILED -gt 0 || ${#_FAILED_SCRIPTS[@]} -gt 0 ]] && has_failures=true
+
+    if [[ "$has_failures" == "false" ]]; then
+        log_info "=========================================="
+        log_info "  NEXT STEPS"
+        log_info "=========================================="
+        echo ""
         echo "1. Review generated files and customize as needed"
         echo ""
         echo "2. Set up environment variables:"
@@ -604,18 +754,45 @@ phase_show_recap() {
         echo "[ ] Set up your preferred IDE extensions"
         echo ""
     else
-        log_warn "Some phases failed. Please review the errors above."
+        log_info "=========================================="
+        log_warn "  FAILURES DETECTED"
+        log_info "=========================================="
         echo ""
-        echo "To retry failed phases:"
-        echo "   omni --init  # Will skip already completed scripts"
+
+        # Show failed scripts
+        if [[ ${#_FAILED_SCRIPTS[@]} -gt 0 ]]; then
+            echo "Failed scripts:"
+            for script in "${_FAILED_SCRIPTS[@]}"; do
+                echo "  - $script"
+            done
+            echo ""
+        fi
+
+        # Show error details
+        if [[ ${#_EXECUTION_ERRORS[@]} -gt 0 ]]; then
+            echo "Error details:"
+            for err in "${_EXECUTION_ERRORS[@]}"; do
+                echo "  $err"
+            done
+            echo ""
+        fi
+
+        log_info "=========================================="
+        log_info "  RECOVERY OPTIONS"
+        log_info "=========================================="
         echo ""
-        echo "To force re-run all phases:"
-        echo "   omni --init --force"
+        echo "To retry (skips completed scripts):"
+        echo "   omni"
+        echo ""
+        echo "To force re-run all scripts:"
+        echo "   omni --force"
         echo ""
         echo "To clear state and start fresh:"
-        echo "   omni status --clear"
-        echo "   omni --init"
+        echo "   omni --status --clear"
+        echo "   omni"
         echo ""
+
+        log_show_file_hint
     fi
 
     log_success "=========================================="

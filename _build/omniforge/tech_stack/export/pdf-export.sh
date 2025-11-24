@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up PDF export formatter
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.12 - PDF Export
+#
+# Required: PROJECT_ROOT,APP_NAME,ENABLE_PDF_EXPORTS
 #
 # Dependencies:
 #   lib/common.sh
