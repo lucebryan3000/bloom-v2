@@ -1,0 +1,26 @@
+# Local Development Database
+# Start: docker compose up -d
+# Stop: docker compose down
+# Reset: docker compose down -v
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: Bloom_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: BloomDB
+      POSTGRES_USER: luce
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U luce -d BloomDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
