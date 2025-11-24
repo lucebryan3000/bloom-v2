@@ -220,9 +220,9 @@ public/export/
 .bootstrap_state
 .bootstrap_state.bak
 # _build/bootstrap_scripts/logs/
-# Allow committing _build artifacts for GitHub visibility
-!_build/
-!_build/**
+# Allow committing _build artifacts for GitHub visibility (commented during dev)
+# !_build/
+# !_build/**
 
 # Legacy/deprecated folders
 old_build/
