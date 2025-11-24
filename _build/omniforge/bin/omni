@@ -36,6 +36,10 @@ set -euo pipefail
 
 readonly CODENAME="OmniForge"
 
+# Set TERM if not set (prevents tput errors in non-interactive shells)
+: "${TERM:=xterm-256color}"
+export TERM
+
 # =============================================================================
 # PATH SETUP
 # =============================================================================
