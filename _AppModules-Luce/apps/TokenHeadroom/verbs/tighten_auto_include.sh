@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# verbs/tighten_auto_include.sh — TokenHeadroom: Tighten autoInclude patterns verb
+
 verb_register "tighten_auto_include" "verb::tighten_auto_include::preview" "verb::tighten_auto_include::apply"
 _verb_auto_include_props(){ python3 - "$1" <<'PY'
 import json, glob, sys, os

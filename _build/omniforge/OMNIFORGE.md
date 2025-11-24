@@ -338,7 +338,79 @@ omni --init
 
 ---
 
+## Docker Integration
+
+All OmniForge solutions are built inside Docker containers, ensuring consistent development and production environments.
+
+### Docker Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    docker-compose.yml                           │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │      app        │  │    postgres     │  │     redis       │ │
+│  │  (Next.js dev)  │  │   (pgvector)    │  │   (optional)    │ │
+│  │   Port: 3000    │  │   Port: 5432    │  │   Port: 6379    │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Docker Files Created
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Multistage production build |
+| `Dockerfile.dev` | Development with hot reload |
+| `.dockerignore` | Build context exclusions |
+| `docker-compose.yml` | Full development stack |
+| `docker-compose.prod.yml` | Production override |
+| `Makefile` | Docker command shortcuts |
+| `.docker/cache-config.sh` | BuildKit cache settings |
+
+### Docker Commands
+
+```bash
+# Development
+make dev                      # Start development stack
+make dev-build                # Rebuild and start
+make logs                     # Follow all logs
+make shell                    # Shell into app container
+make db-shell                 # PostgreSQL shell
+
+# Production
+make build                    # Build production image
+make prod                     # Run production locally
+make push                     # Push to registry
+
+# Utilities
+make clean                    # Remove containers/images
+./scripts/docker-dev.sh       # Helper script menu
+```
+
+### Configuration (bootstrap.conf)
+
+```bash
+# Docker Configuration
+ENABLE_DOCKER="true"
+DOCKER_EXEC_MODE="container"    # host|container
+ENABLE_REDIS="false"
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_BUILDKIT="1"
+```
+
+### Validation Functions (lib/validation.sh)
+
+```bash
+require_docker                 # Check Docker installed and running
+require_docker_compose         # Check Compose v2 or standalone
+require_buildkit               # Check BuildKit enabled
+require_docker_env             # Full Docker environment check
+```
+
+---
+
 **Status**: PRODUCTION READY
-**Architecture**: Modular bin/lib pattern
-**Total Scripts**: 43+
-**Last Updated**: 2025-11-23
+**Architecture**: Modular bin/lib pattern with Docker-first execution
+**Total Scripts**: 46+
+**Last Updated**: 2025-11-24

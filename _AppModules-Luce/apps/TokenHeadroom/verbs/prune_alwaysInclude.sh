@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# verbs/prune_alwaysInclude.sh — TokenHeadroom: Prune alwaysInclude verb
+
 verb_register "prune_alwaysInclude" "verb::prune_alwaysInclude::preview" "verb::prune_alwaysInclude::apply"
 _verb_prune_preview_json(){ python3 - "$1" <<'PY'
 import json, os, sys

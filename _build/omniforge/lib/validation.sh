@@ -79,6 +79,49 @@ require_docker() {
     return 0
 }
 
+# Check Docker Compose is available (v2 plugin or standalone)
+require_docker_compose() {
+    # First check for Docker Compose v2 (plugin)
+    if docker compose version &> /dev/null; then
+        log_debug "Docker Compose v2 (plugin) available"
+        return 0
+    fi
+
+    # Fallback to standalone docker-compose
+    if command -v docker-compose &> /dev/null; then
+        log_warn "Using standalone docker-compose. Consider upgrading to Docker Compose v2"
+        return 0
+    fi
+
+    log_error "Docker Compose not found. Install Docker Desktop or docker-compose-plugin"
+    return 1
+}
+
+# Check Docker BuildKit is enabled
+require_buildkit() {
+    if [[ "${DOCKER_BUILDKIT:-0}" != "1" ]]; then
+        log_warn "DOCKER_BUILDKIT not enabled. Set DOCKER_BUILDKIT=1 for optimized builds"
+        return 1
+    fi
+    log_debug "Docker BuildKit enabled"
+    return 0
+}
+
+# Full Docker environment check (Docker + Compose + running)
+require_docker_env() {
+    local failed=0
+
+    if ! require_docker; then
+        failed=1
+    fi
+
+    if ! require_docker_compose; then
+        failed=1
+    fi
+
+    return $failed
+}
+
 # =============================================================================
 # FILE VALIDATION
 # =============================================================================

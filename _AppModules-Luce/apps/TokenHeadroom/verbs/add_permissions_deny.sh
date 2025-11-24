@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# verbs/add_permissions_deny.sh — TokenHeadroom: Add permissions.deny verb
+
 verb_register "add_permissions_deny" "verb::add_permissions_deny::preview" "verb::add_permissions_deny::apply"
 _verb_deny_preview(){ python3 - "$1" "$@" <<'PY'
 import json, sys
