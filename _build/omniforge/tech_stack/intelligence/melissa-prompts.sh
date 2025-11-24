@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up Melissa.ai prompt system (phase-driven prompts)
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: Appendix X - Melissa.ai Persona & Behavior Specification
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh

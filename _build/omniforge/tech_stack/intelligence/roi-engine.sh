@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up ROI calculation engine
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.5 - ROI Engine (Value Computation)
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh

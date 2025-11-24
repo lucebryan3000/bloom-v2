@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up user settings and preferences UI
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.13 - Settings & User Preferences
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh

@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up confidence scoring and uncertainty quantification
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.6 - Confidence & Uncertainty Engine
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh

@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up JSON export formatter
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.12 - JSON Export
+#
+# Required: PROJECT_ROOT,ENABLE_PDF_EXPORTS
 #
 # Dependencies:
 #   lib/common.sh

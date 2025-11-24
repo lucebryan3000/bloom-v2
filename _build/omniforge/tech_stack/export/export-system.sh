@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up export system infrastructure (PDF, Excel, JSON, Markdown)
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.12 - Export System
+#
+# Required: PROJECT_ROOT,ENABLE_PDF_EXPORTS,PKG_JSPDF,PKG_HTML2CANVAS,PKG_EXCELJS,PKG_MARKDOWN_IT
 #
 # Dependencies:
 #   lib/common.sh

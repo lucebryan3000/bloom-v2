@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up Human-in-the-Loop review queue and governance
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.8 - Human-in-the-Loop (HITL) Governance
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh

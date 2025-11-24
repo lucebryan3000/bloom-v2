@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up feature flag system for controlled rollout and A/B testing
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.13 - Feature Flags & Experimentation
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh

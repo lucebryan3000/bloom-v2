@@ -5,8 +5,10 @@
 # Part of OmniForge - The Factory That Builds Universes
 #
 # Purpose: Set up monitoring and health check endpoints
-# Phase: 4 (Extensions & Quality)
+# Phase: 4
 # Reference: PRD Section 6.13 - Monitoring & Observability
+#
+# Required: PROJECT_ROOT
 #
 # Dependencies:
 #   lib/common.sh
