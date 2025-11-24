@@ -94,13 +94,21 @@ add_gitkeep() {
 
 # Create file with content (dry-run aware)
 # Usage: write_file "/path/to/file" "content" [force]
+#    or: write_file "/path/to/file" <<'EOF' ... EOF  (heredoc)
 write_file() {
     local file_path="$1"
-    local content="$2"
+    local content="${2:-}"
     local force="${3:-false}"
+
+    # If no content argument, read from stdin (heredoc support)
+    if [[ -z "$content" ]]; then
+        content="$(cat)"
+    fi
 
     if [[ -f "$file_path" && "$force" != "true" ]]; then
         log_skip "File exists: $file_path"
+        # Drain stdin if it was a heredoc
+        [[ -t 0 ]] || cat > /dev/null
         return 0
     fi
 
@@ -112,7 +120,7 @@ write_file() {
     # Ensure parent directory exists
     mkdir -p "$(dirname "$file_path")"
 
-    echo "$content" > "$file_path"
+    printf '%s\n' "$content" > "$file_path"
     log_success "Created file: $file_path"
 }
 
