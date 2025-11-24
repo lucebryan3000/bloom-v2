@@ -212,6 +212,11 @@ main() {
     # Initialize logging
     log_init "omniforge"
 
+    # Perform log rotation and cleanup (background, non-blocking)
+    ensure_log_dir "${LOG_DIR}" || true
+    log_rotate_if_needed "${LOG_DIR}" || true
+    log_cleanup_if_needed "${LOG_DIR}" || true
+
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 

@@ -1,0 +1,108 @@
+[2025-11-24 15:52:30] [INFO] OmniForge Bootstrap Initialization Started
+[2025-11-24 15:52:30] [INFO] Configuration loaded from: /home/luce/apps/bloom2/_build/omniforge/bootstrap.conf
+[2025-11-24 15:52:30] [DEBUG] SCRIPTS_DIR=/home/luce/apps/bloom2/_build/omniforge
+[2025-11-24 15:52:30] [DEBUG] LOG_DIR=/home/luce/apps/bloom2/omniforge/logs
+[2025-11-24 15:52:30] [DEBUG] LOG_LEVEL=verbose
+[2025-11-24 15:52:30] [DEBUG] DRY_RUN=false
+[2025-11-24 15:52:30] [INFO] Installation directory: /home/luce/apps/bloom2
+[2025-11-24 15:52:30] [STEP] Phase 0: Foundation - Verifying prerequisites
+[2025-11-24 15:52:30] [DEBUG] Checking Node.js installation
+[2025-11-24 15:52:30] [DEBUG] Running: node --version
+[2025-11-24 15:52:30] [DEBUG] Node.js output: v20.10.0
+[2025-11-24 15:52:30] [DEBUG] Parsed version: 20.10.0
+[2025-11-24 15:52:30] [DEBUG] Required version: 20.10.0
+[2025-11-24 15:52:31] [OK] Node.js v20.10.0 installed
+[2025-11-24 15:52:31] [DEBUG] Checking pnpm installation
+[2025-11-24 15:52:31] [DEBUG] Running: pnpm --version
+[2025-11-24 15:52:31] [DEBUG] pnpm output: 9.1.0
+[2025-11-24 15:52:31] [DEBUG] Parsed version: 9.1.0
+[2025-11-24 15:52:31] [DEBUG] Required version: 9.1.0
+[2025-11-24 15:52:31] [OK] pnpm v9.1.0 installed
+[2025-11-24 15:52:31] [DEBUG] Checking PostgreSQL availability
+[2025-11-24 15:52:31] [DEBUG] Connection string: postgresql://user:****@localhost:5432/bloom_dev
+[2025-11-24 15:52:32] [DEBUG] Database connection test: success
+[2025-11-24 15:52:32] [OK] PostgreSQL v16.1 available
+[2025-11-24 15:52:32] [STEP] Phase 1: Infrastructure - Setting up development environment
+[2025-11-24 15:52:32] [DEBUG] Reading phase configuration: PHASE_CONFIG_01_INFRASTRUCTURE
+[2025-11-24 15:52:32] [DEBUG] Phase metadata: PHASE_METADATA_1
+[2025-11-24 15:52:33] [INFO] Creating directory structure: src/
+[2025-11-24 15:52:33] [DEBUG] mkdir -p /home/luce/apps/bloom2/src/
+[2025-11-24 15:52:33] [DEBUG] Directory created with permissions: drwxr-xr-x
+[2025-11-24 15:52:33] [INFO] Creating directory structure: src/components
+[2025-11-24 15:52:33] [DEBUG] mkdir -p /home/luce/apps/bloom2/src/components
+[2025-11-24 15:52:33] [DEBUG] Directory created with permissions: drwxr-xr-x
+[2025-11-24 15:52:33] [INFO] Creating directory structure: src/lib
+[2025-11-24 15:52:33] [DEBUG] mkdir -p /home/luce/apps/bloom2/src/lib
+[2025-11-24 15:52:33] [DEBUG] Directory created with permissions: drwxr-xr-x
+[2025-11-24 15:52:33] [INFO] Creating directory structure: src/app
+[2025-11-24 15:52:33] [DEBUG] mkdir -p /home/luce/apps/bloom2/src/app
+[2025-11-24 15:52:33] [DEBUG] Directory created with permissions: drwxr-xr-x
+[2025-11-24 15:52:33] [STEP] Installing dependencies
+[2025-11-24 15:52:34] [DEBUG] Running: pnpm install
+[2025-11-24 15:52:34] [DEBUG] Work environment: /home/luce/apps/bloom2
+[2025-11-24 15:52:45] [DEBUG] pnpm output:
+[2025-11-24 15:52:45] [DEBUG]   Packages: +27
+[2025-11-24 15:52:45] [DEBUG]   Install total: 155.2 MB
+[2025-11-24 15:52:45] [DEBUG] Execution time: 11s
+[2025-11-24 15:52:45] [OK] Dependencies installed (27 packages, 155.2 MB)
+[2025-11-24 15:52:45] [STEP] Phase 2: Core Stack - Configuring database
+[2025-11-24 15:52:45] [DEBUG] Reading phase configuration: PHASE_CONFIG_02_CORE
+[2025-11-24 15:52:46] [INFO] Database migration tool: Drizzle
+[2025-11-24 15:52:46] [DEBUG] Drizzle configuration file: drizzle.config.ts
+[2025-11-24 15:52:46] [DEBUG] Database driver: postgres
+[2025-11-24 15:52:46] [INFO] Creating .env file from template
+[2025-11-24 15:52:47] [DEBUG] Template source: bootstrap.conf.example
+[2025-11-24 15:52:47] [DEBUG] Target file: /home/luce/apps/bloom2/.env
+[2025-11-24 15:52:47] [DEBUG] Variables substituted: 15
+[2025-11-24 15:52:47] [INFO] Environment: development
+[2025-11-24 15:52:48] [DEBUG] Running: drizzle-kit migrate
+[2025-11-24 15:52:52] [DEBUG] Migration output: 8 tables, 12 relations
+[2025-11-24 15:52:52] [WARN] PostgreSQL connection string uses localhost - local dev only
+[2025-11-24 15:52:52] [DEBUG] Warning suppressed in QUIET mode
+[2025-11-24 15:52:53] [OK] Database schema validated (8 tables)
+[2025-11-24 15:52:53] [STEP] Phase 3: Features - Installing optional modules
+[2025-11-24 15:52:54] [DEBUG] Reading phase configuration: PHASE_CONFIG_03_FEATURES
+[2025-11-24 15:52:54] [INFO] Feature: Authentication (next-auth) - ENABLED
+[2025-11-24 15:52:54] [DEBUG] Package: next-auth@5.0.0
+[2025-11-24 15:52:54] [DEBUG] Installation command: pnpm add next-auth
+[2025-11-24 15:52:58] [DEBUG] Authentication module installed
+[2025-11-24 15:52:58] [INFO] Creating auth configuration
+[2025-11-24 15:52:59] [DEBUG] Auth config file: src/auth.config.ts
+[2025-11-24 15:52:59] [DEBUG] Providers configured: GitHub, Google
+[2025-11-24 15:53:00] [OK] Auth configured (2 providers)
+[2025-11-24 15:53:00] [INFO] Feature: AI Integration - DISABLED
+[2025-11-24 15:53:00] [DEBUG] ENABLE_AI=false in bootstrap.conf
+[2025-11-24 15:53:00] [SKIP] Feature: AI Integration - DISABLED (set ENABLE_AI=true in bootstrap.conf)
+[2025-11-24 15:53:00] [INFO] Feature: Monitoring (Sentry) - ENABLED
+[2025-11-24 15:53:00] [DEBUG] Package: @sentry/nextjs@7.88.0
+[2025-11-24 15:53:00] [DEBUG] Installation command: pnpm add @sentry/nextjs
+[2025-11-24 15:53:04] [DEBUG] Sentry module installed
+[2025-11-24 15:53:04] [INFO] Sentry configuration created
+[2025-11-24 15:53:05] [OK] Monitoring configured
+[2025-11-24 15:53:05] [STEP] Phase 4: Intelligence - Setting up developer tools
+[2025-11-24 15:53:05] [DEBUG] Reading phase configuration: PHASE_CONFIG_04_INTELLIGENCE
+[2025-11-24 15:53:06] [INFO] ESLint configuration: Standard + Tailwind rules
+[2025-11-24 15:53:06] [DEBUG] Config file: .eslintrc.json
+[2025-11-24 15:53:06] [DEBUG] Rules: 24 configured
+[2025-11-24 15:53:07] [OK] Prettier configured
+[2025-11-24 15:53:08] [DEBUG] Prettier config file: .prettierrc
+[2025-11-24 15:53:08] [DEBUG] Formatting rules: 8 configured
+[2025-11-24 15:53:08] [INFO] TypeScript strict mode enabled
+[2025-11-24 15:53:08] [DEBUG] tsconfig.json: strict = true
+[2025-11-24 15:53:08] [OK] Developer tools configured
+[2025-11-24 15:53:09] [STEP] Phase 5: User Defined - Custom scripts
+[2025-11-24 15:53:09] [DEBUG] Reading phase configuration: PHASE_CONFIG_05_USER_DEFINED
+[2025-11-24 15:53:09] [DEBUG] Custom bootstrap script: scripts/custom-setup.sh
+[2025-11-24 15:53:09] [DEBUG] Running: bash scripts/custom-setup.sh
+[2025-11-24 15:53:10] [DEBUG] Custom setup output: Project initialized
+[2025-11-24 15:53:11] [OK] Custom setup complete
+[2025-11-24 15:53:11] [INFO] Bootstrap initialization completed successfully
+[2025-11-24 15:53:11] [DEBUG] Total phases: 6
+[2025-11-24 15:53:11] [DEBUG] Completed phases: 6
+[2025-11-24 15:53:11] [DEBUG] Failed phases: 0
+[2025-11-24 15:53:11] [INFO] Next steps:
+[2025-11-24 15:53:11] [INFO]   1. Review .env file and update with your credentials
+[2025-11-24 15:53:11] [INFO]   2. Start development: pnpm dev
+[2025-11-24 15:53:11] [INFO]   3. View logs: cat omniforge/logs/verbose_20251124_155230.log
+[2025-11-24 15:53:11] [DEBUG] Log retention: 30 days to archive/, 90 days deletion
+[2025-11-24 15:53:11] [INFO] Bootstrap completed in 41 seconds

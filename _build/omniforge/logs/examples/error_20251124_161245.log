@@ -1,0 +1,67 @@
+[2025-11-24 16:12:45] [INFO] OmniForge Bootstrap Initialization Started
+[2025-11-24 16:12:45] [INFO] Configuration loaded from: /home/luce/apps/bloom2/_build/omniforge/bootstrap.conf
+[2025-11-24 16:12:45] [INFO] Installation directory: /home/luce/apps/bloom2
+[2025-11-24 16:12:45] [STEP] Phase 0: Foundation - Verifying prerequisites
+[2025-11-24 16:12:46] [OK] Node.js v20.10.0 installed
+[2025-11-24 16:12:46] [OK] pnpm v9.1.0 installed
+[2025-11-24 16:12:46] [ERROR] PostgreSQL not available
+[2025-11-24 16:12:46] [ERROR] Connection refused: cannot connect to postgresql://user:****@localhost:5432/bloom_dev
+[2025-11-24 16:12:47] [ERROR] Phase 0: Foundation failed
+[2025-11-24 16:12:47] [WARN] Error recovery: Attempting auto-remediation
+[2025-11-24 16:12:47] [INFO] Auto-remediation: Checking PostgreSQL status
+[2025-11-24 16:12:47] [DEBUG] Running: systemctl status postgresql
+[2025-11-24 16:12:47] [DEBUG] Output: postgresql is not running (inactive)
+[2025-11-24 16:12:47] [INFO] Auto-remediation: Starting PostgreSQL service
+[2025-11-24 16:12:47] [DEBUG] Running: systemctl start postgresql
+[2025-11-24 16:12:52] [OK] PostgreSQL service started successfully
+[2025-11-24 16:12:52] [INFO] Retrying Phase 0: Foundation
+[2025-11-24 16:12:53] [OK] PostgreSQL connection test passed
+[2025-11-24 16:12:53] [OK] Phase 0 completed (auto-remediated)
+[2025-11-24 16:12:53] [STEP] Phase 1: Infrastructure - Setting up development environment
+[2025-11-24 16:12:54] [INFO] Creating directory structure: src/
+[2025-11-24 16:12:54] [OK] Directory created
+[2025-11-24 16:12:54] [INFO] Creating directory structure: src/components
+[2025-11-24 16:12:54] [OK] Directory created
+[2025-11-24 16:12:54] [STEP] Installing dependencies
+[2025-11-24 16:12:55] [INFO] Running: pnpm install
+[2025-11-24 16:13:12] [ERROR] pnpm install failed with exit code 1
+[2025-11-24 16:13:12] [DEBUG] Error output:
+[2025-11-24 16:13:12] [DEBUG]   ERR! ERR_PNPM_STORE_OFFLINE Cannot access pnpm store at ~/.pnpm-store
+[2025-11-24 16:13:12] [DEBUG]   ERR! ERR_PNPM_STORE_OFFLINE Network error: Connection timeout
+[2025-11-24 16:13:12] [WARN] Dependency installation failed: pnpm store offline
+[2025-11-24 16:13:12] [WARN] Error recovery: Attempting offline cache recovery
+[2025-11-24 16:13:12] [INFO] Checking pnpm cache
+[2025-11-24 16:13:13] [DEBUG] Cache location: ~/.pnpm-store
+[2025-11-24 16:13:13] [DEBUG] Cache size: 1.2 GB
+[2025-11-24 16:13:13] [INFO] Retrying with offline cache
+[2025-11-24 16:13:14] [INFO] Running: pnpm install --offline
+[2025-11-24 16:13:45] [OK] Dependencies installed from cache (27 packages)
+[2025-11-24 16:13:45] [WARN] Note: Packages installed from offline cache - some may be outdated
+[2025-11-24 16:13:46] [STEP] Phase 2: Core Stack - Configuring database
+[2025-11-24 16:13:46] [INFO] Database migration tool: Drizzle
+[2025-11-24 16:13:46] [INFO] Creating .env file from template
+[2025-11-24 16:13:47] [OK] Database configured
+[2025-11-24 16:13:47] [INFO] Running database migrations
+[2025-11-24 16:13:48] [ERROR] Migration failed: relation "users" already exists
+[2025-11-24 16:13:48] [WARN] Database already initialized - skipping migrations
+[2025-11-24 16:13:48] [OK] Database schema verified (8 tables found)
+[2025-11-24 16:13:48] [STEP] Phase 3: Features - Installing optional modules
+[2025-11-24 16:13:49] [INFO] Feature: Authentication (next-auth) - ENABLED
+[2025-11-24 16:13:49] [OK] Auth configured
+[2025-11-24 16:13:49] [SKIP] Feature: AI Integration - DISABLED
+[2025-11-24 16:13:49] [INFO] Feature: Monitoring (Sentry) - ENABLED
+[2025-11-24 16:13:50] [OK] Monitoring configured
+[2025-11-24 16:13:50] [STEP] Phase 4: Intelligence - Setting up developer tools
+[2025-11-24 16:13:51] [OK] Developer tools configured
+[2025-11-24 16:13:51] [STEP] Phase 5: User Defined - Custom scripts
+[2025-11-24 16:13:52] [INFO] Running custom bootstrap script: scripts/custom-setup.sh
+[2025-11-24 16:13:53] [OK] Custom setup complete
+[2025-11-24 16:13:53] [WARN] Bootstrap completed with 2 warnings
+[2025-11-24 16:13:53] [INFO] Warnings summary:
+[2025-11-24 16:13:53] [INFO]   1. PostgreSQL service required manual restart (auto-remediated)
+[2025-11-24 16:13:53] [INFO]   2. Packages installed from offline cache (may be outdated)
+[2025-11-24 16:13:53] [INFO] Bootstrap completed in 68 seconds
+[2025-11-24 16:13:53] [INFO] Next steps:
+[2025-11-24 16:13:53] [INFO]   1. Review warnings and update packages when network available
+[2025-11-24 16:13:53] [INFO]   2. Check .env file for PostgreSQL credentials
+[2025-11-24 16:13:53] [INFO]   3. Run: pnpm dev

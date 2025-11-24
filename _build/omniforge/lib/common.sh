@@ -53,55 +53,58 @@ export SCRIPTS_DIR BOOTSTRAP_CONF BOOTSTRAP_CONF_EXAMPLE
 # 1. Logging must be first (other modules use log_* functions)
 source "${_COMMON_LIB_DIR}/logging.sh"
 
-# 2. Validation helpers (no dependencies beyond logging)
+# 2. Log rotation utilities (depends on logging)
+source "${_COMMON_LIB_DIR}/log-rotation.sh"
+
+# 3. Validation helpers (no dependencies beyond logging)
 source "${_COMMON_LIB_DIR}/validation.sh"
 
-# 3. Utils (depends on logging)
+# 4. Utils (depends on logging)
 source "${_COMMON_LIB_DIR}/utils.sh"
 
-# 4. Config loading (depends on logging)
+# 5. Config loading (depends on logging)
 source "${_COMMON_LIB_DIR}/config_bootstrap.sh"
 
-# 5. State tracking (depends on logging)
+# 6. State tracking (depends on logging)
 source "${_COMMON_LIB_DIR}/state.sh"
 
-# 6. Git safety (depends on logging)
+# 7. Git safety (depends on logging)
 source "${_COMMON_LIB_DIR}/git.sh"
 
-# 7. Package management (depends on logging)
+# 8. Package management (depends on logging)
 source "${_COMMON_LIB_DIR}/packages.sh"
 
-# 8. Phase management (depends on logging, state, packages)
+# 9. Phase management (depends on logging, state, packages)
 source "${_COMMON_LIB_DIR}/phases.sh"
 
-# 9. Prerequisites (depends on logging) - for background installation
+# 10. Prerequisites (depends on logging) - for background installation
 source "${_COMMON_LIB_DIR}/prereqs.sh"
 
-# 10. Configuration validation (depends on logging)
+# 11. Configuration validation (depends on logging)
 source "${_COMMON_LIB_DIR}/config_validate.sh"
 
-# 11. Setup wizard (depends on logging, config_bootstrap)
+# 12. Setup wizard (depends on logging, config_bootstrap)
 source "${_COMMON_LIB_DIR}/setup_wizard.sh"
 
-# 12. Configuration bakes/presets (depends on logging)
+# 13. Configuration bakes/presets (depends on logging)
 source "${_COMMON_LIB_DIR}/bakes.sh"
 
-# 13. Script indexer (depends on logging) - for background script discovery
+# 14. Script indexer (depends on logging) - for background script discovery
 source "${_COMMON_LIB_DIR}/indexer.sh"
 
-# 14. ASCII art and branding (depends on logging)
+# 15. ASCII art and branding (depends on logging)
 source "${_COMMON_LIB_DIR}/ascii.sh"
 
-# 15. Download cache system (depends on logging)
+# 16. Download cache system (depends on logging)
 source "${_COMMON_LIB_DIR}/downloads.sh"
 
-# 16. Sequencer for test criteria and timeouts (depends on logging)
+# 17. Sequencer for test criteria and timeouts (depends on logging)
 source "${_COMMON_LIB_DIR}/sequencer.sh"
 
-# 17. Settings manager for IDE configs (depends on logging)
+# 18. Settings manager for IDE configs (depends on logging)
 source "${_COMMON_LIB_DIR}/settings_manager.sh"
 
-# 18. Interactive menu framework (depends on logging, ascii, downloads)
+# 19. Interactive menu framework (depends on logging, ascii, downloads)
 source "${_COMMON_LIB_DIR}/menu.sh"
 
 # =============================================================================

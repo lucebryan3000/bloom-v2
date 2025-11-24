@@ -1,0 +1,45 @@
+[2025-11-24 10:24:30] [INFO] OmniForge Bootstrap Initialization Started (DRY-RUN MODE)
+[2025-11-24 10:24:30] [INFO] Configuration loaded from: /home/luce/apps/bloom2/_build/omniforge/bootstrap.conf
+[2025-11-24 10:24:30] [INFO] DRY_RUN=true - No files will be modified
+[2025-11-24 10:24:30] [INFO] Installation directory: /home/luce/apps/bloom2
+[2025-11-24 10:24:30] [STEP] Phase 0: Foundation - Verifying prerequisites
+[2025-11-24 10:24:31] [DRY] Would verify: Node.js v20.10.0
+[2025-11-24 10:24:31] [DRY] Would verify: pnpm v9.1.0
+[2025-11-24 10:24:31] [DRY] Would verify: PostgreSQL v16.1
+[2025-11-24 10:24:31] [INFO] All prerequisites available (dry-run - not validated)
+[2025-11-24 10:24:31] [STEP] Phase 1: Infrastructure - Setting up development environment
+[2025-11-24 10:24:32] [DRY] Would create directory: /home/luce/apps/bloom2/src/
+[2025-11-24 10:24:32] [DRY] Would create directory: /home/luce/apps/bloom2/src/components
+[2025-11-24 10:24:32] [DRY] Would create directory: /home/luce/apps/bloom2/src/lib
+[2025-11-24 10:24:32] [DRY] Would create directory: /home/luce/apps/bloom2/src/app
+[2025-11-24 10:24:32] [DRY] Would create directory: /home/luce/apps/bloom2/src/styles
+[2025-11-24 10:24:32] [INFO] Directory creation previewed (5 directories)
+[2025-11-24 10:24:32] [DRY] Would execute: pnpm install
+[2025-11-24 10:24:32] [INFO] Dependency installation would proceed (27 packages)
+[2025-11-24 10:24:33] [STEP] Phase 2: Core Stack - Configuring database
+[2025-11-24 10:24:33] [DRY] Would write file: /home/luce/apps/bloom2/.env
+[2025-11-24 10:24:33] [DRY] Would write file: /home/luce/apps/bloom2/.env.development
+[2025-11-24 10:24:34] [DRY] Would execute: drizzle-kit migrate
+[2025-11-24 10:24:34] [INFO] Database setup would proceed (schema validation skipped in dry-run)
+[2025-11-24 10:24:34] [STEP] Phase 3: Features - Installing optional modules
+[2025-11-24 10:24:35] [DRY] Would install: next-auth
+[2025-11-24 10:24:35] [DRY] Would write file: /home/luce/apps/bloom2/src/auth.config.ts
+[2025-11-24 10:24:35] [DRY] Would skip: AI Integration (ENABLE_AI=false)
+[2025-11-24 10:24:35] [DRY] Would install: @sentry/nextjs
+[2025-11-24 10:24:35] [DRY] Would write file: /home/luce/apps/bloom2/sentry.config.ts
+[2025-11-24 10:24:35] [INFO] Feature installation would proceed (3 modules)
+[2025-11-24 10:24:36] [STEP] Phase 4: Intelligence - Setting up developer tools
+[2025-11-24 10:24:36] [DRY] Would write file: /home/luce/apps/bloom2/.eslintrc.json
+[2025-11-24 10:24:36] [DRY] Would write file: /home/luce/apps/bloom2/.prettierrc
+[2025-11-24 10:24:36] [DRY] Would write file: /home/luce/apps/bloom2/tsconfig.json
+[2025-11-24 10:24:36] [INFO] Developer tools would be configured (3 config files)
+[2025-11-24 10:24:36] [STEP] Phase 5: User Defined - Custom scripts
+[2025-11-24 10:24:37] [DRY] Would execute: scripts/custom-setup.sh
+[2025-11-24 10:24:37] [INFO] Custom setup would run
+[2025-11-24 10:24:37] [INFO] DRY-RUN SUMMARY
+[2025-11-24 10:24:37] [INFO]   Directories to create: 5
+[2025-11-24 10:24:37] [INFO]   Files to write: 8
+[2025-11-24 10:24:37] [INFO]   Commands to execute: 6
+[2025-11-24 10:24:37] [INFO]   Packages to install: 4
+[2025-11-24 10:24:37] [INFO] Review the plan and run without --dry-run to execute
+[2025-11-24 10:24:37] [INFO] Dry-run completed in 7 seconds (no changes made)

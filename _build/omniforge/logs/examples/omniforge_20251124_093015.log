@@ -1,0 +1,41 @@
+[2025-11-24 09:30:15] [INFO] OmniForge Bootstrap Initialization Started
+[2025-11-24 09:30:15] [INFO] Configuration loaded from: /home/luce/apps/bloom2/_build/omniforge/bootstrap.conf
+[2025-11-24 09:30:15] [INFO] Log level: STATUS (default - local development)
+[2025-11-24 09:30:15] [INFO] Installation directory: /home/luce/apps/bloom2
+[2025-11-24 09:30:15] [STEP] Phase 0: Foundation - Verifying prerequisites
+[2025-11-24 09:30:16] [OK] Node.js v20.10.0 installed (/usr/local/bin/node)
+[2025-11-24 09:30:16] [OK] pnpm v9.1.0 installed (/usr/local/bin/pnpm)
+[2025-11-24 09:30:16] [OK] PostgreSQL v16.1 available
+[2025-11-24 09:30:16] [STEP] Phase 1: Infrastructure - Setting up development environment
+[2025-11-24 09:30:17] [INFO] Creating directory structure: src/
+[2025-11-24 09:30:17] [INFO] Creating directory structure: src/components
+[2025-11-24 09:30:17] [INFO] Creating directory structure: src/lib
+[2025-11-24 09:30:17] [INFO] Creating directory structure: src/app
+[2025-11-24 09:30:17] [STEP] Installing dependencies
+[2025-11-24 09:30:18] [INFO] Running: pnpm install
+[2025-11-24 09:30:45] [OK] Dependencies installed (27 packages, 155.2 MB)
+[2025-11-24 09:30:45] [STEP] Phase 2: Core Stack - Configuring database
+[2025-11-24 09:30:46] [INFO] Database migration tool: Drizzle
+[2025-11-24 09:30:46] [INFO] Creating .env file from template
+[2025-11-24 09:30:46] [INFO] Environment: development
+[2025-11-24 09:30:47] [WARN] PostgreSQL connection string uses localhost - local dev only
+[2025-11-24 09:30:48] [OK] Database schema validated (8 tables)
+[2025-11-24 09:30:48] [STEP] Phase 3: Features - Installing optional modules
+[2025-11-24 09:30:49] [INFO] Feature: Authentication (next-auth) - ENABLED
+[2025-11-24 09:30:49] [INFO] Creating auth configuration
+[2025-11-24 09:30:50] [SKIP] Feature: AI Integration - DISABLED (set ENABLE_AI=true in bootstrap.conf)
+[2025-11-24 09:30:50] [INFO] Feature: Monitoring (Sentry) - ENABLED
+[2025-11-24 09:30:51] [OK] Sentry configuration created
+[2025-11-24 09:30:51] [STEP] Phase 4: Intelligence - Setting up developer tools
+[2025-11-24 09:30:52] [INFO] ESLint configuration: Standard + Tailwind rules
+[2025-11-24 09:30:52] [OK] Prettier configured
+[2025-11-24 09:30:53] [INFO] TypeScript strict mode enabled
+[2025-11-24 09:30:53] [STEP] Phase 5: User Defined - Custom scripts
+[2025-11-24 09:30:54] [INFO] Running custom bootstrap script: scripts/custom-setup.sh
+[2025-11-24 09:30:55] [OK] Custom setup complete
+[2025-11-24 09:30:55] [INFO] Bootstrap initialization completed successfully
+[2025-11-24 09:30:55] [INFO] Next steps:
+[2025-11-24 09:30:55] [INFO]   1. Review .env file and update with your credentials
+[2025-11-24 09:30:55] [INFO]   2. Start development: pnpm dev
+[2025-11-24 09:30:55] [INFO]   3. View logs: cat omniforge/logs/omniforge_20251124_093015.log
+[2025-11-24 09:30:55] [INFO] Bootstrap completed in 40 seconds
