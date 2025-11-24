@@ -51,21 +51,22 @@ _menu_title() {
     _menu_line "─" 66
 }
 
-# Show a menu item
+# Show a menu item with label and optional description on same line
 _menu_item() {
     local num="$1"
     local label="$2"
     local desc="${3:-}"
     local extra="${4:-}"
 
-    # Format: "  1. Label" with optional description indented on next line
-    printf "  %s. %s\n" "$num" "$label"
+    # Calculate spacing: label width is ~40 chars, then two tabs to description
     if [[ -n "$desc" ]]; then
-        printf "     %s" "${LOG_GRAY:-}$desc"
+        printf "  %s. %-38s %s" "$num" "$label" "${LOG_GRAY:-}$desc"
         if [[ -n "$extra" ]]; then
             printf " %s" "$extra"
         fi
         printf "%s\n" "${LOG_NC:-}"
+    else
+        printf "  %s. %s\n" "$num" "$label"
     fi
 }
 
