@@ -2,9 +2,15 @@
 # =============================================================================
 # bin/omni - OmniForge Main Entry Point
 # =============================================================================
-# Part of OmniForge - The Factory That Builds Universes
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Usage: omni [options]
+#
+# Modes:
+#   (no args)          Launch interactive menu (default)
+#   --init             Direct bootstrap (skip menu)
+#   --settings         Settings manager (copy IDE configs)
+#   --run              Run all phases non-interactively
 #
 # Options:
 #   -n, --dry-run      Show what would be done without executing
@@ -47,19 +53,26 @@ source "${SCRIPTS_DIR}/lib/common.sh"
 
 usage() {
     cat << EOF
-${CODENAME} - The Factory That Builds Universes
+${CODENAME} - Infinite Architectures. Instant Foundation.
 
-Usage: omni [options]
+Usage: omni [mode] [options]
 
-Initialize the project by running all phase scripts in sequence.
+Modes (default: interactive menu):
+  (no args)          Launch interactive menu
+  --init             Direct bootstrap workflow (skip menu)
+  --settings         Settings manager (copy IDE/tool configs)
+  --run              Run all phases non-interactively
+  --purge            Purge download cache
 
 Options:
   -n, --dry-run      Show what would be done without executing
   -v, --verbose      Enable verbose output
+  -q, --quiet        Minimal output (errors only)
   -f, --force        Ignore previous state, re-run all scripts
   -p, --phase NUM    Run only specified phase (e.g., -p 0)
   -l, --list         List all phases without running
   -s, --status       Show current status
+  -c, --config       Show configuration summary
   -h, --help         Show this help message
 
 Environment Variables:
@@ -68,13 +81,18 @@ Environment Variables:
   ALLOW_DIRTY=true   Skip git clean check
   GIT_SAFETY=false   Disable git safety checks
   STACK_PROFILE      Set stack profile (minimal, api-only, full)
+  NON_INTERACTIVE    Skip prompts (for CI/automation)
 
 Examples:
-  omni                         # Run all phases
-  omni --dry-run               # Preview all actions
+  omni                         # Interactive menu (default)
+  omni --init                  # Direct bootstrap workflow
+  omni --settings              # Copy IDE configs to project
+  omni --run                   # Run all phases (non-interactive)
+  omni --run --dry-run         # Preview all actions
   omni --phase 0               # Run only phase 0
   omni --list                  # List all phases
   omni --status                # Show current status
+  omni --purge                 # Clear download cache
 EOF
 }
 
@@ -82,6 +100,8 @@ EOF
 # ARGUMENT PARSING
 # =============================================================================
 
+# Execution mode
+MODE="menu"  # Default to interactive menu
 FORCE=false
 SINGLE_PHASE=""
 LIST_ONLY=false
@@ -96,6 +116,28 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
+        # Mode selection
+        --init)
+            MODE="init"
+            shift
+            ;;
+        --settings)
+            MODE="settings"
+            shift
+            ;;
+        --run)
+            MODE="run"
+            shift
+            ;;
+        --purge)
+            MODE="purge"
+            shift
+            ;;
+        --menu)
+            MODE="menu"
+            shift
+            ;;
+        # Options
         -n|--dry-run)
             DRY_RUN=true
             shift
@@ -124,19 +166,23 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -p|--phase)
+            MODE="phase"
             SINGLE_PHASE="$2"
             shift 2
             ;;
         -l|--list)
             LIST_ONLY=true
+            MODE="list"
             shift
             ;;
         -s|--status)
             SHOW_STATUS=true
+            MODE="status"
             shift
             ;;
         -c|--config)
             SHOW_CONFIG=true
+            MODE="config"
             shift
             ;;
         *)
@@ -165,21 +211,67 @@ main() {
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 
-    # Handle special modes (don't need prereqs)
-    if [[ "$LIST_ONLY" == "true" ]]; then
-        phase_list_all
-        exit 0
-    fi
+    # =========================================================================
+    # MODE DISPATCH
+    # =========================================================================
 
-    if [[ "$SHOW_STATUS" == "true" ]]; then
-        state_show_status
-        exit 0
-    fi
+    case "$MODE" in
+        menu)
+            # Interactive menu (default)
+            menu_main
+            exit 0
+            ;;
 
-    if [[ "$SHOW_CONFIG" == "true" ]]; then
-        config_show_summary
-        exit 0
-    fi
+        settings)
+            # Settings manager
+            settings_interactive
+            exit 0
+            ;;
+
+        purge)
+            # Purge download cache
+            downloads_purge
+            exit 0
+            ;;
+
+        list)
+            # List phases
+            phase_list_all
+            exit 0
+            ;;
+
+        status)
+            # Show status
+            state_show_status
+            exit 0
+            ;;
+
+        config)
+            # Show config
+            config_show_summary
+            exit 0
+            ;;
+
+        init)
+            # Direct bootstrap workflow (interactive steps)
+            menu_bootstrap
+            exit 0
+            ;;
+
+        run|phase)
+            # Non-interactive run (continue below)
+            ;;
+
+        *)
+            log_error "Unknown mode: $MODE"
+            usage
+            exit 1
+            ;;
+    esac
+
+    # =========================================================================
+    # NON-INTERACTIVE RUN MODE (--run or --phase)
+    # =========================================================================
 
     # Run enhanced configuration validation
     if ! config_validate_all; then
@@ -203,14 +295,13 @@ main() {
     indexer_start_background "$tech_stack_dir"
 
     # Banner (shows while background processes run)
-    log_info "=========================================="
-    log_info "  OMNIFORGE - The Factory That Builds Universes"
-    log_info "=========================================="
+    ascii_show_logo
+    ascii_show_tagline
+    echo ""
     log_info "  App: ${APP_NAME:-bloom2}"
-    log_info "  Mode: ${DRY_RUN:-false} && dry-run || live"
+    log_info "  Mode: $([ "${DRY_RUN:-false}" == "true" ] && echo "dry-run" || echo "live")"
     log_info "  Profile: ${STACK_PROFILE:-full}"
     log_info "  Resume: ${BOOTSTRAP_RESUME_MODE:-skip}"
-    log_info "=========================================="
     echo ""
 
     # Initialize execution statistics
@@ -270,7 +361,7 @@ main() {
     git_ensure_clean
 
     # Single phase or all phases
-    if [[ -n "$SINGLE_PHASE" ]]; then
+    if [[ "$MODE" == "phase" && -n "$SINGLE_PHASE" ]]; then
         log_info "Running single phase: $SINGLE_PHASE"
         if phase_execute "$SINGLE_PHASE" "$tech_stack_dir" "$FORCE"; then
             phase_stats_record "$SINGLE_PHASE" "completed"

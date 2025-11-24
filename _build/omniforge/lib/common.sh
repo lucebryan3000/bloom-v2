@@ -92,6 +92,18 @@ source "${_COMMON_LIB_DIR}/indexer.sh"
 # 14. ASCII art and branding (depends on logging)
 source "${_COMMON_LIB_DIR}/ascii.sh"
 
+# 15. Download cache system (depends on logging)
+source "${_COMMON_LIB_DIR}/downloads.sh"
+
+# 16. Sequencer for test criteria and timeouts (depends on logging)
+source "${_COMMON_LIB_DIR}/sequencer.sh"
+
+# 17. Settings manager for IDE configs (depends on logging)
+source "${_COMMON_LIB_DIR}/settings_manager.sh"
+
+# 18. Interactive menu framework (depends on logging, ascii, downloads)
+source "${_COMMON_LIB_DIR}/menu.sh"
+
 # =============================================================================
 # BACKWARD COMPATIBILITY ALIASES
 # =============================================================================
