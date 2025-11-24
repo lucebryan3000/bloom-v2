@@ -58,14 +58,16 @@ _menu_item() {
     local desc="${3:-}"
     local extra="${4:-}"
 
-    printf "  %s. %s\n" "$num" "$label"
-
+    # Format: "  1. Label" with optional description on next line
     if [[ -n "$desc" ]]; then
-        printf "     └─ %s\n" "${LOG_GRAY:-}$desc${LOG_NC:-}"
-    fi
-
-    if [[ -n "$extra" ]]; then
-        printf "        ${LOG_GRAY:-}%s${LOG_NC:-}\n" "$extra"
+        printf "  %s. %s\n" "$num" "$label"
+        printf "     └─ %s" "${LOG_GRAY:-}$desc"
+        if [[ -n "$extra" ]]; then
+            printf " %s" "$extra"
+        fi
+        printf "%s\n" "${LOG_NC:-}"
+    else
+        printf "  %s. %s\n" "$num" "$label"
     fi
 }
 
@@ -501,15 +503,67 @@ menu_settings() {
 
 _settings_copy() {
     local setting_id="$1"
-    local settings_dir="${SCRIPTS_DIR:-}/settings-files/$setting_id"
+    local manifest="${SCRIPTS_DIR:-}/settings-files/manifest.conf"
+    local settings_base="${SCRIPTS_DIR:-}/settings-files"
+    local project_root="${PROJECT_ROOT:-.}"
+    local copied=0
+    local failed=0
+    local temp_file="/tmp/settings_copy_$$.txt"
 
-    if [[ -d "$settings_dir" ]]; then
-        echo "  Copying $setting_id settings..."
-        cp -r "$settings_dir"/* "${PROJECT_ROOT:-.}/" 2>/dev/null && \
-            echo "  [OK] $setting_id settings copied" || \
-            echo "  [FAIL] Could not copy $setting_id settings"
+    if [[ ! -f "$manifest" ]]; then
+        echo "  [FAIL] Settings manifest not found at $manifest"
+        return 1
+    fi
+
+    # Filter manifest for matching entries and process
+    grep "^${setting_id}:" "$manifest" | while IFS=: read -r id src dest_dir dest_file; do
+        # Trim whitespace
+        src="${src// /}"
+        dest_dir="${dest_dir// /}"
+        dest_file="${dest_file// /}"
+
+        local src_file="$settings_base/$id/$src"
+
+        if [[ ! -f "$src_file" ]]; then
+            echo "$((failed++))" >> "$temp_file"
+            continue
+        fi
+
+        # Construct destination path
+        local full_dest
+        if [[ "$dest_dir" == "." ]]; then
+            full_dest="$project_root/$dest_file"
+        else
+            full_dest="$project_root/$dest_dir/$dest_file"
+            # Create destination directory if needed
+            mkdir -p "$project_root/$dest_dir" 2>/dev/null || {
+                echo "  [FAIL] Could not create directory: $project_root/$dest_dir"
+                echo "$((failed++))" >> "$temp_file"
+                continue
+            }
+        fi
+
+        # Copy file, stripping .example extension
+        if cp "$src_file" "$full_dest" 2>/dev/null; then
+            echo "  [OK] $(basename "$full_dest")"
+            echo "$((copied++))" >> "$temp_file"
+        else
+            echo "  [FAIL] Could not copy $(basename "$src_file")"
+            echo "$((failed++))" >> "$temp_file"
+        fi
+    done
+
+    # Count the results from temp file
+    if [[ -f "$temp_file" ]]; then
+        copied=$(wc -l < "$temp_file")
+        failed=0
+        rm -f "$temp_file"
+    fi
+
+    if [[ $copied -gt 0 ]]; then
+        echo "  [OK] $setting_id settings copied ($copied files)"
     else
-        echo "  [SKIP] $setting_id settings not found"
+        echo "  [SKIP] No settings found for $setting_id"
     fi
 }
 
@@ -534,9 +588,9 @@ menu_purge() {
     echo ""
 
     _menu_line
-    read -rp "  Purge cache? [y/N]: " choice
+    read -rp "  Purge cache? [Y/n]: " choice
 
-    if [[ "${choice,,}" == "y" ]]; then
+    if [[ "${choice,,}" != "n" ]]; then
         if type downloads_purge &>/dev/null; then
             downloads_purge
             echo "  [OK] Cache purged"
