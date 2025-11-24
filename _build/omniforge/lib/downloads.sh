@@ -23,8 +23,14 @@ _LIB_DOWNLOADS_LOADED=1
 # CACHE CONFIGURATION
 # =============================================================================
 
-# Cache location (default: ~/.omniforge/cache)
-: "${OMNIFORGE_CACHE_DIR:=${HOME}/.omniforge/cache}"
+# Directory paths
+# Navigate from lib/ -> omniforge/
+_DOWNLOADS_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_DOWNLOADS_OMNIFORGE_DIR="$(cd "${_DOWNLOADS_SCRIPT_DIR}/.." && pwd)"
+
+# Cache and logs stay inside omniforge directory (self-contained)
+: "${OMNIFORGE_CACHE_DIR:=${_DOWNLOADS_OMNIFORGE_DIR}/.download-cache}"
+: "${OMNIFORGE_LOG_DIR:=${_DOWNLOADS_OMNIFORGE_DIR}/logs}"
 : "${OMNIFORGE_CACHE_MAX_AGE:=604800}"  # 7 days in seconds
 
 # Package managers
@@ -43,10 +49,10 @@ downloads_init() {
 
     mkdir -p "${OMNIFORGE_CACHE_DIR}/npm"
     mkdir -p "${OMNIFORGE_CACHE_DIR}/pnpm"
-    mkdir -p "${OMNIFORGE_CACHE_DIR}/logs"
+    mkdir -p "${OMNIFORGE_LOG_DIR}"
 
-    # Set up logging
-    _DOWNLOADS_LOG="${OMNIFORGE_CACHE_DIR}/logs/download_$(date +%Y%m%d_%H%M%S).log"
+    # Set up logging (logs stay in omniforge dir)
+    _DOWNLOADS_LOG="${OMNIFORGE_LOG_DIR}/download_$(date +%Y%m%d_%H%M%S).log"
     touch "$_DOWNLOADS_LOG"
 
     # Clean old cached packages
@@ -231,25 +237,47 @@ _download_npm_package() {
     local package="$1"
     local cache_dir="${OMNIFORGE_CACHE_DIR}/npm"
 
-    # Use npm pack to download without installing
-    # This downloads to a tarball we can install from later
-    local tarball
+    # Ensure cache directory exists
+    mkdir -p "$cache_dir"
 
-    if command -v pnpm &>/dev/null; then
-        # pnpm stores in its own cache, just trigger fetch
-        pnpm store add "$package" >> "$_DOWNLOADS_LOG" 2>&1 || {
-            echo "  [WARN] Failed to cache: $package" >> "$_DOWNLOADS_LOG"
-            return 1
-        }
-    elif command -v npm &>/dev/null; then
-        # npm cache add
-        npm cache add "$package" >> "$_DOWNLOADS_LOG" 2>&1 || {
-            echo "  [WARN] Failed to cache: $package" >> "$_DOWNLOADS_LOG"
-            return 1
-        }
+    # Check if package is already cached (look for .tgz file matching package name)
+    # npm pack creates files like: package-name-1.0.0.tgz or @scope-package-name-1.0.0.tgz
+    local pkg_base="${package#@}"           # Remove leading @ if scoped
+    pkg_base="${pkg_base//\//-}"            # Replace / with - for scoped packages
+    pkg_base="${pkg_base%%@*}"              # Remove version specifier if any
+
+    # Check if any .tgz file exists for this package
+    if ls "${cache_dir}/"*"${pkg_base}"*.tgz &>/dev/null 2>&1; then
+        echo "  [SKIP] Already cached: $package" >> "$_DOWNLOADS_LOG"
+        return 0
     fi
 
-    echo "  [OK] Cached: $package" >> "$_DOWNLOADS_LOG"
+    # Use npm pack to download tarball to our project cache
+    # This downloads the package as a .tgz file we can install from later
+    if command -v npm &>/dev/null; then
+        # npm pack downloads the tarball to current directory
+        # We run it in the cache dir so tarballs land there
+        local tarball_name
+        tarball_name=$(cd "$cache_dir" && npm pack "$package" 2>&1 | tail -1) || {
+            echo "  [WARN] Failed to cache: $package" >> "$_DOWNLOADS_LOG"
+            return 1
+        }
+
+        # Extract the tarball and remove it
+        local tarball_path="${cache_dir}/${tarball_name}"
+        if [[ -f "$tarball_path" ]]; then
+            tar -xzf "$tarball_path" -C "$cache_dir" >> "$_DOWNLOADS_LOG" 2>&1
+            rm -f "$tarball_path"
+            echo "  [OK] Extracted and cached: $package (removed tarball)" >> "$_DOWNLOADS_LOG"
+        else
+            echo "  [WARN] Tarball not found: $tarball_path" >> "$_DOWNLOADS_LOG"
+            return 1
+        fi
+    else
+        echo "  [WARN] npm not found, skipping: $package" >> "$_DOWNLOADS_LOG"
+        return 1
+    fi
+
     return 0
 }
 

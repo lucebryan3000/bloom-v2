@@ -281,65 +281,43 @@ setup_run_interactive() {
     # ─────────────────────────────────────────────────────────────────────────
     # Section 1: Core Identity
     # ─────────────────────────────────────────────────────────────────────────
-    echo "Step 1/5: Core Identity"
+    echo "Step 1/4: Core Identity"
     echo ""
 
     local app_name
     app_name=$(_wizard_prompt "APP_NAME" "Application name" "bloom2" "alphanumeric") || return 1
 
-    local project_root
-    project_root=$(_wizard_prompt "PROJECT_ROOT" "Project root" "." "") || return 1
+    # Project root is assumed to be current directory
+    local project_root="."
+
+    # Stack profile already selected in bootstrap menu Step 1
+    local stack_profile="${STACK_PROFILE:-full}"
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Section 2: Stack Profile
-    # ─────────────────────────────────────────────────────────────────────────
-    echo ""
-    echo "Step 2/5: Stack Profile"
-    echo ""
-    echo "  1) minimal   - Next.js + TypeScript only"
-    echo "  2) api-only  - Backend API without UI components"
-    echo "  3) full      - Complete stack (recommended)"
-    echo ""
-
-    local profile_choice
-    read -rp "Select profile [3]: " profile_choice
-
-    local stack_profile
-    case "${profile_choice:-3}" in
-        1) stack_profile="minimal" ;;
-        2) stack_profile="api-only" ;;
-        *) stack_profile="full" ;;
-    esac
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # Section 3: Feature Flags (only for full profile)
+    # Section 2: Feature Flags (inherit from bootstrap menu selections)
     # ─────────────────────────────────────────────────────────────────────────
     declare -A features
     features=(
-        ["ENABLE_AUTHJS"]="true"
-        ["ENABLE_AI_SDK"]="true"
-        ["ENABLE_PG_BOSS"]="true"
-        ["ENABLE_SHADCN"]="true"
-        ["ENABLE_ZUSTAND"]="true"
-        ["ENABLE_PDF_EXPORTS"]="false"
-        ["ENABLE_TEST_INFRA"]="true"
-        ["ENABLE_CODE_QUALITY"]="false"
+        ["ENABLE_AUTHJS"]="${ENABLE_AUTHJS:-true}"
+        ["ENABLE_AI_SDK"]="${ENABLE_AI_SDK:-true}"
+        ["ENABLE_PG_BOSS"]="${ENABLE_PG_BOSS:-true}"
+        ["ENABLE_SHADCN"]="${ENABLE_SHADCN:-true}"
+        ["ENABLE_ZUSTAND"]="${ENABLE_ZUSTAND:-true}"
+        ["ENABLE_PDF_EXPORTS"]="${ENABLE_PDF_EXPORTS:-false}"
+        ["ENABLE_TEST_INFRA"]="${ENABLE_TEST_INFRA:-true}"
+        ["ENABLE_CODE_QUALITY"]="${ENABLE_CODE_QUALITY:-false}"
     )
 
-    if [[ "$stack_profile" == "full" ]]; then
-        echo ""
-        echo "Step 3/5: Feature Flags"
-        _wizard_feature_select features
-    fi
+    # Feature flags already selected in bootstrap menu Step 2, skip interactive selection
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Section 4: Database Configuration
+    # Section 2: Database Configuration
     # ─────────────────────────────────────────────────────────────────────────
     echo ""
-    echo "Step 4/5: Database Configuration"
+    echo "Step 2/4: PostgreSQL Database Configuration"
     echo ""
 
-    local db_name db_user db_password db_port
+    local db_name db_user db_password db_host db_port
     db_name=$(_wizard_prompt "DB_NAME" "Database name" "${app_name}_db" "alphanumeric") || return 1
     db_user=$(_wizard_prompt "DB_USER" "Database user" "$app_name" "alphanumeric") || return 1
 
@@ -348,19 +326,45 @@ setup_run_interactive() {
     echo ""
     db_password="${db_password:-change_me}"
 
+    db_host=$(_wizard_prompt "DB_HOST" "PostgreSQL host" "localhost") || return 1
     db_port=$(_wizard_prompt "DB_PORT" "Database port" "5432" "port") || return 1
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Section 5: Summary & Confirmation
+    # Section 3: Backup Configuration
+    # ─────────────────────────────────────────────────────────────────────────
+    echo ""
+    echo "Step 3/4: Backup Configuration"
+    echo ""
+
+    local backup_location enable_auto_backup
+    backup_location=$(_wizard_prompt "BACKUP_LOCATION" "Backup directory" "./backups") || return 1
+
+    echo "Enable automatic daily backups? [Y/n]: "
+    read -r backup_prompt
+    enable_auto_backup="true"
+    [[ "${backup_prompt,,}" == "n" ]] && enable_auto_backup="false"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Section 4: Summary & Confirmation
     # ─────────────────────────────────────────────────────────────────────────
     echo ""
     log_section "Configuration Summary"
     echo ""
-    echo "  App Name:     $app_name"
-    echo "  Project Root: $project_root"
-    echo "  Profile:      $stack_profile"
-    echo "  Database:     $db_name@localhost:$db_port"
-    echo "  DB User:      $db_user"
+    echo "  📦 Application"
+    echo "      Name:         $app_name"
+    echo "      Root:         $project_root"
+    echo "      Profile:      $stack_profile"
+    echo ""
+    echo "  🐘 PostgreSQL Database"
+    echo "      Name:         $db_name"
+    echo "      User:         $db_user"
+    echo "      Host:         $db_host"
+    echo "      Port:         $db_port"
+    echo "      Connection:   postgresql://$db_user@$db_host:$db_port/$db_name"
+    echo ""
+    echo "  💾 Backups"
+    echo "      Location:     $backup_location"
+    echo "      Auto-Backup:  $enable_auto_backup"
     echo ""
 
     if [[ "$stack_profile" == "full" ]]; then
@@ -384,7 +388,8 @@ setup_run_interactive() {
             # Apply to config file
             _wizard_apply_config "$config_file" \
                 "$app_name" "$project_root" "$stack_profile" \
-                "$db_name" "$db_user" "$db_password" "$db_port" \
+                "$db_name" "$db_user" "$db_password" "$db_host" "$db_port" \
+                "$backup_location" "$enable_auto_backup" \
                 features
             log_success "Configuration saved to $config_file"
             return 0
@@ -409,8 +414,11 @@ _wizard_apply_config() {
     local db_name="$5"
     local db_user="$6"
     local db_password="$7"
-    local db_port="$8"
-    local -n features_map=$9
+    local db_host="$8"
+    local db_port="$9"
+    local backup_location="${10}"
+    local enable_auto_backup="${11}"
+    local -n features_map=${12}
 
     # Use sed to update values in place
     local sed_cmd="sed -i"
@@ -420,10 +428,17 @@ _wizard_apply_config() {
     $sed_cmd "s/^APP_NAME=.*/APP_NAME=\"$app_name\"/" "$config_file"
     $sed_cmd "s/^PROJECT_ROOT=.*/PROJECT_ROOT=\"$project_root\"/" "$config_file"
     $sed_cmd "s/^STACK_PROFILE=.*/STACK_PROFILE=\"$stack_profile\"/" "$config_file"
+
+    # Update database configuration
     $sed_cmd "s/^DB_NAME=.*/DB_NAME=\"$db_name\"/" "$config_file"
     $sed_cmd "s/^DB_USER=.*/DB_USER=\"$db_user\"/" "$config_file"
     $sed_cmd "s/^DB_PASSWORD=.*/DB_PASSWORD=\"$db_password\"/" "$config_file"
+    $sed_cmd "s/^DB_HOST=.*/DB_HOST=\"$db_host\"/" "$config_file"
     $sed_cmd "s/^DB_PORT=.*/DB_PORT=\"$db_port\"/" "$config_file"
+
+    # Update backup configuration
+    $sed_cmd "s/^BACKUP_LOCATION=.*/BACKUP_LOCATION=\"$backup_location\"/" "$config_file"
+    $sed_cmd "s/^ENABLE_AUTO_BACKUP=.*/ENABLE_AUTO_BACKUP=\"$enable_auto_backup\"/" "$config_file"
 
     # Update feature flags
     for key in "${!features_map[@]}"; do

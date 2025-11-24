@@ -1,0 +1,5 @@
+# OmniForge runtime logs
+/logs/
+
+# Package download cache
+/.download-cache/
