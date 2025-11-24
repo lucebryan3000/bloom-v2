@@ -243,6 +243,18 @@ main() {
         log_debug "Local tools activated: Node.js $(node --version 2>/dev/null), pnpm $(pnpm --version 2>/dev/null)"
     fi
 
+    # =========================================================================
+    # OMNIFORGE PROJECT SETUP (One-Time Initialization)
+    # =========================================================================
+    # Deploy template files and prepare project structure
+    # This runs once per project (idempotent via marker file)
+
+    if ! setup_omniforge_project; then
+        log_error "OmniForge project setup failed"
+        log_info "See error details above"
+        exit 1
+    fi
+
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 

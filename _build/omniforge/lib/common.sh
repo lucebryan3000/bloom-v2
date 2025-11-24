@@ -83,6 +83,12 @@ source "${_COMMON_LIB_DIR}/prereqs.sh"
 # 10b. Local Prerequisites (depends on logging) - for project-local tool installation
 source "${_COMMON_LIB_DIR}/prereqs-local.sh"
 
+# 10c. Project Scaffolding (depends on logging) - for template deployment
+source "${_COMMON_LIB_DIR}/scaffold.sh"
+
+# 10d. OmniForge Setup (depends on logging, scaffold) - for one-time project initialization
+source "${_COMMON_LIB_DIR}/setup.sh"
+
 # 11. Configuration validation (depends on logging)
 source "${_COMMON_LIB_DIR}/config_validate.sh"
 
