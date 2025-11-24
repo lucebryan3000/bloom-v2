@@ -1,176 +1,150 @@
 ################################################################################
-# Bloom2 .gitignore - Node.js / Next.js 15 / pnpm / PostgreSQL + Drizzle ORM
-# Organized by technology layer and build phase
+# Bloom2 .gitignore - Next.js 15 / pnpm / PostgreSQL + Drizzle ORM
+# Organized by category - deduplicated and consolidated
 ################################################################################
 
 ## ============================================================================
-## CORE DEPENDENCIES & PACKAGE MANAGEMENT (pnpm v9.x)
+## DEPENDENCIES & PACKAGE MANAGEMENT
 ## ============================================================================
 
-# pnpm modules (locked in pnpm-lock.yaml, never committed)
-/node_modules/
-/pnpm-store/
-/.pnp
-.pnp.js
+# pnpm (primary)
+node_modules/
+pnpm-store/
+pnpm-debug.log*
 
-# Alternative package managers (if present during migration)
-/package-lock.json
-/yarn.lock
+# Lock files from other package managers (migration artifacts)
+package-lock.json
+yarn.lock
 npm-shrinkwrap.json
+
+# pnp (if used)
+.pnp
+.pnp.js
 
 ## ============================================================================
 ## BUILD & RUNTIME ARTIFACTS
 ## ============================================================================
 
-# Next.js 15 App Router artifacts
-/.next/
-/out/
-/.vercel/
+# Next.js 15
+.next/
+out/
 
-# Build outputs (Drizzle, TS compilation)
-/build/
-/dist/
+# General build outputs
+build/
+dist/
+tmp/
+temp/
+cache/
+
+# TypeScript
 *.tsbuildinfo
+tsconfig.tsbuildinfo
 next-env.d.ts
 
-# Drizzle ORM (root-level only, not bootstrap template folders)
-/drizzle/
-/.drizzle/
+# Drizzle ORM
+drizzle/
+.drizzle/
+
+# Bundler caches
+.turbo/
+.parcel-cache/
 
 ## ============================================================================
-## TESTING & COVERAGE (Vitest + Playwright)
+## DEPLOYMENT & HOSTING
 ## ============================================================================
 
-# Coverage reports (Vitest)
-/coverage/
+.vercel/
+.vercelignore
+.netlify/
+
+## ============================================================================
+## TESTING & COVERAGE
+## ============================================================================
+
+# Coverage reports
+coverage/
 .nyc_output/
 *.lcov
 
-# Playwright test artifacts
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Snapshots & fixtures
+__snapshots__/
+test/fixtures/
+test-output/
 
 ## ============================================================================
-## ENVIRONMENT & CONFIGURATION
+## ENVIRONMENT & SECRETS (CRITICAL - Never commit)
 ## ============================================================================
 
-# Local environment files (never commit secrets)
+# Environment files
 .env
-.env*.local
+.env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.example
+.vault*
 
-# Vercel/deployment config
-.vercel/
-.vercelignore
-
-# IDE & editor local settings
-.idea/
-.vscode/
-.DS_Store
-*.swp
-*.swo
-*~
-*.sublime-workspace
-
-## ============================================================================
-## LOGGING & RUNTIME STATE (should not be committed)
-## ============================================================================
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# pnpm logs
-pnpm-debug.log
-
-# Runtime state / logs (if stored locally)
-*.log
-logs/
-
-# Temporary state files
-.state
-.cache
-
-## ============================================================================
-## SECURITY & CREDENTIALS (CRITICAL - Never commit)
-## ============================================================================
-
-# SSL/TLS certificates
+# Private keys & certificates
 *.pem
 *.key
 *.crt
 *.cert
 
-# Database dumps (may contain user data)
-*.sql
-*.sql.gz
-*.dump
-
-# Sensitive configuration
-.env.production
+# Sensitive config
 secrets.json
 credentials.json
 
 ## ============================================================================
-## DATABASE & PERSISTENCE (PostgreSQL + Docker volumes)
+## DATABASE & PERSISTENCE
 ## ============================================================================
 
-# Docker volumes (local Postgres data, logs)
+# PostgreSQL data volumes
 postgres_data/
 db_data/
 postgres_logs/
 
-# Database migration artifacts
+# Database files & dumps
+*.sql
+*.sql.gz
+*.dump
+*.db
+
+# Migration artifacts
 migrations_backup/
+src/db/migrations/
 
 ## ============================================================================
-## DOCKER & CONTAINERIZATION
+## LOGGING
 ## ============================================================================
 
-# Docker build cache (automatically managed, but useful to ignore)
-.dockerignore
-
-# Docker compose overrides (if needed locally)
-docker-compose.override.yml
-docker-compose.local.yml
-
-## ============================================================================
-## MACOS & WINDOWS
-## ============================================================================
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-*.swp
-
-# Windows
-Thumbs.db
-*.lnk
+# Log files
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pino-pretty/
 
 ## ============================================================================
-## TYPESCRIPT
+## IDE & EDITOR
 ## ============================================================================
 
-# TS build info (already listed above, but explicit for clarity)
-*.tsbuildinfo
-tsconfig.tsbuildinfo
-
-## ============================================================================
-## IDE & EDITOR FILES
-## ============================================================================
-
-# VS Code workspace settings
-.vscode/*.json
+# VS Code
+.vscode/
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/launch.json
 
-# JetBrains IDEs
+# JetBrains
 .idea/
 *.iml
 *.iws
@@ -179,46 +153,85 @@ tsconfig.tsbuildinfo
 *.sublime-project
 *.sublime-workspace
 
-# vim
+# Vim
 .vim/
 *.vim
+*.swp
+*.swo
 
 # Emacs
 *~
-#*#
+\#*#
 .\#*
 
 ## ============================================================================
-## OPTIONAL: CLUTTER & DEBUG (Remove or Review)
+## OS-SPECIFIC
 ## ============================================================================
 
-# These entries should be reviewed and either formalized or deleted
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
 
-# Temporary test outputs
-test-output/
-temp/
-tmp/
+# Windows
+Thumbs.db
+desktop.ini
+*.lnk
 
-# Old build artifacts
-old_build/
-legacy/
-deprecated/
+## ============================================================================
+## DOCKER
+## ============================================================================
 
-# Local development utilities
-tools/local/
-scripts/debug/
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
 
-# Stale configuration backups
-*.backup
-*.bak
-*.old
+## ============================================================================
+## TOOLING CACHES
+## ============================================================================
 
-# Bootstrap System State (runtime tracking, never committed)
+.state
+.cache
+.eslintcache
+.stylelintcache
+.sass-cache/
+
+## ============================================================================
+## GENERATED OUTPUTS (Reports, Exports)
+## ============================================================================
+
+public/export/
+*.pdf
+*.csv
+*.xlsx
+*.zip
+*.tar
+*.gz
+
+## ============================================================================
+## PROJECT-SPECIFIC
+## ============================================================================
+
+# Bootstrap system state
 .bootstrap_state
 .bootstrap_state.bak
 _build/bootstrap_scripts/logs/
 
-# Random notes / scratch files (should not exist in repo)
+# Legacy/deprecated folders
+old_build/
+legacy/
+deprecated/
+
+# Local dev utilities
+tools/local/
+scripts/debug/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Scratch files (should not exist)
 NOTES.md
 SCRATCH.md
 TODO_DEV.md

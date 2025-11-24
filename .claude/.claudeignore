@@ -1,0 +1,96 @@
+# -------------------------------------------------------------------
+# CLAUDE CONTEXT OPTIMIZATION POLICY (SOFT BLOCK TIER)
+# Files listed here are EXCLUDED from the context window to save tokens.
+# The Claude agent CAN still access these files via the file system tool
+# (e.g., 'cat <path>') if it needs to inspect them for debugging.
+# -------------------------------------------------------------------
+
+# 🛑 HARD BLOCK WARNING:
+# Files that contain the absolute largest token costs or highest security
+# risk are *not* listed here. They are HARD BLOCKED from all access
+# (read/write/list) via the 'permissions.deny' key in:
+# .claude/settings.json (applied by apply.sh).
+# The hard blocked patterns include:
+# - node_modules/
+# - .next/
+# - .env* (for security)
+# - logs/
+# -------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------
+# A. Dependency & Package Manager Artifacts
+# -------------------------------------------------------------------
+# Primary: Node dependency caches and lockfiles
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+pnpm-store/         # pnpm's global store (often huge)
+npm-debug.log*
+
+# -------------------------------------------------------------------
+# B. Build, Cache, and Generated Output
+# -------------------------------------------------------------------
+dist/                  # Common build output directory
+out/                   # Static export output (e.g., Next export)
+build/                 # Generic build output
+tmp/                   # Generic temporary files
+cache/                 # Generic cache folders
+*.tsbuildinfo          # TypeScript incremental build state
+.vercel/                # Vercel deployment metadata/cache
+.netlify/              # Netlify build cache
+.turbo/                # Turborepo cache/artifacts (for monorepo scalability)
+.parcel-cache/         # Parcel bundler cache
+
+# -------------------------------------------------------------------
+# C. Secrets and Keys (Security Critical, but soft-blocked if not hard-blocked)
+# -------------------------------------------------------------------
+# NOTE: .env* and key files should ALSO be in permissions.deny for safety.
+*.pem                  # Private key files
+*.key                  # Private key files
+.vault* # Vault/secret configuration files
+
+# -------------------------------------------------------------------
+# D. Database, Migration, and Log Artifacts
+# -------------------------------------------------------------------
+src/db/migrations/      # Generated SQL migration files (Drizzle)
+drizzle/               # Drizzle migration snapshots
+postgres_data/         # Local Postgres volume data
+*.sql                  # Generated SQL dumps or simple schemas
+.pino-pretty/          # Pino logger artifacts (from your spec)
+sqlite.db              # Common SQLite file (if used outside Postgres)
+
+# -------------------------------------------------------------------
+# E. Testing, Reporting, and Document Generation Artifacts
+# -------------------------------------------------------------------
+coverage/              # Test coverage reports (Vitest)
+test-results/          # Test runner artifacts (Playwright/Vitest)
+playwright-report/     # Playwright HTML reports
+public/export/         # Generated PDF/Excel reports (Phase 5)
+__snapshots__/         # Jest/Vitest snapshot testing files
+test/fixtures/         # Large test assets that aren't source code
+*.pdf
+*.csv
+*.xlsx
+*.zip
+*.tar
+*.gz
+
+# -------------------------------------------------------------------
+# F. Tooling, IDE, and OS Artifacts
+# -------------------------------------------------------------------
+.vscode/               # VS Code configuration
+.idea/                 # IntelliJ/WebStorm project files
+.DS_Store              # macOS folder metadata
+Thumbs.db              # Windows thumbnail cache
+.git/                  # Git internal files (non-code)
+.hg/                   # Mercurial internal files
+.sass-cache/           # SASS/SCSS compiler cache
+.eslintcache           # ESLint cache
+
+# -------------------------------------------------------------------
+# G. Your Project Specific Script/Orchestration Artifacts
+# -------------------------------------------------------------------
+_build/                # All artifacts related to your 35 bootstrap scripts
+docker-compose.override.yml
+.dockerignore

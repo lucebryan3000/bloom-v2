@@ -11,7 +11,7 @@ BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 # Defaults
 DRY_RUN=0; VERBOSE=0; FORCE=0; YES_ALL=0
 LOG_MODE="off"            # off|on|critical
-CONTEXT_BUDGET=200000
+CONTEXT_BUDGET=50000
 CI_MODE=0
 JSON_REPORT=""
 ACTION_ID=""
