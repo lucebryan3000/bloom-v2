@@ -111,7 +111,7 @@ menu_main() {
 
         _menu_item "1" "Bootstrap Project" "Select apps, configure, install"
         echo ""
-        _menu_item "2" "Settings Manager" "Copy IDE/tool configs to project"
+        _menu_item "2" "IDE Settings Manager" "Copy IDE/tool configs to project"
         echo ""
         _menu_item "3" "Purge Download Cache" "Clear cached packages [$cache_size]"
         echo ""
@@ -450,7 +450,7 @@ _bootstrap_step_validate() {
 
 menu_settings() {
     _menu_header
-    _menu_title "SETTINGS MANAGER"
+    _menu_title "IDE SETTINGS MANAGER"
     echo ""
     echo "  Copy configuration templates to your project:"
     echo ""
@@ -698,7 +698,7 @@ menu_help() {
     echo "     • Run preflight checks"
     echo "     • Install all components"
     echo ""
-    echo "  2. Settings - Copy IDE/tool configurations"
+    echo "  2. IDE Settings Manager - Copy IDE/tool configurations"
     echo "     • VS Code, Cursor, GitHub workflows"
     echo "     • Test configs (Playwright, Vitest)"
     echo ""
