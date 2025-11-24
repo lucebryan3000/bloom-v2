@@ -23,6 +23,113 @@
 _LIB_SETUP_WIZARD_LOADED=1
 
 # =============================================================================
+# PROJECT CONFIGURATION WIZARD (Simplified)
+# =============================================================================
+
+# Configure project basics (APP_NAME, APP_DESCRIPTION)
+# Shows auto-detected values, prompts for essentials
+wizard_configure_project() {
+    local config_file="${BOOTSTRAP_CONF}"
+
+    _menu_header
+    echo -e "  ${LOG_CYAN}OMNIFORGE SETUP WIZARD${LOG_NC}"
+    _menu_line "─" 66
+    echo ""
+    echo "  Configure your OmniForge project settings."
+    echo ""
+
+    # Show auto-detected values (read-only)
+    echo -e "  ${LOG_CYAN}Auto-Detected Settings:${LOG_NC}"
+    echo "  ─────────────────────────────────────────"
+    echo "  Project Name:  ${AUTO_DETECTED_PROJECT_NAME:-$(basename "$(pwd)")}"
+    echo "  Project Root:  $(pwd)"
+    if [[ -n "${AUTO_DETECTED_GIT_REMOTE}" ]]; then
+        echo "  Git Remote:    ${AUTO_DETECTED_GIT_REMOTE}"
+    else
+        echo "  Git Remote:    (none detected)"
+    fi
+    echo ""
+
+    # Prompt for essential configuration
+    echo -e "  ${LOG_CYAN}Application Settings:${LOG_NC}"
+    echo "  ─────────────────────────────────────────"
+    echo ""
+
+    local app_name app_description
+
+    # APP_NAME
+    local current_app_name="${APP_NAME:-${AUTO_DETECTED_PROJECT_NAME:-bloom2}}"
+    read -rp "  Application name [$current_app_name]: " app_name
+    app_name="${app_name:-$current_app_name}"
+
+    # APP_DESCRIPTION
+    local current_desc="${APP_DESCRIPTION:-Built with OmniForge}"
+    read -rp "  Description [$current_desc]: " app_description
+    app_description="${app_description:-$current_desc}"
+
+    # Show summary
+    echo ""
+    echo -e "  ${LOG_CYAN}Configuration Summary:${LOG_NC}"
+    echo "  ─────────────────────────────────────────"
+    echo "  Name:         $app_name"
+    echo "  Description:  $app_description"
+    echo ""
+
+    # Confirm
+    echo "  [s] Save configuration"
+    echo "  [e] Edit full bootstrap.conf file"
+    echo "  [c] Cancel"
+    echo ""
+
+    local choice
+    read -rp "  Choice [s]: " choice
+
+    case "${choice:-s}" in
+        s|S)
+            # Write to config file
+            local sed_cmd="sed -i"
+            [[ "$(uname)" == "Darwin" ]] && sed_cmd="sed -i ''"
+
+            $sed_cmd "s/^APP_NAME=.*/APP_NAME=\"$app_name\"/" "$config_file"
+            $sed_cmd "s/^APP_DESCRIPTION=.*/APP_DESCRIPTION=\"$app_description\"/" "$config_file"
+
+            log_success "Configuration saved to $config_file"
+            echo ""
+
+            # Offer to edit full file
+            read -rp "  Edit full configuration file? [y/N]: " edit_choice
+            if [[ "${edit_choice,,}" == "y" ]]; then
+                # Auto-detect an available editor for full config
+                local available_editors
+                available_editors=$(setup_detect_editors)
+                local editor="${available_editors%% *}"  # Get first available
+                if [[ -z "$editor" ]]; then
+                    editor="nano"
+                fi
+                setup_launch_editor "$editor" "$config_file"
+            fi
+
+            return 0
+            ;;
+        e|E)
+            # Auto-detect an available editor for full config
+            local available_editors
+            available_editors=$(setup_detect_editors)
+            local editor="${available_editors%% *}"  # Get first available
+            if [[ -z "$editor" ]]; then
+                editor="nano"
+            fi
+            setup_launch_editor "$editor" "$config_file"
+            return $?
+            ;;
+        *)
+            log_warn "Configuration cancelled"
+            return 1
+            ;;
+    esac
+}
+
+# =============================================================================
 # EDITOR DETECTION
 # =============================================================================
 

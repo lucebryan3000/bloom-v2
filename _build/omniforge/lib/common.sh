@@ -89,6 +89,9 @@ source "${_COMMON_LIB_DIR}/scaffold.sh"
 # 10d. OmniForge Setup (depends on logging, scaffold) - for one-time project initialization
 source "${_COMMON_LIB_DIR}/setup.sh"
 
+# 10e. Auto-detection (depends on logging) - for project settings detection
+source "${_COMMON_LIB_DIR}/auto_detect.sh"
+
 # 11. Configuration validation (depends on logging)
 source "${_COMMON_LIB_DIR}/config_validate.sh"
 

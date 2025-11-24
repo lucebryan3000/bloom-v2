@@ -259,6 +259,20 @@ main() {
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 
     # =========================================================================
+    # AUTO-DETECTION (First Run Only)
+    # =========================================================================
+    # Detect project settings on first run
+
+    if autodetect_is_needed; then
+        log_debug "First run detected - running auto-detection"
+        autodetect_run_all
+        autodetect_write_to_config
+
+        # Reload config to pick up new values
+        config_load
+    fi
+
+    # =========================================================================
     # MODE DISPATCH
     # =========================================================================
 

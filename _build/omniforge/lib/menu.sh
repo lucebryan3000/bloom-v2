@@ -242,23 +242,25 @@ menu_main() {
         _menu_line "─" 66
         echo ""
 
-        _menu_item "1" "Bootstrap Project" "Select apps, configure, install"
-        _menu_item "2" "Clean Installation" "Delete/reset a previous deployment"
-        _menu_item "3" "IDE Settings Manager" "Copy IDE/tool configs to project"
-        _menu_item "4" "Purge Download Cache" "Clear cached packages" "[$cache_size]"
-        _menu_item "5" "OmniForge Options" "Preferences and defaults"
-        _menu_item "6" "Help" "Usage guide and documentation"
+        _menu_item "1" "OmniForge Setup Wizard" "Configure project settings (name, description)"
+        _menu_item "2" "Bootstrap Project" "Deploy apps and install stack"
+        _menu_item "3" "Clean Installation" "Delete/reset a previous deployment"
+        _menu_item "4" "IDE Settings Manager" "Copy IDE/tool configs to project"
+        _menu_item "5" "Purge Download Cache" "Clear cached packages" "[$cache_size]"
+        _menu_item "6" "OmniForge Options" "Preferences and defaults"
+        _menu_item "7" "Help" "Usage guide and documentation"
         _menu_item "0" "Exit"
 
-        _menu_prompt "Select [0-6]"
+        _menu_prompt "Select [0-7]"
 
         case "$_MENU_SELECTION" in
-            1) menu_bootstrap ;;
-            2) menu_clean ;;
-            3) menu_settings ;;
-            4) menu_purge ;;
-            5) menu_options ;;
-            6) menu_help ;;
+            1) wizard_configure_project ;;
+            2) menu_bootstrap ;;
+            3) menu_clean ;;
+            4) menu_settings ;;
+            5) menu_purge ;;
+            6) menu_options ;;
+            7) menu_help ;;
             *) _MENU_RUNNING=false ;;  # Any other key exits
         esac
     done
