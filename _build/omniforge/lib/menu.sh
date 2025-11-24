@@ -58,16 +58,14 @@ _menu_item() {
     local desc="${3:-}"
     local extra="${4:-}"
 
-    # Format: "  1. Label" with optional description on next line
+    # Format: "  1. Label" with optional description indented on next line
+    printf "  %s. %s\n" "$num" "$label"
     if [[ -n "$desc" ]]; then
-        printf "  %s. %s\n" "$num" "$label"
-        printf "     └─ %s" "${LOG_GRAY:-}$desc"
+        printf "     %s" "${LOG_GRAY:-}$desc"
         if [[ -n "$extra" ]]; then
             printf " %s" "$extra"
         fi
         printf "%s\n" "${LOG_NC:-}"
-    else
-        printf "  %s. %s\n" "$num" "$label"
     fi
 }
 
