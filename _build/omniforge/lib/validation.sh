@@ -229,6 +229,90 @@ install_pnpm() {
     fi
 }
 
+# Attempt to install Docker
+# Usage: install_docker
+# Respects: AUTO_INSTALL_DOCKER flag
+install_docker() {
+    if command -v docker &>/dev/null; then
+        log_ok "Docker already installed"
+        return 0
+    fi
+
+    # Check if auto-install is disabled
+    if [[ "${AUTO_INSTALL_DOCKER:-true}" != "true" ]]; then
+        log_debug "Docker auto-install disabled (AUTO_INSTALL_DOCKER=false)"
+        return 1
+    fi
+
+    log_step "Installing Docker..."
+
+    # Detect OS and install accordingly
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux: Use package manager
+        if command -v apt-get &>/dev/null; then
+            log_info "Installing Docker via apt-get..."
+            sudo apt-get update && sudo apt-get install -y docker.io 2>/dev/null && return 0
+        elif command -v yum &>/dev/null; then
+            log_info "Installing Docker via yum..."
+            sudo yum install -y docker 2>/dev/null && return 0
+        elif command -v brew &>/dev/null; then
+            log_info "Installing Docker via brew..."
+            brew install docker 2>/dev/null && return 0
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS: Use Homebrew
+        if command -v brew &>/dev/null; then
+            log_info "Installing Docker via Homebrew (macOS)..."
+            brew install docker docker-machine 2>/dev/null && return 0
+        fi
+    fi
+
+    log_error "Could not auto-install Docker - please install manually from https://docker.com"
+    return 1
+}
+
+# Attempt to install PostgreSQL client (psql)
+# Usage: install_psql
+# Respects: AUTO_INSTALL_PSQL flag
+install_psql() {
+    if command -v psql &>/dev/null; then
+        log_ok "psql (PostgreSQL client) already installed"
+        return 0
+    fi
+
+    # Check if auto-install is disabled
+    if [[ "${AUTO_INSTALL_PSQL:-true}" != "true" ]]; then
+        log_debug "psql auto-install disabled (AUTO_INSTALL_PSQL=false)"
+        return 1
+    fi
+
+    log_step "Installing psql (PostgreSQL client)..."
+
+    # Detect OS and install accordingly
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux: Use package manager
+        if command -v apt-get &>/dev/null; then
+            log_info "Installing PostgreSQL client via apt-get..."
+            sudo apt-get update && sudo apt-get install -y postgresql-client 2>/dev/null && return 0
+        elif command -v yum &>/dev/null; then
+            log_info "Installing PostgreSQL client via yum..."
+            sudo yum install -y postgresql 2>/dev/null && return 0
+        elif command -v brew &>/dev/null; then
+            log_info "Installing PostgreSQL client via brew..."
+            brew install postgresql 2>/dev/null && return 0
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS: Use Homebrew
+        if command -v brew &>/dev/null; then
+            log_info "Installing PostgreSQL client via Homebrew (macOS)..."
+            brew install postgresql 2>/dev/null && return 0
+        fi
+    fi
+
+    log_error "Could not auto-install psql - please install manually from https://postgresql.org"
+    return 1
+}
+
 # Attempt to download packages to cache before phase execution
 # Usage: preflight_download_packages
 preflight_download_packages() {
@@ -276,6 +360,28 @@ preflight_remediate_missing() {
             log_ok "pnpm remediation successful"
         else
             log_error "pnpm remediation failed"
+            critical_missing=1
+        fi
+    fi
+
+    # Critical dependency: Docker
+    if ! command -v docker &>/dev/null; then
+        log_warn "Docker not found - attempting installation..."
+        if install_docker; then
+            log_ok "Docker remediation successful"
+        else
+            log_warn "Docker remediation failed - will need manual installation"
+            critical_missing=1
+        fi
+    fi
+
+    # Critical dependency: psql (PostgreSQL client)
+    if ! command -v psql &>/dev/null; then
+        log_warn "psql (PostgreSQL client) not found - attempting installation..."
+        if install_psql; then
+            log_ok "psql remediation successful"
+        else
+            log_warn "psql remediation failed - will need manual installation"
             critical_missing=1
         fi
     fi
