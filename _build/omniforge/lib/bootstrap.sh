@@ -40,7 +40,7 @@ for _v in "${_OF_SECTION1_VARS[@]}"; do
   fi
 done
 
-# Load canonical config (bootstrap.conf remains canonical in this phase)
+# Load canonical config for non-Section 1 domains (profiles, phases, advanced settings)
 if [[ -f "$BOOTSTRAP_CONF" ]]; then
   set -a
   # shellcheck source=/dev/null
@@ -51,11 +51,14 @@ else
   exit 1
 fi
 
-# Optional override layer for Section 1 (QUICK START) and related settings
+# Optional override layer for Section 1 (QUICK START) and related settings (canonical for Section 1)
 OMNI_CONFIG_PATH="${OMNI_CONFIG_PATH:-${OF_ROOT_DIR}/omni.config}"
 if [[ -f "$OMNI_CONFIG_PATH" ]]; then
   # shellcheck source=/dev/null
   . "$OMNI_CONFIG_PATH"
+else
+  echo "lib/bootstrap.sh: missing omni.config at $OMNI_CONFIG_PATH (Section 1 must live in omni.config)" >&2
+  exit 1
 fi
 
 # Re-apply env overrides (env > omni.config > bootstrap.conf)

@@ -107,6 +107,13 @@ config_load() {
         fi
     fi
 
+    # Determine omni.config path (canonical Section 1 source)
+    local omni_config_path="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/omni.config}"
+    if [[ ! -f "$omni_config_path" ]]; then
+        log_error "omni.config not found at $omni_config_path (Section 1 must live in omni.config)"
+        return 1
+    fi
+
     # Save environment overrides (allow env vars to override config)
     local section1_vars=(
         APP_NAME APP_VERSION APP_DESCRIPTION
@@ -131,12 +138,9 @@ config_load() {
     # shellcheck source=/dev/null
     source "${BOOTSTRAP_CONF}"
 
-    # Optional overlay: omni.config (Section 1 overrides)
-    local omni_config_path="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/omni.config}"
-    if [[ -f "$omni_config_path" ]]; then
-        # shellcheck source=/dev/null
-        source "$omni_config_path"
-    fi
+    # Required overlay: omni.config (Section 1 canonical source)
+    # shellcheck source=/dev/null
+    source "$omni_config_path"
 
     # Restore environment overrides (env vars take precedence over config file)
     for v in "${section1_vars[@]}"; do
