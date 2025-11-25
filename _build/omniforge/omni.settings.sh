@@ -74,7 +74,7 @@
 : "${E2E_DIR:=e2e}"
 
 if [[ -z "${PROJECT_DIRECTORIES+x}" ]]; then
-read -r -d '' PROJECT_DIRECTORIES <<'EOF'
+PROJECT_DIRECTORIES="$(cat <<'EOF'
 ${SRC_APP_DIR}
 ${SRC_COMPONENTS_DIR}
 ${SRC_LIB_DIR}
@@ -84,6 +84,7 @@ ${SRC_HOOKS_DIR}
 ${SRC_TYPES_DIR}
 ${PUBLIC_DIR}
 EOF
+)"
 fi
 
 : "${DEV_PORT:=3000}"
