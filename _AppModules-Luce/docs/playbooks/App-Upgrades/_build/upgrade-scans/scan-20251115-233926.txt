@@ -1,0 +1,34 @@
+=== Package Upgrade Scan: Sat Nov 15 11:39:26 PM CST 2025 ===
+
+=== npm outdated (All Packages) ===
+Package                  Current      Wanted   Latest  Location                           Depended by
+@monaco-editor/react  4.8.0-rc.2  4.8.0-rc.2    4.7.0  node_modules/@monaco-editor/react  bloom
+@types/node             20.19.24    20.19.24  24.10.1  node_modules/@types/node           bloom
+tailwind-merge             2.6.0       2.6.0    3.4.0  node_modules/tailwind-merge        bloom
+tailwindcss               3.4.18      3.4.18   4.1.17  node_modules/tailwindcss           bloom
+
+=== Dependabot Pull Requests ===
+[]
+
+=== Major Version Upgrades Available ===
+@types/node: 20.19.24 → 24.10.1
+tailwind-merge: 2.6.0 → 3.4.0
+tailwindcss: 3.4.18 → 4.1.17
+
+=== Security Audit ===
+found 0 vulnerabilities
+
+=== Deprecated Packages ===
+None found
+
+=== Critical Package Versions ===
+Checking versions of critical dependencies...
+  next: 16.0.3 (Latest: 16.0.3)
+  @anthropic-ai/sdk: 0.69.0 (Latest: 0.69.0)
+  prisma: 6.19.0 (Latest: 6.19.0)
+  @prisma/client: 6.19.0 (Latest: 6.19.0)
+  react: 19.2.0 (Latest: 19.2.0)
+  react-dom: 19.2.0 (Latest: 19.2.0)
+  typescript: 5.9.3 (Latest: 5.9.3)
+  jest: 30.2.0 (Latest: 30.2.0)
+
