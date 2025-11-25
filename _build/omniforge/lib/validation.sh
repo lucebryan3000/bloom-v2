@@ -67,33 +67,40 @@ require_pnpm() {
 
 # Check Docker is installed and running
 require_docker() {
-    if ! require_cmd "docker" "Install from https://docker.com"; then
+    local install_hint="Install Docker from https://docker.com"
+
+    if ! require_cmd "docker" "$install_hint"; then
+        log_error "Docker is required to bootstrap. Install Docker and ensure the daemon is running, then rerun omni (Option 1)."
         return 1
     fi
 
     if ! docker info &> /dev/null; then
-        log_error "Docker is not running. Please start Docker."
+        log_error "Docker is required to bootstrap. Install Docker and ensure the daemon is running, then rerun omni (Option 1)."
         return 1
     fi
-    log_debug "Docker is running"
+
+    if ! require_docker_compose; then
+        log_error "Docker is required to bootstrap. Install Docker and ensure the daemon is running, then rerun omni (Option 1)."
+        return 1
+    fi
+
+    log_debug "Docker CLI, daemon, and compose are available"
     return 0
 }
 
 # Check Docker Compose is available (v2 plugin or standalone)
 require_docker_compose() {
-    # First check for Docker Compose v2 (plugin)
-    if docker compose version &> /dev/null; then
+    if command -v docker >/dev/null 2>&1 && docker compose version &> /dev/null; then
         log_debug "Docker Compose v2 (plugin) available"
         return 0
     fi
 
-    # Fallback to standalone docker-compose
     if command -v docker-compose &> /dev/null; then
         log_warn "Using standalone docker-compose. Consider upgrading to Docker Compose v2"
         return 0
     fi
 
-    log_error "Docker Compose not found. Install Docker Desktop or docker-compose-plugin"
+    log_error "Docker Compose not found. Install Docker Compose v2 or the docker-compose plugin."
     return 1
 }
 
@@ -109,17 +116,11 @@ require_buildkit() {
 
 # Full Docker environment check (Docker + Compose + running)
 require_docker_env() {
-    local failed=0
-
     if ! require_docker; then
-        failed=1
+        return 1
     fi
 
-    if ! require_docker_compose; then
-        failed=1
-    fi
-
-    return $failed
+    return 0
 }
 
 # =============================================================================

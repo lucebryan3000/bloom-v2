@@ -59,6 +59,9 @@ source "${_COMMON_LIB_DIR}/log-rotation.sh"
 # 3. Validation helpers (no dependencies beyond logging)
 source "${_COMMON_LIB_DIR}/validation.sh"
 
+# 3b. Docker helpers (compose wrappers)
+source "${_COMMON_LIB_DIR}/docker.sh"
+
 # 4. Utils (depends on logging)
 source "${_COMMON_LIB_DIR}/utils.sh"
 

@@ -26,6 +26,7 @@
 
 set -Eeuo pipefail
 IFS=$'\n\t'
+ORIGINAL_ARGS=("$@")
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OMNI_ROOT="${OMNI_ROOT:-"${SCRIPT_DIR}"}"
@@ -74,6 +75,91 @@ _validate_bin() {
     if [[ ! -x "${SCRIPT_DIR}/bin/${script}" ]]; then
         _error_exit "Executable not found: ${SCRIPT_DIR}/bin/${script}" 1
     fi
+}
+
+# Determine if the current command requires Docker
+_command_requires_docker() {
+    case "${COMMAND:-}" in
+        run)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# List Docker services that must be running before bootstrap
+_docker_services_for_bootstrap() {
+    local services=()
+
+    if [[ -n "${APP_SERVICE_NAME:-}" ]]; then
+        services+=("${APP_SERVICE_NAME}")
+    fi
+
+    printf '%s\n' "${services[@]}"
+}
+
+# Ensure required Docker services are running before re-exec
+_ensure_docker_services_running() {
+    local services=("$@")
+
+    [[ ${#services[@]} -eq 0 ]] && return 0
+
+    local compose_file
+    compose_file="$(omni_resolve_compose_file)"
+
+    if ! require_file "$compose_file" "Stage Docker templates from tech_stack/docker before bootstrap."; then
+        return 1
+    fi
+
+    log_info "Starting Docker services: ${services[*]}"
+    if ! omni_docker_compose up -d "${services[@]}"; then
+        log_error "Failed to start required Docker services from ${compose_file}."
+        return 1
+    fi
+
+    return 0
+}
+
+# Re-exec inside the Docker app container when container mode is enabled
+_maybe_reexec_in_docker() {
+    local original_args=("$@")
+
+    if [[ "${DOCKER_REQUIRED:-false}" != "true" ]]; then
+        return
+    fi
+
+    if [[ "${DOCKER_EXEC_MODE:-container}" != "container" ]]; then
+        return
+    fi
+
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        return
+    fi
+
+    if ! _command_requires_docker; then
+        return
+    fi
+
+    if [[ ${#original_args[@]} -eq 0 ]]; then
+        original_args=("run")
+    fi
+
+    if ! require_docker; then
+        _error_exit "Docker is required to bootstrap. Install Docker and ensure the daemon is running, then rerun omni (Option 1)." 1
+    fi
+
+    local services=()
+    read -r -a services <<< "$(_docker_services_for_bootstrap)"
+
+    if ! _ensure_docker_services_running "${services[@]}"; then
+        _error_exit "Failed to prepare Docker services for bootstrap." 1
+    fi
+
+    log_info "Re-executing inside Docker container (${APP_SERVICE_NAME:-app})"
+    omni_docker_exec_app env INSIDE_OMNI_DOCKER=1 ./_build/omniforge/omni.sh "${original_args[@]}"
+    exit $?
 }
 
 # Set TERM if not set (prevents tput errors)
@@ -292,6 +378,9 @@ ARGS=()
 
 # Validate required files before execution
 _validate_files
+
+# Enforce Docker container re-exec for bootstrap commands when enabled
+_maybe_reexec_in_docker "${ORIGINAL_ARGS[@]}"
 
 # Execute command by delegating to bin scripts
 case "${COMMAND:-}" in

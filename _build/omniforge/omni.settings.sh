@@ -24,8 +24,11 @@
 : "${LOG_ROTATE_DAYS:=30}"
 : "${LOG_CLEANUP_DAYS:=90}"
 
+: "${DOCKER_REQUIRED:=true}"
 : "${ENABLE_DOCKER:=true}"
 : "${DOCKER_EXEC_MODE:=container}"              # Options: host, container
+: "${DOCKER_COMPOSE_FILE:=docker-compose.yml}"
+: "${APP_SERVICE_NAME:=app}"
 : "${ENABLE_REDIS:=false}"
 : "${DOCKER_REGISTRY:=ghcr.io}"
 : "${DOCKER_BUILDKIT:=1}"

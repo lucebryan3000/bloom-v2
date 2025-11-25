@@ -1228,6 +1228,11 @@ _bootstrap_step_install() {
     echo "  Starting installation (this may take several minutes)..."
     echo ""
 
+    local previous_command="${COMMAND:-}"
+    COMMAND="run"
+    _maybe_reexec_in_docker "${ORIGINAL_ARGS[@]}"
+    COMMAND="${previous_command}"
+
     # Initialize stats
     if type phase_stats_init &>/dev/null; then
         phase_stats_init
