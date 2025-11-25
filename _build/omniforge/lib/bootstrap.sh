@@ -36,6 +36,12 @@ else
   exit 1
 fi
 
+# Load staged profile helpers (data comes from bootstrap.conf)
+if [[ -f "${OF_ROOT_DIR}/lib/omni_profiles.sh" ]]; then
+  # shellcheck source=/dev/null
+  . "${OF_ROOT_DIR}/lib/omni_profiles.sh"
+fi
+
 # Delegate to common.sh for full loader stack
 # shellcheck source=/dev/null
 . "${SCRIPTS_DIR}/lib/common.sh"
