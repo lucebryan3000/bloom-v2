@@ -24,10 +24,15 @@
 #
 # =============================================================================
 
-set -euo pipefail
+set -Eeuo pipefail
 IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OMNI_ROOT="${OMNI_ROOT:-"${SCRIPT_DIR}"}"
+
+# Central bootstrap loader (delegates to common.sh)
+# shellcheck source=/dev/null
+. "${OMNI_ROOT}/lib/bootstrap.sh"
 
 readonly VERSION="1.1.0"
 readonly CODENAME="OmniForge"
@@ -47,7 +52,7 @@ _error_exit() {
 # Validate required files exist before execution
 _validate_files() {
     local required_files=(
-        "${SCRIPT_DIR}/lib/common.sh"
+        "${SCRIPT_DIR}/lib/bootstrap.sh"
         "${SCRIPT_DIR}/lib/menu.sh"
         "${SCRIPT_DIR}/lib/ascii.sh"
         "${SCRIPT_DIR}/bootstrap.conf"
@@ -289,7 +294,6 @@ _validate_files
 case "${COMMAND:-}" in
     menu|"")
         # Launch interactive menu (default when no command given)
-        source "${SCRIPT_DIR}/lib/common.sh"
         source "${SCRIPT_DIR}/lib/ascii.sh"
         source "${SCRIPT_DIR}/lib/menu.sh"
         menu_main
@@ -314,7 +318,6 @@ case "${COMMAND:-}" in
         ;;
     clean)
         # Load libraries for clean function
-        source "${SCRIPT_DIR}/lib/common.sh"
         source "${SCRIPT_DIR}/lib/ascii.sh"
         source "${SCRIPT_DIR}/lib/menu.sh"
 
