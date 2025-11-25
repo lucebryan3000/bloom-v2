@@ -29,7 +29,7 @@ This page makes ChatGPT/GitHub and Claude Code aware of files that exist locally
 - scripts/bootstrap/
 
 ## Untracked (not ignored)
-- none (once this file and `scripts/list-ignored-files.sh` are checked in)
+- none
 
 ## Claude soft-blocked items present (.claude/.claudeignore)
 - .DS_Store
