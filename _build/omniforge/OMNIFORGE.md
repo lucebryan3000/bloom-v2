@@ -109,7 +109,7 @@ OmniForge automatically:
 - **Environment Replication**: Recreate identical setups across machines
 - **Development Iteration**: Quick reset/redeployment when testing configuration changes
 - **Stack Composition**: Mix and match tech stacks via profiles and feature flags
-- **Infrastructure as Code**: Define entire application architecture in bootstrap.conf
+- **Infrastructure as Code**: Define entire application architecture in omni.* metadata
 
 ---
 
@@ -177,41 +177,28 @@ Bootstrap Execution State (.bootstrap_state):
 ### Data Flow
 
 ```
-bootstrap.conf (451 lines, 6 sections)
-    ├─ SECTION 1: QUICK START (user configurable)
-    │   ├─ APP_NAME, APP_VERSION, INSTALL_TARGET
-    │   ├─ DB_NAME, DB_USER, DB_PASSWORD
-    │   └─ ENABLE_* feature flags
-    │
-    ├─ SECTION 2: ADVANCED SETTINGS
-    │   ├─ Preflight, logging, Docker config
-    │   ├─ Auto-installation settings
-    │   └─ Safety & behavior flags
-    │
-    ├─ SECTION 3: SYSTEM CONFIGURATION
-    │   ├─ Framework versions (Node, pnpm, PostgreSQL, etc.)
-    │   ├─ Project paths & directories
-    │   └─ Tool locations (.tools/node, .tools/pnpm)
-    │
-    ├─ SECTION 4: PHASE METADATA
-    │   ├─ PHASE_METADATA_N (phase name, description, enabled)
-    │   ├─ PHASE_CONFIG_NN_* (timeout, prereq, dependencies)
-    │   ├─ PHASE_PACKAGES_NN_* (npm package list)
-    │   └─ BOOTSTRAP_PHASE_NN_* (scripts to execute)
-    │
-    ├─ SECTION 5: STACK PROFILES
-    │   ├─ ai_automation, fpa_dashboard, collab_editor
-    │   ├─ erp_gateway, asset_manager, custom_bos
-    │   └─ Each profile overrides ENABLE_* flags
-    │
-    └─ SECTION 6: PACKAGE DEFINITIONS
-        ├─ Core (Next.js, React, TypeScript)
-        ├─ Database (Drizzle, PostgreSQL)
-        ├─ AI & Auth (Vercel AI, Auth.js)
-        ├─ UI & State (Shadcn, Zustand)
-        ├─ Export & Observability
-        ├─ Testing & Quality
-        └─ 60+ PKG_* variables for easy updates
+omni.config (Section 1, top-level app settings)
+    ├─ APP_NAME, APP_VERSION, INSTALL_TARGET
+    ├─ STACK_PROFILE
+    ├─ DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+    └─ ENABLE_* feature flags
+
+omni.settings.sh (advanced/system settings & derived values)
+    ├─ Preflight/logging/docker/safety flags
+    ├─ Framework versions (Node, pnpm, PostgreSQL, etc.)
+    ├─ Project paths & directories
+    ├─ Tool locations (.tools/node, .tools/pnpm)
+    └─ Derived values (INSTALL_DIR, markers, git remote)
+
+omni.profiles.sh (profile data)
+    ├─ PROFILE_* associative arrays
+    └─ AVAILABLE_PROFILES ordering
+
+omni.phases.sh (phase metadata)
+    ├─ PHASE_METADATA_N (phase name, description, enabled)
+    ├─ PHASE_CONFIG_NN_* (timeout, prereq, dependencies)
+    ├─ PHASE_PACKAGES_NN_* (npm package list)
+    └─ BOOTSTRAP_PHASE_NN_* (scripts to execute)
 ```
 
 ---
@@ -360,8 +347,12 @@ _build/omniforge/
 │   └── [others...]
 │
 ├── omni.sh                                 # Main CLI entry point (wrapper)
-├── bootstrap.conf                          # Configuration (451 lines, 6 sections)
-├── bootstrap.conf.example                  # Example configuration
+├── omni.config                             # Section 1 config (app-facing)
+├── omni.settings.sh                        # Advanced/system settings
+├── omni.profiles.sh                        # Profile data
+├── omni.phases.sh                          # Phase metadata
+├── example-files/*.example                 # Legacy templates (bootstrap.*) and omni.* templates
+├── bootstrap.conf (deprecated stub)        # Legacy placeholder only
 ├── OMNIFORGE.md                            # This file
 ├── omniforge-refactor.md                   # Refactoring notes
 │
@@ -371,9 +362,9 @@ _build/omniforge/
 
 ### Statistics
 
-- **Library Modules**: 26 files, 10,344 lines of code
+- **Library Modules**: 26 files, ~10k lines of code
 - **Tech Stack Scripts**: 57 scripts across 18 technology categories
-- **Total Configuration**: 451 lines in bootstrap.conf
+- **Configuration**: omni.config + omni.settings.sh + omni.profiles.sh + omni.phases.sh (bootstrap.conf is legacy/stub)
 - **Entry Points**: 3 main scripts (omni, forge, status)
 - **Phases**: 6 phases (0-5) with full metadata-driven configuration
 - **Stack Profiles**: 6 pre-configured templates
@@ -382,229 +373,14 @@ _build/omniforge/
 
 ## Configuration System
 
-### bootstrap.conf: The Single Source of Truth
-
-All OmniForge settings are defined in `bootstrap.conf`, which is sourced (not executed) by all scripts. This provides:
-
-- **Centralized control**: Change settings once, affect entire system
-- **Overridability**: Environment variables override file settings
-- **Versionability**: Configuration is part of git history
-- **Validation**: All values validated before use
-
-### Section 1: Quick Start (USER CONFIGURABLE)
-
-Most commonly changed for new projects:
-
-```bash
-# Project Identity
-APP_NAME="Bloom"              # Application name
-APP_VERSION="0.1.0"           # Version string
-APP_DESCRIPTION="..."         # Short description
-
-# Installation Target
-INSTALL_TARGET="test"         # Options: "test" or "prod"
-                              # Determines install location
-
-# Stack Profile (6 pre-configured options)
-STACK_PROFILE="asset_manager" # Options:
-                              # - ai_automation (AI-focused)
-                              # - fpa_dashboard (Analytics)
-                              # - collab_editor (Real-time collab)
-                              # - erp_gateway (Enterprise)
-                              # - asset_manager (Asset management)
-                              # - custom_bos (Custom business logic)
-
-# Database Configuration
-DB_NAME="BloomDB"             # PostgreSQL database name
-DB_USER="luce"                # Database user
-DB_PASSWORD="r6VcpsjgqngnXV" # Database password
-DB_HOST="localhost"           # Database host
-DB_PORT="5432"                # PostgreSQL port
-
-# Feature Flags (can be overridden by profile)
-ENABLE_AUTHJS="true"          # Authentication with Auth.js
-ENABLE_AI_SDK="true"          # Vercel AI SDK integration
-ENABLE_PG_BOSS="true"         # Background jobs with PgBoss
-ENABLE_SHADCN="true"          # Shadcn UI components
-ENABLE_ZUSTAND="true"         # State management
-ENABLE_PDF_EXPORTS="true"     # PDF export system
-ENABLE_TEST_INFRA="true"      # Testing infrastructure
-ENABLE_CODE_QUALITY="true"    # ESLint, Prettier, etc.
-```
-
-### Config overlay: omni.config
-
-Section 1 defaults live in `bootstrap.conf`. A lightweight overlay `omni.config` is sourced **after** `bootstrap.conf` by `lib/bootstrap.sh` and can override Section 1 values. Precedence is:
-
-1. Environment variables (highest)
-2. `omni.config` (Quick Start overrides)
-3. `bootstrap.conf` defaults
-
-Profiles, phase metadata, and other settings still come from `bootstrap.conf`. Helper functions live in `lib/omni_profiles.sh` (profile data remains in `bootstrap.conf`).
-
-### Section 2: Advanced Settings
-
-Occasionally changed for development workflow:
-
-```bash
-# Preflight & Remediation
-PREFLIGHT_REMEDIATE="true"           # Auto-fix missing dependencies
-PREFLIGHT_SKIP_MISSING="false"       # Skip validation on missing tools
-PREFLIGHT_DOWNLOAD_PACKAGES="true"   # Pre-download npm packages
-
-# Auto-Installation
-AUTO_INSTALL_PNPM="true"             # Install pnpm locally if missing
-AUTO_INSTALL_NODE="true"             # Install Node.js locally if missing
-AUTO_INSTALL_DOCKER="true"           # Install Docker if available
-AUTO_INSTALL_PSQL="true"             # Install PostgreSQL if available
-
-# Logging Configuration
-LOG_LEVEL="status"                   # Options: quiet, status, verbose
-LOG_FORMAT="plain"                   # Options: plain, json
-LOG_ROTATE_DAYS="30"                 # Rotate logs after 30 days
-LOG_CLEANUP_DAYS="90"                # Delete logs older than 90 days
-
-# Docker Configuration
-ENABLE_DOCKER="true"                 # Use Docker containers
-DOCKER_EXEC_MODE="container"         # Options: host, container
-ENABLE_REDIS="false"                 # Add Redis service
-DOCKER_REGISTRY="ghcr.io"            # Container registry
-DOCKER_BUILDKIT="1"                  # Use BuildKit for faster builds
-
-# Safety & Behavior
-GIT_SAFETY="true"                    # Require clean git repo
-ALLOW_DIRTY="false"                  # Override git safety
-NON_INTERACTIVE="false"              # CI/automation mode
-MAX_CMD_SECONDS="960"                # Timeout for commands (16 minutes)
-BOOTSTRAP_RESUME_MODE="skip"         # Options: skip, force
-```
-
-### Section 3: System Configuration
-
-Rarely changed - framework versions and project structure:
-
-```bash
-# Framework & Tool Versions
-NODE_VERSION="20.18.1"
-PNPM_VERSION="9.15.0"
-NEXT_VERSION="15"
-POSTGRES_VERSION="16"
-PGVECTOR_IMAGE="pgvector/pgvector:pg16"
-
-# Project Structure
-PROJECT_ROOT="."
-OMNIFORGE_DIR="_build/omniforge"
-TOOLS_DIR=".tools"
-
-# Installation Directories
-INSTALL_DIR_TEST="./test/install-1"
-INSTALL_DIR_PROD="./app"
-
-# Source Directory Structure
-SRC_DIR="src"
-SRC_APP_DIR="src/app"
-SRC_COMPONENTS_DIR="src/components"
-SRC_LIB_DIR="src/lib"
-SRC_DB_DIR="src/db"
-SRC_STYLES_DIR="src/styles"
-SRC_HOOKS_DIR="src/hooks"
-SRC_TYPES_DIR="src/types"
-SRC_STORES_DIR="src/stores"
-PUBLIC_DIR="public"
-TEST_DIR="__tests__"
-E2E_DIR="e2e"
-
-# Local Tools Paths
-NODE_LOCAL_DIR=".tools/node"
-NODE_LOCAL_BIN=".tools/node/bin/node"
-PNPM_LOCAL_DIR=".tools/pnpm"
-PNPM_LOCAL_BIN=".tools/pnpm/bin/pnpm"
-TOOLS_ACTIVATE_SCRIPT=".toolsrc"
-```
-
-### Section 4: Phase Metadata
-
-Drives phase discovery and execution:
-
-```bash
-# Phase definition format:
-PHASE_METADATA_0="number:0|name:Project Foundation|description:Initialize Next.js..."
-
-# Phase configuration (timeout, prerequisites, dependencies)
-PHASE_CONFIG_00_FOUNDATION="enabled:true|timeout:300|prereq:strict|deps:node:20,pnpm:9"
-
-# Packages for this phase
-PHASE_PACKAGES_00_FOUNDATION="PKG_NEXT|PKG_TYPESCRIPT|PKG_TYPES_NODE|PKG_TYPES_REACT"
-
-# Scripts to execute (multiline)
-BOOTSTRAP_PHASE_00_FOUNDATION="
-foundation/init-nextjs.sh
-foundation/init-typescript.sh
-foundation/init-directory-structure.sh
-"
-```
-
-### Section 5: Stack Profiles
-
-Pre-configured feature sets for common use cases:
-
-```bash
-# Each profile defines which features are enabled/disabled
-# Example: ai_automation profile enables AI and automation features
-# Example: api_only profile disables UI components for API-only apps
-```
-
-### Section 6: Package Definitions
-
-NPM package versions (60+ definitions):
-
-```bash
-# Core Framework
-PKG_NEXT="next@15"
-PKG_REACT="react@19"
-PKG_TYPESCRIPT="typescript@5"
-
-# Database
-PKG_DRIZZLE_ORM="drizzle-orm"
-PKG_POSTGRES_JS="postgres"
-
-# AI & Auth
-PKG_VERCEL_AI="ai"
-PKG_NEXT_AUTH="next-auth@beta"
-
-# UI & State
-PKG_ZUSTAND="zustand"
-PKG_TAILWINDCSS="tailwindcss"
-
-# Testing & Quality
-PKG_VITEST="vitest"
-PKG_PLAYWRIGHT="@playwright/test"
-PKG_ESLINT="eslint"
-
-# ... and 40+ more
-```
-
-### Loading Configuration
-
-```bash
-# In any OmniForge script:
-source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
-
-# Automatically loads:
-# - bootstrap.conf (main configuration)
-# - All 26 library modules
-# - Sets up all functions
-
-# Access settings:
-echo "App name: ${APP_NAME}"
-echo "Database: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
-
-# Override with environment:
-export APP_NAME="MyApp"
-export DB_PASSWORD="secret"
-```
-
----
+- **Canonical files (loaded by lib/bootstrap.sh)**:
+  - `omni.config` – Section 1 (Quick Start) and top-level app settings.
+  - `omni.settings.sh` – Advanced/system settings and derived values.
+  - `omni.profiles.sh` – Profile data (PROFILE_* arrays, AVAILABLE_PROFILES).
+  - `omni.phases.sh` – Phase metadata (PHASE_METADATA_*, PHASE_CONFIG_*, PHASE_PACKAGES_*, BOOTSTRAP_PHASE_*).
+- **Precedence**: Environment variables → omni.* values. `bootstrap.conf` is deprecated/stub only.
+- **Helpers**: Profile helpers live in `lib/omni_profiles.sh`; phase logic lives in `lib/phases.sh`.
+- **Examples**: Prefer omni.* example files; bootstrap.conf.example is legacy only.
 
 ## Phase System
 

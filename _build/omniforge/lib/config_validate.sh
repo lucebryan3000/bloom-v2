@@ -4,8 +4,8 @@
 # =============================================================================
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
-# Provides comprehensive validation of bootstrap.conf settings before
-# execution. Validates types, ranges, required fields, and cross-field
+# Provides comprehensive validation of OmniForge settings (omni.* + env)
+# before execution. Validates types, ranges, required fields, and cross-field
 # dependencies.
 #
 # Exports:

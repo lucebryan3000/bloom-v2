@@ -5,7 +5,7 @@
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Provides ASCII art logos for the menu system.
-# Logo selection controlled by OMNI_LOGO in bootstrap.conf
+# Logo selection controlled by OMNI_LOGO in omni.settings.sh (env overrides win)
 #
 # Options: block, gradient, shadow, simple, minimal
 #
