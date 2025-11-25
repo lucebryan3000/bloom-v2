@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# =============================================================================
+# omni.config.example
+# Canonical Section 1 (Quick Start) example for OmniForge.
+# Copy to omni.config and customize.
+# =============================================================================
+
+# --- Project Identity ---
+APP_NAME="YourApp"
+APP_VERSION="0.1.0"
+APP_DESCRIPTION="Built with OmniForge"
+
+# --- Installation Target ---
+# Options: "test" (installs to ./test/install-1) or "prod" (installs to ./app)
+INSTALL_TARGET="test"
+
+# --- Stack Profile ---
+# Options: ai_automation, fpa_dashboard, collab_editor, erp_gateway, asset_manager, custom_bos
+STACK_PROFILE="asset_manager"
+
+# --- Database Configuration ---
+DB_NAME="YourDB"
+DB_USER="your_user"
+DB_PASSWORD="change_me"
+DB_HOST="localhost"
+DB_PORT="5432"
+
+# --- Feature Flags ---
+ENABLE_AUTHJS="true"
+ENABLE_AI_SDK="true"
+ENABLE_PG_BOSS="true"
+ENABLE_SHADCN="true"
+ENABLE_ZUSTAND="true"
+ENABLE_PDF_EXPORTS="true"
+ENABLE_TEST_INFRA="true"
+ENABLE_CODE_QUALITY="true"

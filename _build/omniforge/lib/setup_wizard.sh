@@ -77,7 +77,7 @@ wizard_configure_project() {
 
     # Confirm
     echo "  [s] Save configuration"
-    echo "  [e] Edit full bootstrap.conf file"
+    echo "  [e] Edit omni.config file"
     echo "  [c] Cancel"
     echo ""
 

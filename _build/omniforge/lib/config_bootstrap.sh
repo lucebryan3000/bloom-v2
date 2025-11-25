@@ -25,6 +25,8 @@ _LIB_CONFIG_LOADED=1
 : "${SCRIPTS_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 : "${OMNI_CONFIG_PATH:=${SCRIPTS_DIR}/omni.config}"
 : "${OMNI_SETTINGS_PATH:=${SCRIPTS_DIR}/omni.settings.sh}"
+: "${OMNI_CONFIG_EXAMPLE:=${SCRIPTS_DIR}/omni.config.example}"
+: "${OMNI_SETTINGS_EXAMPLE:=${SCRIPTS_DIR}/omni.settings.example}"
 : "${OMNI_PROFILES_PATH:=${SCRIPTS_DIR}/omni.profiles.sh}"
 : "${OMNI_PHASES_PATH:=${SCRIPTS_DIR}/omni.phases.sh}"
 : "${NON_INTERACTIVE:=false}"
@@ -103,15 +105,25 @@ config_load() {
     local omni_profiles_path="${OMNI_PROFILES_PATH:-${SCRIPTS_DIR}/omni.profiles.sh}"
     local omni_phases_path="${OMNI_PHASES_PATH:-${SCRIPTS_DIR}/omni.phases.sh}"
 
-    # Require omni.config (Section 1)
+    # Ensure omni.config exists (Section 1)
     if [[ ! -f "$omni_config_path" ]]; then
-        log_error "omni.config not found at $omni_config_path (Section 1 must live in omni.config)"
-        return 1
+        if [[ -f "${OMNI_CONFIG_EXAMPLE:-}" ]]; then
+            log_info "omni.config missing; copying from example ${OMNI_CONFIG_EXAMPLE}"
+            cp "${OMNI_CONFIG_EXAMPLE}" "$omni_config_path"
+        else
+            log_error "omni.config not found at $omni_config_path and no example at ${OMNI_CONFIG_EXAMPLE:-<unset>}"
+            return 1
+        fi
     fi
-    # Require omni.settings (advanced/system)
+    # Ensure omni.settings exists (advanced/system)
     if [[ ! -f "$omni_settings_path" ]]; then
-        log_error "omni.settings.sh not found at $omni_settings_path (advanced settings are required)"
-        return 1
+        if [[ -f "${OMNI_SETTINGS_EXAMPLE:-}" ]]; then
+            log_info "omni.settings.sh missing; copying from example ${OMNI_SETTINGS_EXAMPLE}"
+            cp "${OMNI_SETTINGS_EXAMPLE}" "$omni_settings_path"
+        else
+            log_error "omni.settings.sh not found at $omni_settings_path and no example at ${OMNI_SETTINGS_EXAMPLE:-<unset>}"
+            return 1
+        fi
     fi
     # Require profile and phase data
     if [[ ! -f "$omni_profiles_path" ]]; then

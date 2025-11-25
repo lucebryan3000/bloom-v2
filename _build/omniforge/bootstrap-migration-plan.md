@@ -350,6 +350,13 @@ When we ask you to run **Phase 3**, stay within this scope.
   - `omni.phases.sh` is created in Phase 3.
   - `omni.settings.sh` is created in Phase 4 if needed.
   - Each file is created and populated with data copied from `bootstrap.conf` **before** consumers are rewired in that domain.
+- **Examples/first-run artifacts:**
+  - Replace `bootstrap.conf.example` with `omni.config.example`, `omni.settings.example`, `omni.profiles.example`, `omni.phases.example` (or remove the legacy example entirely).
+  - Update any first-run/setup flows to prefer the omni.* examples.
+- **Docs/templates sweep:**
+  - Update/remove lingering `bootstrap.conf` references in docs and example templates (example-files/, docs/DEPENDENCY-*, LOGGING, etc.) to reflect omni.* as canonical.
+- **First-run/index flows:**
+  - Ensure config_bootstrap/setup_wizard/indexer/auto_detect use omni.* example files (not bootstrap.conf.example) and handle missing omni.* by creating from those examples.
 - **Data targets / layout:**
   - Use `omni.settings.sh` for all non–Section 1 settings and derived values (PROJECT_ROOT, paths, safety flags, logging/docker/tool settings, versions, env var names, derived values like INSTALL_DIR/markers).
   - Keep `omni.config` as Section 1 + top-level app-facing settings.
