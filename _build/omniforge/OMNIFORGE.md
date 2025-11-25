@@ -358,13 +358,6 @@ _build/omniforge/
 │
 ├── settings-files/                         # App-specific settings
 │   └── [IDE & environment configs...]
-│
-├── tools/                                  # Utility scripts
-│   ├── validate-templates.sh               # Validate template deployment
-│   ├── refactor-install-dir.sh             # Refactor install locations
-│   ├── test-local-tools.sh                 # Test local tool installation
-│   └── [others...]
-│
 ├── omni.sh                                 # Main CLI entry point (wrapper)
 ├── omni.config                             # Section 1 config (app-facing)
 ├── omni.settings.sh                        # Advanced/system settings
@@ -843,6 +836,12 @@ omni status  # Uses state_show_status() internally
 # Reset if needed
 state_clear_all
 ```
+
+#### Bootstrap State File (.bootstrap_state)
+- **Location**: `${BOOTSTRAP_STATE_FILE:-${PROJECT_ROOT}/.bootstrap_state}`; auto-created by `state_init`.
+- **Purpose**: Records each successful script as `script-path=success:<timestamp>` (paths are relative to `tech_stack/`) so reruns can skip completed work.
+- **Resume behavior**: With `BOOTSTRAP_RESUME_MODE=skip` (default), `phase_execute` skips any script already in the file; set `force` to re-run everything regardless of state.
+- **Resetting**: Delete the file or call `state_clear_all` to force a clean run. `omni menu` clean levels 2+ and `omni reset` also remove it (after backing up) so bootstrap starts from scratch.
 
 ### Execution Management
 
