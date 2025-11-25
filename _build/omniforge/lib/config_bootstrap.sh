@@ -63,7 +63,7 @@ _config_first_run_basic() {
     _config_prompt_basic "PROJECT_ROOT" "Project root directory" "."
     _config_prompt_basic "DB_NAME" "Database name" "bloom2_db"
     _config_prompt_basic "DB_USER" "Database user" "bloom2"
-    _config_prompt_basic "DB_PASSWORD" "Database password" "change_me"
+    _config_prompt_basic "DB_PASSWORD" "Database password (leave blank to auto-generate)" ""
 
     echo ""
     log_info "Configuration saved to omni.config"
@@ -226,14 +226,6 @@ config_validate() {
     if [[ ! -d "${PROJECT_ROOT}" ]]; then
         log_error "PROJECT_ROOT does not exist: ${PROJECT_ROOT}"
         return 1
-    fi
-
-    # Validate password in non-interactive mode
-    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
-        if [[ "${DB_PASSWORD:-}" == "change_me" ]]; then
-            log_error "DB_PASSWORD is still 'change_me' in NON_INTERACTIVE mode"
-            return 1
-        fi
     fi
 
     log_debug "PROJECT_ROOT: ${PROJECT_ROOT}"

@@ -50,12 +50,15 @@ fi
 : "${PNPM_VERSION:=9}"
 : "${DB_NAME:?DB_NAME not set}"
 : "${DB_USER:?DB_USER not set}"
-: "${DB_PASSWORD:?DB_PASSWORD not set}"
 : "${DB_HOST:=postgres}"
 : "${DB_PORT:=5432}"
 : "${POSTGRES_VERSION:=16}"
 : "${PGVECTOR_IMAGE:=pgvector/pgvector:pg${POSTGRES_VERSION}}"
 : "${ENABLE_REDIS:=false}"
+
+secrets_ensure_core_env
+
+ENV_FILE_PATH="${APP_ENV_FILE:-.env}"
 
 cd "$INSTALL_DIR"
 
@@ -103,9 +106,10 @@ services:
       # Named volume for pnpm store
       - pnpm_store:/root/.local/share/pnpm/store
     working_dir: /workspace
+    env_file:
+      - ${ENV_FILE_PATH}
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://\${DB_USER:-${DB_USER}}:\${DB_PASSWORD:-${DB_PASSWORD}}@postgres:\${DB_PORT:-5432}/\${DB_NAME:-${DB_NAME}}
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
     depends_on:
@@ -121,10 +125,12 @@ services:
     image: ${PGVECTOR_IMAGE}
     container_name: ${CONTAINER_PREFIX}_postgres
     restart: unless-stopped
+    env_file:
+      - ${ENV_FILE_PATH}
     environment:
-      POSTGRES_DB: \${DB_NAME:-${DB_NAME}}
-      POSTGRES_USER: \${DB_USER:-${DB_USER}}
-      POSTGRES_PASSWORD: \${DB_PASSWORD:-${DB_PASSWORD}}
+      POSTGRES_DB: \${DB_NAME}
+      POSTGRES_USER: \${DB_USER}
+      POSTGRES_PASSWORD: \${DB_PASSWORD}
     ports:
       - "\${DB_PORT:-${DB_PORT}}:5432"
     volumes:

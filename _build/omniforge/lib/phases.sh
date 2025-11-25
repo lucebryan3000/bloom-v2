@@ -398,6 +398,12 @@ phase_execute_all() {
     # Initialize error tracking
     _execution_reset
 
+    # Ensure app env and secrets exist before running phases
+    if ! secrets_ensure_core_env; then
+        log_error "Failed to prepare app env/secrets"
+        return 1
+    fi
+
     local phases
     # Save IFS and restore to default for word splitting
     local OLD_IFS="$IFS"

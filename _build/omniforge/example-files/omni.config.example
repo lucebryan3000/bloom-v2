@@ -21,7 +21,7 @@ STACK_PROFILE="asset_manager"
 # --- Database Configuration ---
 DB_NAME="YourDB"
 DB_USER="your_user"
-DB_PASSWORD="change_me"
+DB_PASSWORD=""
 DB_HOST="localhost"
 DB_PORT="5432"
 

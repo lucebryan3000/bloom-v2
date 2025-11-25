@@ -70,27 +70,21 @@ fi
 # 3) Env wiring
 ########################################
 
-ENV_FILE="${REPO_ROOT}/.env.local"
-touch "${ENV_FILE}"
+ENV_FILE="$(secrets_resolve_env_file "${APP_ENV_FILE:-.env}")"
+log_step "Ensuring MinIO env vars in ${ENV_FILE}"
 
-add_env_var() {
+seed_env_var() {
   local key="$1"
   local default="$2"
-
-  if grep -q "^${key}=" "${ENV_FILE}"; then
-    warn "Env var ${key} already exists in .env.local; leaving as-is."
-  else
-    echo "${key}=${default}" >> "${ENV_FILE}"
-    log "Added ${key} to .env.local"
-  fi
+  ensure_env_var "$key" "$default" "$ENV_FILE"
 }
 
-add_env_var "MINIO_ENDPOINT" "minio"
-add_env_var "MINIO_PORT" "9000"
-add_env_var "MINIO_ACCESS_KEY" "minioadmin"
-add_env_var "MINIO_SECRET_KEY" "minioadmin"
-add_env_var "MINIO_USE_SSL" "false"
-add_env_var "EXPORT_BUCKET_NAME" "bloom-exports"
+seed_env_var "MINIO_ENDPOINT" "minio"
+seed_env_var "MINIO_PORT" "9000"
+seed_env_var "MINIO_ACCESS_KEY" "minioadmin"
+seed_env_var "MINIO_SECRET_KEY" "minioadmin"
+seed_env_var "MINIO_USE_SSL" "false"
+seed_env_var "EXPORT_BUCKET_NAME" "bloom-exports"
 
 log "MinIO setup complete.
 

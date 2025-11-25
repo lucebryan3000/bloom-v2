@@ -68,6 +68,9 @@ source "${_COMMON_LIB_DIR}/utils.sh"
 # 5. Config loading (depends on logging)
 source "${_COMMON_LIB_DIR}/config_bootstrap.sh"
 
+# 5b. Secrets helpers (depends on logging, config)
+source "${_COMMON_LIB_DIR}/secrets.sh"
+
 # 6. State tracking (depends on logging)
 source "${_COMMON_LIB_DIR}/state.sh"
 

@@ -29,6 +29,7 @@
 : "${DOCKER_EXEC_MODE:=container}"              # Options: host, container
 : "${DOCKER_COMPOSE_FILE:=docker-compose.yml}"
 : "${APP_SERVICE_NAME:=app}"
+: "${APP_ENV_FILE:=.env}"
 : "${ENABLE_REDIS:=false}"
 : "${DOCKER_REGISTRY:=ghcr.io}"
 : "${DOCKER_BUILDKIT:=1}"

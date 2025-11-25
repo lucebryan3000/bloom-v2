@@ -48,9 +48,10 @@ fi
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
 : "${DB_NAME:?DB_NAME not set}"
 : "${DB_USER:?DB_USER not set}"
-: "${DB_PASSWORD:?DB_PASSWORD not set}"
 : "${DB_HOST:=localhost}"
 : "${DB_PORT:=5432}"
+
+secrets_ensure_core_env
 
 cd "$INSTALL_DIR"
 

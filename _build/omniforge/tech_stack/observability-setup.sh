@@ -73,9 +73,11 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: ${COMPOSE_PROJECT_NAME:-app}-grafana
+    env_file:
+      - .env
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
     ports:
       - "3001:3000"
     networks:
@@ -89,18 +91,11 @@ networks:
 YAML
 fi
 
-ENV_FILE="${REPO_ROOT}/.env.local"
-touch "${ENV_FILE}"
+ENV_FILE="$(secrets_resolve_env_file "${APP_ENV_FILE:-.env}")"
+log_step "Ensuring Grafana credentials in ${ENV_FILE}"
 
-if ! grep -q "^GRAFANA_USER=" "${ENV_FILE}"; then
-  echo "GRAFANA_USER=admin" >> "${ENV_FILE}"
-  log "Added GRAFANA_USER to .env.local"
-fi
-
-if ! grep -q "^GRAFANA_PASSWORD=" "${ENV_FILE}"; then
-  echo "GRAFANA_PASSWORD=admin" >> "${ENV_FILE}"
-  log "Added GRAFANA_PASSWORD to .env.local"
-fi
+ensure_env_var "GRAFANA_USER" "admin" "$ENV_FILE"
+ensure_random_secret "GRAFANA_PASSWORD" "$ENV_FILE" 16
 
 log "Prometheus + Grafana setup complete.
 

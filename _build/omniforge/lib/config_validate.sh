@@ -143,17 +143,9 @@ _validate_database() {
 
     # DB_PASSWORD
     if [[ -z "${DB_PASSWORD:-}" ]]; then
-        _validation_error "DB_PASSWORD" "Required field is empty"
-        ((errors++))
-    elif [[ "${DB_PASSWORD}" == "change_me" ]]; then
-        if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
-            _validation_error "DB_PASSWORD" "Still set to 'change_me' in non-interactive mode"
-            ((errors++))
-        else
-            _validation_warn "DB_PASSWORD" "Still set to default 'change_me'"
-        fi
+        _validation_warn "DB_PASSWORD" "Not set in config; a secure value will be generated into ${APP_ENV_FILE:-.env}."
     elif [[ ${#DB_PASSWORD} -lt 8 ]]; then
-        _validation_warn "DB_PASSWORD" "Weak password (less than 8 characters)"
+        _validation_warn "DB_PASSWORD" "Weak password (less than 8 characters); consider leaving blank to auto-generate."
     fi
 
     # DB_PORT
