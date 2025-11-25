@@ -83,6 +83,16 @@ if [[ -f "${OF_ROOT_DIR}/lib/omni_profiles.sh" ]]; then
   . "${OF_ROOT_DIR}/lib/omni_profiles.sh"
 fi
 
+# Load phase metadata (canonical)
+OMNI_PHASES_PATH="${OMNI_PHASES_PATH:-${OF_ROOT_DIR}/omni.phases.sh}"
+if [[ -f "$OMNI_PHASES_PATH" ]]; then
+  # shellcheck source=/dev/null
+  . "$OMNI_PHASES_PATH"
+else
+  echo "lib/bootstrap.sh: missing omni.phases.sh at $OMNI_PHASES_PATH (phase metadata is required)" >&2
+  exit 1
+fi
+
 # Delegate to common.sh for full loader stack
 # shellcheck source=/dev/null
 . "${SCRIPTS_DIR}/lib/common.sh"

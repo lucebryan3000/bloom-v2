@@ -4,7 +4,7 @@
 # =============================================================================
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
-# Pure functions for discovering and executing phases from bootstrap.conf.
+# Pure functions for discovering and executing phases from omni.phases.sh.
 # Reads PHASE_METADATA_N variables dynamically. No execution on source.
 #
 # Exports:
