@@ -71,6 +71,25 @@ omni build
 pnpm dev  # Start development server
 ```
 
+## Docker-First Bootstrap Model
+
+- Host entrypoint stays in `_build/omniforge/omni.sh`; menus/status still work without Docker running.
+- Starting bootstrap (`omni run` or menu Option 1) performs a Docker preflight (CLI + daemon + compose), stages templates, then re-execs inside the `app` container with `INSIDE_OMNI_DOCKER=1`.
+- Core services started for bootstrap: `app` + `postgres` (plus profile-gated services) from `docker-compose.yml` staged from `tech_stack/docker/`; env values come from `<project root>/${APP_ENV_FILE:-.env}` (merges `.env.local` for missing keys only).
+- Secrets are generated into `.env` (e.g., `DB_PASSWORD`, `ADMIN_INITIAL_PASSWORD`). `.env` is the long-term source of truth; `.env.local` is legacy/merge-only.
+- Docker-first is default; host mode is legacy/debug. `.tools` is host-only; container mode expects pnpm/node in the image (see `Dockerfile.dev`).
+- Re-run behavior: bootstrap detects prior completion and exits with guidance to delete/rebuild instead of reapplying.
+- Post-bootstrap: run the app with `docker compose up -d`; OmniForge can be removed once outputs are committed.
+
+## Migrating from Host-Based OmniForge
+
+1. Ensure Docker is installed and the daemon is running (`docker info`).
+2. Run the Docker-first bootstrap once (`omni run` or menu Option 1) to stage Dockerfile.dev, docker-compose.yml, and generate the app `.env`.
+3. Record admin credentials (user `admin`, password stored in `.env` under `ADMIN_INITIAL_PASSWORD`).
+4. Start the stack with `docker compose up -d app postgres` (or `omni stack up`) and validate the app/DB locally.
+5. CI: run with `DOCKER_EXEC_MODE=host` or `docker compose up -d app postgres && docker compose exec app ./_build/omniforge/omni.sh --run`.
+6. Treat `.tools` as legacy (host-only). After validating the generated app, commit the outputs and optionally delete `_build/omniforge`.
+
 ---
 
 ## What is OmniForge?
@@ -85,7 +104,7 @@ OmniForge is a **production-grade, phase-based project initialization framework*
 - **Deterministic**: Same inputs always produce identical outputs
 - **Resume-Capable**: Interrupted runs resume from last successful phase via state tracking
 - **Extensible**: Add custom phases, tech stacks, or profiles without modifying core
-- **Self-Contained**: Project-local Node.js and pnpm installation in `.tools/` directory
+- **Self-Contained**: Project-local Node.js and pnpm in `.tools/` for host mode; Docker-first mode uses container-provided tools
 - **Modular**: 26 library modules with single responsibilities, no circular dependencies
 - **Idempotent**: Running the same phase multiple times is safe; skips already-completed tasks
 

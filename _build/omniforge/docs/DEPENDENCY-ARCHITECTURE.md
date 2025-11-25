@@ -53,6 +53,13 @@ pnpm --version
 node --version
 ```
 
+### Docker-First Notes
+
+- Bootstrap runs inside the Docker `app` container by default (host menu/status remain host-only).
+- Docker preflight (CLI + daemon + compose) happens when starting a run; templates are staged before re-exec.
+- The project `.env` (\`${APP_ENV_FILE:-.env}\`) is the canonical source of truth; `.env.local` is merged for missing keys only. `.tools` is legacy/host-only in container mode.
+- Re-run behavior is detect-and-exit: delete/rebuild to apply new configuration.
+
 ---
 
 ## Architecture Overview
