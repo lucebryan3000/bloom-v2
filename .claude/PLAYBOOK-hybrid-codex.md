@@ -923,8 +923,8 @@ codex exec -m gpt-5.1-codex-max \
 
 ## Related Documentation
 
-- [PLAYBOOK-documentation-update.md](PLAYBOOK-documentation-update.md) - Original multi-agent workflow (OmniForge-specific)
+- [CLAUDE.md](CLAUDE.md) - Project-specific Claude instructions
 - [../_build/omniforge/OMNIFORGE.md](../_build/omniforge/OMNIFORGE.md) - OmniForge comprehensive docs
 - [../_build/omniforge/bootstrap.conf](../_build/omniforge/bootstrap.conf) - Configuration reference
-- [CLAUDE.md](CLAUDE.md) - Project-specific Claude instructions
 - Codex CLI docs: Run `codex --help` for command reference
+- [archive/PLAYBOOK-documentation-update.md](archive/PLAYBOOK-documentation-update.md) - Original multi-agent workflow (archived)

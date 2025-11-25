@@ -45,33 +45,40 @@ validate_bash_file() {
     warn "validate_bash_file: missing file $f"
     return 0
   fi
-  if ! bash -n "$f" 2>/tmp/omniforge_bash_check.err; then
+
+  local tmp
+  tmp="$(mktemp /tmp/omniforge_bash_check.XXXXXX 2>/dev/null)" || {
+    warn "validate_bash_file: could not allocate temp file; skipping bash -n for $f"
+    return 1
+  }
+
+  if ! bash -n "$f" 2>"$tmp"; then
     warn "bash -n failed for $f"
     warn "---- bash -n output ----"
-    sed 's/^/[bash -n] /' /tmp/omniforge_bash_check.err >&2 || true
-    rm -f /tmp/omniforge_bash_check.err || true
+    sed 's/^/[bash -n] /' "$tmp" >&2 || true
+    rm -f "$tmp" || true
     return 1
   fi
-  rm -f /tmp/omniforge_bash_check.err || true
+  rm -f "$tmp" || true
   return 0
 }
 
 ensure_git_safety_and_branch() {
   # Only do this if we’re in a git repo
-  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    warn "Not in a git repository; skipping branch and clean-state checks."
+  if ! git -C "$OMNI_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    warn "Not in a git repository at $OMNI_ROOT; skipping branch and clean-state checks."
     return 0
   fi
 
-  # Ensure clean state under _build/omniforge (current directory)
+  # Ensure clean state under _build/omniforge (rooted at OMNI_ROOT)
   local dirty
-  dirty="$(git status --porcelain .)"
+  dirty="$(git -C "$OMNI_ROOT" status --porcelain .)"
   if [[ -n "$dirty" ]]; then
-    err "Uncommitted changes under $(pwd). Commit or stash before running this refactor."
+    err "Uncommitted changes under $OMNI_ROOT. Commit or stash before running this refactor."
   fi
 
   local current_branch
-  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  current_branch="$(git -C "$OMNI_ROOT" rev-parse --abbrev-ref HEAD)"
 
   # If on main/master, auto-create a feature branch with numeric suffix
   if [[ "$current_branch" == "main" || "$current_branch" == "master" ]]; then
@@ -79,14 +86,14 @@ ensure_git_safety_and_branch() {
     local candidate="$base"
     local n=1
 
-    while git rev-parse --verify --quiet "refs/heads/$candidate" >/dev/null; do
+    while git -C "$OMNI_ROOT" rev-parse --verify --quiet "refs/heads/$candidate" >/dev/null; do
       n=$((n + 1))
       candidate="${base}-${n}"
     done
 
     log "Current branch is '$current_branch'. Creating feature branch '$candidate' for refactor."
-    git checkout -b "$candidate"
-    log "Now on branch: $(git rev-parse --abbrev-ref HEAD)"
+    git -C "$OMNI_ROOT" checkout -b "$candidate"
+    log "Now on branch: $(git -C "$OMNI_ROOT" rev-parse --abbrev-ref HEAD)"
   else
     log "Using existing branch: $current_branch"
   fi
@@ -143,9 +150,9 @@ EOF
 
     # Copy SECTION 1 body from bootstrap.conf
     awk '
-      /SECTION 1: QUICK START - USER CONFIGURABLE/ { in=1 }
-      /SECTION 2: ADVANCED SETTINGS/ { if (in) exit }
-      in { print }
+      /SECTION 1: QUICK START - USER CONFIGURABLE/ { in_section=1 }
+      /SECTION 2: ADVANCED SETTINGS/ { if (in_section) exit }
+      in_section { print }
     ' "$BOOTSTRAP_CONF" >>"$OMNI_CONFIG"
   fi
 
@@ -170,11 +177,11 @@ EOF
     # Extract the three functions from bootstrap.conf and append to omni_profiles.sh
     # We rely on function definitions of the form: name() { ... }
     awk '
-      /^apply_stack_profile\(\)\s*\{/      { in=1; depth=0 }
-      /^get_profile_by_number\(\)\s*\{/    { in=1; depth=0 }
-      /^get_profile_metadata\(\)\s*\{/     { in=1; depth=0 }
+      /^[[:space:]]*apply_stack_profile[[:space:]]*\(\)[[:space:]]*\{/   { capture=1; depth=0 }
+      /^[[:space:]]*get_profile_by_number[[:space:]]*\(\)[[:space:]]*\{/ { capture=1; depth=0 }
+      /^[[:space:]]*get_profile_metadata[[:space:]]*\(\)[[:space:]]*\{/  { capture=1; depth=0 }
 
-      in {
+      capture {
         print
         # crude brace counter to find function end
         for (i=1; i<=NF; i++) {
@@ -186,7 +193,7 @@ EOF
         }
         if (depth <= 0 && /\}/) {
           print ""  # blank line between functions
-          in=0
+          capture=0
           depth=0
         }
       }
