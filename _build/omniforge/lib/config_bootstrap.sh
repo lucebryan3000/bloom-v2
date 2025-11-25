@@ -34,7 +34,7 @@ _LIB_CONFIG_LOADED=1
 # =============================================================================
 
 # Run first-time setup using the setup wizard
-# This is called when no bootstrap.conf exists
+# This is called when config files are missing
 _config_first_run() {
     # Check if setup wizard is available
     if type setup_run_first_time &>/dev/null; then
@@ -92,7 +92,7 @@ _config_prompt_basic() {
 # CONFIG LOADING
 # =============================================================================
 
-# Load configuration from bootstrap.conf
+# Load configuration from omni.* files
 # Usage: config_load
 config_load() {
     log_debug "Loading configuration..."
@@ -235,8 +235,7 @@ config_validate() {
 # Apply stack profile settings
 # Handles BOS profiles: ai_automation, fpa_dashboard, collab_editor,
 # erp_gateway, asset_manager, custom_bos
-# Note: The data-driven apply_stack_profile() from bootstrap.conf uses
-# associative arrays which don't survive being sourced inside a function.
+# Note: The data-driven apply_stack_profile() helpers live in lib/omni_profiles.sh.
 # This fallback provides the same functionality with explicit case handling.
 # Usage: config_apply_profile
 config_apply_profile() {
