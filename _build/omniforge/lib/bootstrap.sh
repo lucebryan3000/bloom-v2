@@ -36,6 +36,13 @@ else
   exit 1
 fi
 
+# Optional override layer for Section 1 (QUICK START) and related settings
+OMNI_CONFIG_PATH="${OMNI_CONFIG_PATH:-${OF_ROOT_DIR}/omni.config}"
+if [[ -f "$OMNI_CONFIG_PATH" ]]; then
+  # shellcheck source=/dev/null
+  . "$OMNI_CONFIG_PATH"
+fi
+
 # Load staged profile helpers (data comes from bootstrap.conf)
 if [[ -f "${OF_ROOT_DIR}/lib/omni_profiles.sh" ]]; then
   # shellcheck source=/dev/null
