@@ -474,8 +474,10 @@ phase_list_all() {
         echo "Phase $phase_num: $name [$enabled]"
         [[ -n "$desc" ]] && echo "  Description: $desc"
 
-        local scripts
-        scripts=$(phase_get_scripts "$phase_num")
+        local scripts=""
+        if [[ "$enabled" == "enabled" ]]; then
+            scripts=$(phase_get_scripts "$phase_num") || scripts=""
+        fi
         local count=0
 
         while IFS= read -r script; do
