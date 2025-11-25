@@ -42,6 +42,35 @@ readonly CODENAME="OmniForge"
 export TERM
 
 # =============================================================================
+# INSTALL PLAN LOGGING
+# =============================================================================
+
+_log_install_plan() {
+    log_info "Profile: ${STACK_PROFILE:-full}"
+
+    local phases
+    local OLD_IFS="$IFS"
+    IFS=' ' 
+    read -ra phases <<< "$(phase_discover)"
+    IFS="$OLD_IFS"
+
+    for p in "${phases[@]}"; do
+        if ! phase_is_enabled "$p"; then
+            continue
+        fi
+        if [[ "$MODE" == "phase" && -n "$SINGLE_PHASE" && "$SINGLE_PHASE" != "$p" ]]; then
+            continue
+        fi
+
+        local name
+        name=$(phase_get_name "$p")
+        local scripts_count
+        scripts_count=$(phase_get_scripts "$p" | sed '/^$/d' | wc -l | tr -d ' ')
+        log_info "Plan: Phase ${p} (${name}) - ${scripts_count} script(s)"
+    done
+}
+
+# =============================================================================
 # PATH SETUP
 # =============================================================================
 
@@ -372,6 +401,8 @@ main() {
     log_info "  Mode: $([ "${DRY_RUN:-false}" == "true" ] && echo "dry-run" || echo "live")"
     log_info "  Profile: ${STACK_PROFILE:-full}"
     log_info "  Resume: ${BOOTSTRAP_RESUME_MODE:-skip}"
+    echo ""
+    _log_install_plan
     echo ""
 
     # Initialize execution statistics
