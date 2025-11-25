@@ -31,10 +31,25 @@ _LIB_PKG_INSTALL_LOADED=1
 readonly PKG_CACHE_DIR="${SCRIPTS_DIR:-.}/.download-cache/npm"
 
 # Package manager (pnpm preferred, fallback to npm)
-PKG_MANAGER="pnpm"
-if ! command -v pnpm &>/dev/null; then
+PKG_MANAGER=""
+if command -v pnpm &>/dev/null; then
+    PKG_MANAGER="pnpm"
+elif command -v npm &>/dev/null; then
     PKG_MANAGER="npm"
 fi
+
+if [[ -n "${INSIDE_OMNI_DOCKER:-}" && "${PKG_MANAGER}" != "pnpm" ]]; then
+    log_error "[docker] pnpm is required inside the container. Rebuild Dockerfile.dev (Phase 2)."
+    PKG_MANAGER=""
+fi
+
+# Require an available package manager
+pkg_require_manager() {
+    if [[ -z "$PKG_MANAGER" ]]; then
+        log_error "Package manager not available. Ensure pnpm (in container mode) or pnpm/npm is installed."
+        return 1
+    fi
+}
 
 # =============================================================================
 # CACHE UTILITIES
@@ -83,6 +98,8 @@ pkg_install_from_cache() {
     local save_flag="${2:---save}"
     local tarball_path="${PKG_CACHE_DIR}/${tarball}"
 
+    pkg_require_manager || return 1
+
     if [[ ! -f "$tarball_path" ]]; then
         log_error "Cache tarball not found: $tarball"
         return 1
@@ -113,6 +130,8 @@ pkg_install() {
     local cache_installs=()
     local network_installs=()
     local failed=()
+
+    pkg_require_manager || return 1
 
     # Sort packages into cache vs network
     for pkg in "${packages[@]}"; do
@@ -165,6 +184,8 @@ pkg_install_dev() {
     local cache_installs=()
     local network_installs=()
     local failed=()
+
+    pkg_require_manager || return 1
 
     # Sort packages into cache vs network
     for pkg in "${packages[@]}"; do

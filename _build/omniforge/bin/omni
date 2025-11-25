@@ -224,24 +224,32 @@ main() {
     # Check if local Node.js/pnpm exist, install if missing
     # This ensures project is fully self-contained
 
-    if ! prereqs_local_node_exists || ! prereqs_local_pnpm_exists; then
-        log_info "Setting up project-local development tools..."
-        echo ""
-
-        if ! prereqs_local_setup_all; then
-            log_error "Failed to setup local tools"
-            log_info "See error details above"
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        log_info "[docker] Container mode detected (INSIDE_OMNI_DOCKER=1); using image-provided node/pnpm"
+        if ! command -v node >/dev/null 2>&1 || ! command -v pnpm >/dev/null 2>&1; then
+            log_error "[docker] pnpm/node not found in container. Rebuild Dockerfile.dev (Phase 2)."
             exit 1
         fi
+    else
+        if ! prereqs_local_node_exists || ! prereqs_local_pnpm_exists; then
+            log_info "Setting up project-local development tools..."
+            echo ""
 
-        echo ""
-    fi
+            if ! prereqs_local_setup_all; then
+                log_error "Failed to setup local tools"
+                log_info "See error details above"
+                exit 1
+            fi
 
-    # Activate local tools environment (prepend .tools/node/bin to PATH)
-    if [[ -f "${TOOLS_ACTIVATE_SCRIPT}" ]]; then
-        # shellcheck source=/dev/null
-        source "${TOOLS_ACTIVATE_SCRIPT}" > /dev/null 2>&1
-        log_debug "Local tools activated: Node.js $(node --version 2>/dev/null), pnpm $(pnpm --version 2>/dev/null)"
+            echo ""
+        fi
+
+        # Activate local tools environment (prepend .tools/node/bin to PATH)
+        if [[ -f "${TOOLS_ACTIVATE_SCRIPT}" ]]; then
+            # shellcheck source=/dev/null
+            source "${TOOLS_ACTIVATE_SCRIPT}" > /dev/null 2>&1
+            log_debug "Local tools activated: Node.js $(node --version 2>/dev/null), pnpm $(pnpm --version 2>/dev/null)"
+        fi
     fi
 
     # =========================================================================

@@ -97,7 +97,28 @@ _docker_services_for_bootstrap() {
         services+=("${APP_SERVICE_NAME}")
     fi
 
+    services+=("postgres")
+
     printf '%s\n' "${services[@]}"
+}
+
+# Wait for Postgres health (best-effort)
+_wait_for_postgres() {
+    local attempts=0
+    local max_attempts=20
+
+    while (( attempts < max_attempts )); do
+        if omni_docker_compose exec postgres pg_isready -U "${DB_USER:-postgres}" -d "${DB_NAME:-postgres}" >/dev/null 2>&1; then
+            log_info "Postgres is ready"
+            return 0
+        fi
+
+        sleep 2
+        attempts=$((attempts + 1))
+    done
+
+    log_warn "Postgres readiness check timed out; continuing."
+    return 1
 }
 
 # Ensure required Docker services are running before re-exec
@@ -117,6 +138,10 @@ _ensure_docker_services_running() {
     if ! omni_docker_compose up -d "${services[@]}"; then
         log_error "Failed to start required Docker services from ${compose_file}."
         return 1
+    fi
+
+    if printf '%s\n' "${services[@]}" | grep -q "^postgres$"; then
+        _wait_for_postgres || true
     fi
 
     return 0
@@ -149,6 +174,8 @@ _maybe_reexec_in_docker() {
     if ! require_docker; then
         _error_exit "Docker is required to bootstrap. Install Docker and ensure the daemon is running, then rerun omni (Option 1)." 1
     fi
+
+    secrets_ensure_core_env
 
     local services=()
     read -r -a services <<< "$(_docker_services_for_bootstrap)"

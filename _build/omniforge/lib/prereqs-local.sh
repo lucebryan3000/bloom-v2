@@ -26,8 +26,30 @@
 _LIB_PREREQS_LOCAL_LOADED=1
 
 # =============================================================================
-# DETECTION FUNCTIONS
+# DOCKER MODE SHORT-CIRCUIT
 # =============================================================================
+if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+    prereqs_local_node_exists() { command -v node >/dev/null 2>&1; }
+    prereqs_local_pnpm_exists() { command -v pnpm >/dev/null 2>&1; }
+    prereqs_local_node_version() { prereqs_local_node_exists && node --version 2>/dev/null | sed 's/v//'; }
+    prereqs_local_pnpm_version() { prereqs_local_pnpm_exists && pnpm --version 2>/dev/null; }
+    prereqs_local_check_versions() { prereqs_local_node_exists && prereqs_local_pnpm_exists; }
+    prereqs_local_install_node() { log_info "[docker] Using container Node.js"; }
+    prereqs_local_install_pnpm() { log_info "[docker] Using container pnpm"; }
+    prereqs_local_create_activate_script() { return 0; }
+    prereqs_local_activate() { return 0; }
+    prereqs_local_setup_all() {
+        log_info "[docker] Skipping host-local tool setup inside container"
+        if ! prereqs_local_node_exists || ! prereqs_local_pnpm_exists; then
+            log_error "[docker] Container missing node/pnpm. Rebuild Dockerfile.dev (Phase 2)."
+            return 1
+        fi
+        return 0
+    }
+    prereqs_local_status() { log_info "[docker] Container mode: using bundled node/pnpm"; }
+    return 0
+fi
+
 
 # Check if local Node.js is installed
 # Usage: prereqs_local_node_exists
