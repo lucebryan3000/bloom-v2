@@ -108,6 +108,19 @@ config_load() {
     fi
 
     # Save environment overrides (allow env vars to override config)
+    local section1_vars=(
+        APP_NAME APP_VERSION APP_DESCRIPTION
+        INSTALL_TARGET STACK_PROFILE
+        DB_NAME DB_USER DB_PASSWORD DB_HOST DB_PORT
+        ENABLE_AUTHJS ENABLE_AI_SDK ENABLE_PG_BOSS ENABLE_SHADCN
+        ENABLE_ZUSTAND ENABLE_PDF_EXPORTS ENABLE_TEST_INFRA ENABLE_CODE_QUALITY
+    )
+    declare -A saved_section1_env=()
+    for v in "${section1_vars[@]}"; do
+        if [[ -n "${v}" && -n "${!v+x}" ]]; then
+            saved_section1_env["$v"]="${!v}"
+        fi
+    done
     local saved_dry_run="${DRY_RUN:-}"
     local saved_allow_dirty="${ALLOW_DIRTY:-}"
     local saved_git_safety="${GIT_SAFETY:-}"
@@ -118,12 +131,25 @@ config_load() {
     # shellcheck source=/dev/null
     source "${BOOTSTRAP_CONF}"
 
+    # Optional overlay: omni.config (Section 1 overrides)
+    local omni_config_path="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/omni.config}"
+    if [[ -f "$omni_config_path" ]]; then
+        # shellcheck source=/dev/null
+        source "$omni_config_path"
+    fi
+
     # Restore environment overrides (env vars take precedence over config file)
+    for v in "${section1_vars[@]}"; do
+        if [[ -n "${saved_section1_env[$v]+x}" ]]; then
+            export "${v}=${saved_section1_env[$v]}"
+        fi
+    done
     [[ -n "${saved_dry_run}" ]] && DRY_RUN="${saved_dry_run}"
     [[ -n "${saved_allow_dirty}" ]] && ALLOW_DIRTY="${saved_allow_dirty}"
     [[ -n "${saved_git_safety}" ]] && GIT_SAFETY="${saved_git_safety}"
     [[ -n "${saved_verbose}" ]] && VERBOSE="${saved_verbose}"
     [[ -n "${saved_log_format}" ]] && LOG_FORMAT="${saved_log_format}"
+    unset section1_vars saved_section1_env v omni_config_path
 
     # Set defaults for optional vars
     : "${DRY_RUN:=false}"
