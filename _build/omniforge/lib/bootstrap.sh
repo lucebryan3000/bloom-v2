@@ -13,40 +13,32 @@ if [[ -n "${OF_BOOTSTRAP_LOADED:-}" ]]; then
 fi
 OF_BOOTSTRAP_LOADED=1
 
+set -Eeuo pipefail
+IFS=$'\n\t'
+
 # Resolve Omniforge root directory
 OF_ROOT_DIR="${OF_ROOT_DIR:-$(cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-OF_CONF_PATH="${OF_CONF_PATH:-"${OF_ROOT_DIR}/bootstrap.conf"}"
+
+# Align with common.sh expectations
+SCRIPTS_DIR="${SCRIPTS_DIR:-${OF_ROOT_DIR}}"
+BOOTSTRAP_CONF="${BOOTSTRAP_CONF:-${SCRIPTS_DIR}/bootstrap.conf}"
+BOOTSTRAP_CONF_EXAMPLE="${BOOTSTRAP_CONF_EXAMPLE:-${SCRIPTS_DIR}/bootstrap.conf.example}"
+export SCRIPTS_DIR BOOTSTRAP_CONF BOOTSTRAP_CONF_EXAMPLE
 
 # Load canonical config (bootstrap.conf remains canonical in this phase)
-if [[ -f "$OF_CONF_PATH" ]]; then
+if [[ -f "$BOOTSTRAP_CONF" ]]; then
   set -a
   # shellcheck source=/dev/null
-  . "$OF_CONF_PATH"
+  . "$BOOTSTRAP_CONF"
   set +a
 else
-  echo "lib/bootstrap.sh: missing config at $OF_CONF_PATH" >&2
+  echo "lib/bootstrap.sh: missing config at $BOOTSTRAP_CONF" >&2
   exit 1
 fi
 
-# Helper for loading libs
-_of_load() {
-  # shellcheck source=/dev/null
-  . "${OF_ROOT_DIR}/lib/$1"
-}
-
-# Core libs (load if present)
-[[ -f "${OF_ROOT_DIR}/lib/common.sh"           ]] && _of_load "common.sh"
-[[ -f "${OF_ROOT_DIR}/lib/logging.sh"          ]] && _of_load "logging.sh"
-[[ -f "${OF_ROOT_DIR}/lib/utils.sh"            ]] && _of_load "utils.sh"
-[[ -f "${OF_ROOT_DIR}/lib/state.sh"            ]] && _of_load "state.sh"
-[[ -f "${OF_ROOT_DIR}/lib/settings_manager.sh" ]] && _of_load "settings_manager.sh"
-[[ -f "${OF_ROOT_DIR}/lib/scaffold.sh"         ]] && _of_load "scaffold.sh"
-[[ -f "${OF_ROOT_DIR}/lib/setup.sh"            ]] && _of_load "setup.sh"
-[[ -f "${OF_ROOT_DIR}/lib/log-rotation.sh"     ]] && _of_load "log-rotation.sh"
-
-# Optional prereq helpers
-[[ -f "${OF_ROOT_DIR}/lib/prereqs.sh"          ]] && _of_load "prereqs.sh"
-[[ -f "${OF_ROOT_DIR}/lib/prereqs-local.sh"    ]] && _of_load "prereqs-local.sh"
+# Delegate to common.sh for full loader stack
+# shellcheck source=/dev/null
+. "${SCRIPTS_DIR}/lib/common.sh"
 
 # Future hook points (only run if implemented)
 if declare -F of_state_init >/dev/null 2>&1; then
@@ -58,4 +50,3 @@ fi
 if declare -F of_logging_init >/dev/null 2>&1; then
   of_logging_init
 fi
-
