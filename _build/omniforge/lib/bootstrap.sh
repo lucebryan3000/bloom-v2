@@ -25,6 +25,21 @@ BOOTSTRAP_CONF="${BOOTSTRAP_CONF:-${SCRIPTS_DIR}/bootstrap.conf}"
 BOOTSTRAP_CONF_EXAMPLE="${BOOTSTRAP_CONF_EXAMPLE:-${SCRIPTS_DIR}/bootstrap.conf.example}"
 export SCRIPTS_DIR BOOTSTRAP_CONF BOOTSTRAP_CONF_EXAMPLE
 
+# Preserve environment overrides for Section 1 (QUICK START) values
+_OF_SECTION1_VARS=(
+  APP_NAME APP_VERSION APP_DESCRIPTION
+  INSTALL_TARGET STACK_PROFILE
+  DB_NAME DB_USER DB_PASSWORD DB_HOST DB_PORT
+  ENABLE_AUTHJS ENABLE_AI_SDK ENABLE_PG_BOSS ENABLE_SHADCN
+  ENABLE_ZUSTAND ENABLE_PDF_EXPORTS ENABLE_TEST_INFRA ENABLE_CODE_QUALITY
+)
+declare -A _OF_ENV_OVERRIDES=()
+for _v in "${_OF_SECTION1_VARS[@]}"; do
+  if [[ -n "${_v}" && -n "${!_v+x}" ]]; then
+    _OF_ENV_OVERRIDES["$_v"]="${!_v}"
+  fi
+done
+
 # Load canonical config (bootstrap.conf remains canonical in this phase)
 if [[ -f "$BOOTSTRAP_CONF" ]]; then
   set -a
@@ -42,6 +57,14 @@ if [[ -f "$OMNI_CONFIG_PATH" ]]; then
   # shellcheck source=/dev/null
   . "$OMNI_CONFIG_PATH"
 fi
+
+# Re-apply env overrides (env > omni.config > bootstrap.conf)
+for _v in "${_OF_SECTION1_VARS[@]}"; do
+  if [[ -n "${_OF_ENV_OVERRIDES[$_v]+x}" ]]; then
+    export "${_v}=${_OF_ENV_OVERRIDES[$_v]}"
+  fi
+done
+unset _OF_SECTION1_VARS _OF_ENV_OVERRIDES _v
 
 # Load staged profile helpers (data comes from bootstrap.conf)
 if [[ -f "${OF_ROOT_DIR}/lib/omni_profiles.sh" ]]; then
