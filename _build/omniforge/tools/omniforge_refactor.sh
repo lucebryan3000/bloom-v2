@@ -344,10 +344,99 @@ exactly as before; only scaffolding and staging were added.
 MSG
 }
 
+phase2_verify_and_smoke() {
+  log "Phase 2: Validation + smoke (non-destructive)"
+
+  require_dir "$OMNI_ROOT/lib"
+  require_dir "$OMNI_ROOT/bin"
+  require_file "$OMNI_ROOT/omni.sh"
+  require_file "$OMNI_ROOT/bin/omni"
+  require_file "$OMNI_ROOT/bin/status"
+  require_file "$OMNI_ROOT/bin/forge"
+  require_file "$OMNI_ROOT/bin/reset"
+  require_file "$OMNI_ROOT/lib/common.sh"
+  require_file "$OMNI_ROOT/lib/menu.sh"
+  require_file "$OMNI_ROOT/lib/bootstrap.sh"
+  # Optional configs (validate if present)
+  [[ -f "$OMNI_ROOT/lib/config_bootstrap.sh" ]] && require_file "$OMNI_ROOT/lib/config_bootstrap.sh"
+  [[ -f "$OMNI_ROOT/lib/config_validate.sh" ]] && require_file "$OMNI_ROOT/lib/config_validate.sh"
+  [[ -f "$OMNI_ROOT/lib/omni_profiles.sh" ]] && require_file "$OMNI_ROOT/lib/omni_profiles.sh"
+
+  log "Running bash -n on key scripts"
+  validate_bash_file "$OMNI_ROOT/omni.sh"                   || err "omni.sh failed bash -n"
+  validate_bash_file "$OMNI_ROOT/bin/omni"                  || err "bin/omni failed bash -n"
+  validate_bash_file "$OMNI_ROOT/bin/status"                || err "bin/status failed bash -n"
+  validate_bash_file "$OMNI_ROOT/bin/forge"                 || err "bin/forge failed bash -n"
+  validate_bash_file "$OMNI_ROOT/bin/reset"                 || err "bin/reset failed bash -n"
+  validate_bash_file "$OMNI_ROOT/lib/common.sh"             || err "lib/common.sh failed bash -n"
+  validate_bash_file "$OMNI_ROOT/lib/menu.sh"               || err "lib/menu.sh failed bash -n"
+  if [[ -f "$OMNI_ROOT/lib/config_bootstrap.sh" ]]; then
+    validate_bash_file "$OMNI_ROOT/lib/config_bootstrap.sh" || err "lib/config_bootstrap.sh failed bash -n"
+  fi
+  if [[ -f "$OMNI_ROOT/lib/config_validate.sh" ]]; then
+    validate_bash_file "$OMNI_ROOT/lib/config_validate.sh"  || err "lib/config_validate.sh failed bash -n"
+  fi
+  validate_bash_file "$OMNI_ROOT/lib/bootstrap.sh"          || err "lib/bootstrap.sh failed bash -n"
+  if [[ -f "$OMNI_ROOT/lib/omni_profiles.sh" ]]; then
+    validate_bash_file "$OMNI_ROOT/lib/omni_profiles.sh"    || err "lib/omni_profiles.sh failed bash -n"
+  fi
+
+  local SMOKE="$OMNI_ROOT/tools/omniforge_smoke.sh"
+  if [[ -f "$SMOKE" ]]; then
+    log "Smoke harness already exists at tools/omniforge_smoke.sh; reusing."
+  else
+    log "Creating tools/omniforge_smoke.sh (non-destructive smoke tests)"
+    cat >"$SMOKE" <<'EOF'
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OMNI_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+
+cd "$OMNI_ROOT"
+
+log()  { printf '[smoke] %s\n' "$*"; }
+warn() { printf '[smoke][WARN] %s\n' "$*"; }
+
+run_cmd() {
+  local desc="$1"; shift
+  log "$desc"
+  if "$@"; then
+    log "$desc: OK"
+  else
+    log "$desc: FAILED"
+    exit 1
+  fi
+}
+
+run_cmd "./omni.sh status" ./omni.sh status
+run_cmd "./omni.sh list"   ./omni.sh list
+
+warn "./omni.sh menu: SKIPPED (interactive)"
+warn "./omni.sh reset: SKIPPED (destructive)"
+warn "./omni.sh run: SKIPPED (mutating/heavy)"
+warn "./omni.sh build/forge: SKIPPED (mutating/heavy)"
+# warn "./omni.sh clean --path /tmp/omniforge-smoke.$$ --level 1: SKIPPED (enable manually if desired)"
+
+log "Smoke complete."
+EOF
+    chmod +x "$SMOKE"
+  fi
+
+  log "Running smoke harness"
+  if ! "$SMOKE"; then
+    err "Smoke harness failed"
+  fi
+
+  log "Phase 2 validation + smoke complete."
+}
+
 usage() {
   cat <<EOF
 Usage:
   $(basename "$0") phase1   # scaffold omni.config, lib/omni_profiles.sh, lib/bootstrap.sh (non-destructive)
+  $(basename "$0") phase2   # validate bash syntax and run non-destructive smoke tests (non-destructive)
 EOF
 }
 
@@ -358,6 +447,10 @@ main() {
     phase1)
       ensure_git_safety_and_branch
       phase1_scaffold
+      ;;
+    phase2)
+      ensure_git_safety_and_branch
+      phase2_verify_and_smoke
       ;;
     *)
       usage
