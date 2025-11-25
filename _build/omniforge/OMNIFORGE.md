@@ -81,7 +81,7 @@ OmniForge is a **production-grade, phase-based project initialization framework*
 
 ### Design Principles
 
-- **Configuration-Driven**: Single source of truth in `bootstrap.conf` (6 organized sections)
+- **Configuration-Driven**: Canonical config in omni.* files (`omni.config`, `omni.settings.sh`, `omni.profiles.sh`, `omni.phases.sh`) — `bootstrap.conf` is deprecated/legacy only
 - **Deterministic**: Same inputs always produce identical outputs
 - **Resume-Capable**: Interrupted runs resume from last successful phase via state tracking
 - **Extensible**: Add custom phases, tech stacks, or profiles without modifying core
@@ -93,7 +93,7 @@ OmniForge is a **production-grade, phase-based project initialization framework*
 
 OmniForge automatically:
 
-- **Discovers** all phases from bootstrap.conf metadata
+- **Discovers** all phases from omni.phases metadata
 - **Manages** 57 technology-specific scripts across 18 categories
 - **Orchestrates** sequential installation with error recovery
 - **Tracks** state for intelligent resume capability

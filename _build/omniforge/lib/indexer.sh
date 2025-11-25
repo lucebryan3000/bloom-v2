@@ -330,10 +330,10 @@ indexer_show_requirements() {
 # MISSING VARIABLE INJECTION
 # =============================================================================
 
-# Add missing variables to bootstrap.conf with placeholder values
-# Usage: indexer_inject_missing_vars "/path/to/bootstrap.conf"
+# Add missing variables to a config file with placeholder values
+# Usage: indexer_inject_missing_vars "/path/to/omni.settings.sh"
 indexer_inject_missing_vars() {
-    local config_file="$1"
+    local config_file="${1:-${OMNI_SETTINGS_PATH:-${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/omni.settings.sh}}"
 
     if [[ ! -f "$INDEX_FILE" ]]; then
         return 1

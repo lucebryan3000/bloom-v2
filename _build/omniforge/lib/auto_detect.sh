@@ -83,11 +83,11 @@ autodetect_run_all() {
 # WRITE DETECTED VALUES TO CONFIG
 # =============================================================================
 
-# Write detected values to bootstrap.conf
+# Write detected values to omni.config (Section 1) and related settings
 autodetect_write_to_config() {
-    local config_file="${BOOTSTRAP_CONF}"
+    local config_file="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/omni.config}"
 
-    log_info "Writing auto-detected values to bootstrap.conf"
+    log_info "Writing auto-detected values to omni.config"
 
     # Use sed to update values
     local sed_cmd="sed -i"

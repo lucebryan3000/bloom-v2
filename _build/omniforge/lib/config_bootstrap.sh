@@ -4,7 +4,7 @@
 # =============================================================================
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
-# Pure functions for loading bootstrap.conf. No execution on source.
+# Pure functions for loading OmniForge configuration. No execution on source.
 #
 # Exports:
 #   config_load, config_validate, config_apply_profile
@@ -22,8 +22,11 @@ _LIB_CONFIG_LOADED=1
 # =============================================================================
 
 # These should be set by the entry script before sourcing
-: "${BOOTSTRAP_CONF:=}"
-: "${BOOTSTRAP_CONF_EXAMPLE:=}"
+: "${SCRIPTS_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+: "${OMNI_CONFIG_PATH:=${SCRIPTS_DIR}/omni.config}"
+: "${OMNI_SETTINGS_PATH:=${SCRIPTS_DIR}/omni.settings.sh}"
+: "${OMNI_PROFILES_PATH:=${SCRIPTS_DIR}/omni.profiles.sh}"
+: "${OMNI_PHASES_PATH:=${SCRIPTS_DIR}/omni.phases.sh}"
 : "${NON_INTERACTIVE:=false}"
 
 # =============================================================================
@@ -61,7 +64,7 @@ _config_first_run_basic() {
     _config_prompt_basic "DB_PASSWORD" "Database password" "change_me"
 
     echo ""
-    log_info "Configuration saved to bootstrap.conf"
+    log_info "Configuration saved to omni.config"
     echo ""
 }
 
@@ -94,23 +97,29 @@ _config_prompt_basic() {
 config_load() {
     log_debug "Loading configuration..."
 
-    # Check if config file exists
-    if [[ ! -f "${BOOTSTRAP_CONF}" ]]; then
-        if [[ -f "${BOOTSTRAP_CONF_EXAMPLE}" ]]; then
-            log_info "First run detected - copying bootstrap.conf.example to bootstrap.conf"
-            cp "${BOOTSTRAP_CONF_EXAMPLE}" "${BOOTSTRAP_CONF}"
-            _config_first_run
-        else
-            log_error "Configuration file not found: ${BOOTSTRAP_CONF}"
-            log_error "Also no example file found at: ${BOOTSTRAP_CONF_EXAMPLE}"
-            return 1
-        fi
-    fi
+    # Determine canonical config paths
+    local omni_config_path="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR}/omni.config}"
+    local omni_settings_path="${OMNI_SETTINGS_PATH:-${SCRIPTS_DIR}/omni.settings.sh}"
+    local omni_profiles_path="${OMNI_PROFILES_PATH:-${SCRIPTS_DIR}/omni.profiles.sh}"
+    local omni_phases_path="${OMNI_PHASES_PATH:-${SCRIPTS_DIR}/omni.phases.sh}"
 
-    # Determine omni.config path (canonical Section 1 source)
-    local omni_config_path="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/omni.config}"
+    # Require omni.config (Section 1)
     if [[ ! -f "$omni_config_path" ]]; then
         log_error "omni.config not found at $omni_config_path (Section 1 must live in omni.config)"
+        return 1
+    fi
+    # Require omni.settings (advanced/system)
+    if [[ ! -f "$omni_settings_path" ]]; then
+        log_error "omni.settings.sh not found at $omni_settings_path (advanced settings are required)"
+        return 1
+    fi
+    # Require profile and phase data
+    if [[ ! -f "$omni_profiles_path" ]]; then
+        log_error "omni.profiles.sh not found at $omni_profiles_path (profile data is required)"
+        return 1
+    fi
+    if [[ ! -f "$omni_phases_path" ]]; then
+        log_error "omni.phases.sh not found at $omni_phases_path (phase metadata is required)"
         return 1
     fi
 
@@ -134,13 +143,15 @@ config_load() {
     local saved_verbose="${VERBOSE:-}"
     local saved_log_format="${LOG_FORMAT:-}"
 
-    # Source the configuration
-    # shellcheck source=/dev/null
-    source "${BOOTSTRAP_CONF}"
-
-    # Required overlay: omni.config (Section 1 canonical source)
+    # Source the configuration (omni.*)
     # shellcheck source=/dev/null
     source "$omni_config_path"
+    # shellcheck source=/dev/null
+    source "$omni_settings_path"
+    # shellcheck source=/dev/null
+    source "$omni_profiles_path"
+    # shellcheck source=/dev/null
+    source "$omni_phases_path"
 
     # Restore environment overrides (env vars take precedence over config file)
     for v in "${section1_vars[@]}"; do
@@ -164,7 +175,22 @@ config_load() {
     : "${ALLOW_DIRTY:=false}"
     : "${STACK_PROFILE:=full}"
 
-    log_debug "Configuration loaded from: ${BOOTSTRAP_CONF}"
+    # Derived values
+    if [[ "${PROJECT_ROOT:-.}" == "." ]]; then
+        PROJECT_ROOT="$(cd "${SCRIPTS_DIR}/../.." && pwd)"
+    fi
+    if [[ -z "${INSTALL_DIR+x}" ]]; then
+        if [[ "${INSTALL_TARGET:-test}" == "prod" ]]; then
+            INSTALL_DIR="${INSTALL_DIR_PROD}"
+        else
+            INSTALL_DIR="${INSTALL_DIR_TEST}"
+        fi
+    fi
+    : "${OMNIFORGE_SETUP_MARKER:=${PROJECT_ROOT}/.omniforge_setup_complete}"
+    : "${BOOTSTRAP_STATE_FILE:=${PROJECT_ROOT}/.bootstrap_state}"
+    : "${GIT_REMOTE_URL:=${GIT_REMOTE_URL:-}}"
+
+    log_debug "Configuration loaded from omni.* files"
     return 0
 }
 
@@ -173,7 +199,7 @@ config_load() {
 config_validate() {
     # Validate PROJECT_ROOT exists
     if [[ -z "${PROJECT_ROOT:-}" ]]; then
-        log_error "PROJECT_ROOT not set in bootstrap.conf"
+        log_error "PROJECT_ROOT not set in config"
         return 1
     fi
 
@@ -181,7 +207,7 @@ config_validate() {
     if [[ "${PROJECT_ROOT}" == "." ]]; then
         # Assumes we're in _build/omniforge, so ../.. is project root
         local script_parent
-        script_parent="$(dirname "${BOOTSTRAP_CONF}")"
+        script_parent="${SCRIPTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
         PROJECT_ROOT="$(cd "${script_parent}/../.." 2>/dev/null && pwd)"
     fi
 

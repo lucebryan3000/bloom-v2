@@ -21,9 +21,11 @@ OF_ROOT_DIR="${OF_ROOT_DIR:-$(cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 
 # Align with common.sh expectations
 SCRIPTS_DIR="${SCRIPTS_DIR:-${OF_ROOT_DIR}}"
-BOOTSTRAP_CONF="${BOOTSTRAP_CONF:-${SCRIPTS_DIR}/bootstrap.conf}"
-BOOTSTRAP_CONF_EXAMPLE="${BOOTSTRAP_CONF_EXAMPLE:-${SCRIPTS_DIR}/bootstrap.conf.example}"
-export SCRIPTS_DIR BOOTSTRAP_CONF BOOTSTRAP_CONF_EXAMPLE
+OMNI_CONFIG_PATH="${OMNI_CONFIG_PATH:-${SCRIPTS_DIR}/omni.config}"
+OMNI_SETTINGS_PATH="${OMNI_SETTINGS_PATH:-${SCRIPTS_DIR}/omni.settings.sh}"
+OMNI_PROFILES_PATH="${OMNI_PROFILES_PATH:-${SCRIPTS_DIR}/omni.profiles.sh}"
+OMNI_PHASES_PATH="${OMNI_PHASES_PATH:-${SCRIPTS_DIR}/omni.phases.sh}"
+export SCRIPTS_DIR OMNI_CONFIG_PATH OMNI_SETTINGS_PATH OMNI_PROFILES_PATH OMNI_PHASES_PATH
 
 # Preserve environment overrides for Section 1 (QUICK START) values
 _OF_SECTION1_VARS=(
@@ -40,19 +42,7 @@ for _v in "${_OF_SECTION1_VARS[@]}"; do
   fi
 done
 
-# Load canonical config for non-Section 1 domains (profiles, phases, advanced settings)
-if [[ -f "$BOOTSTRAP_CONF" ]]; then
-  set -a
-  # shellcheck source=/dev/null
-  . "$BOOTSTRAP_CONF"
-  set +a
-else
-  echo "lib/bootstrap.sh: missing config at $BOOTSTRAP_CONF" >&2
-  exit 1
-fi
-
-# Optional override layer for Section 1 (QUICK START) and related settings (canonical for Section 1)
-OMNI_CONFIG_PATH="${OMNI_CONFIG_PATH:-${OF_ROOT_DIR}/omni.config}"
+# Load canonical Section 1 config
 if [[ -f "$OMNI_CONFIG_PATH" ]]; then
   # shellcheck source=/dev/null
   . "$OMNI_CONFIG_PATH"
@@ -61,7 +51,16 @@ else
   exit 1
 fi
 
-# Re-apply env overrides (env > omni.config > bootstrap.conf)
+# Load advanced/system settings
+if [[ -f "$OMNI_SETTINGS_PATH" ]]; then
+  # shellcheck source=/dev/null
+  . "$OMNI_SETTINGS_PATH"
+else
+  echo "lib/bootstrap.sh: missing omni.settings.sh at $OMNI_SETTINGS_PATH (advanced settings are required)" >&2
+  exit 1
+fi
+
+# Re-apply env overrides (env > omni.config)
 for _v in "${_OF_SECTION1_VARS[@]}"; do
   if [[ -n "${_OF_ENV_OVERRIDES[$_v]+x}" ]]; then
     export "${_v}=${_OF_ENV_OVERRIDES[$_v]}"
@@ -70,7 +69,6 @@ done
 unset _OF_SECTION1_VARS _OF_ENV_OVERRIDES _v
 
 # Load profile data (canonical) and helpers
-OMNI_PROFILES_PATH="${OMNI_PROFILES_PATH:-${OF_ROOT_DIR}/omni.profiles.sh}"
 if [[ -f "$OMNI_PROFILES_PATH" ]]; then
   # shellcheck source=/dev/null
   . "$OMNI_PROFILES_PATH"
@@ -84,7 +82,6 @@ if [[ -f "${OF_ROOT_DIR}/lib/omni_profiles.sh" ]]; then
 fi
 
 # Load phase metadata (canonical)
-OMNI_PHASES_PATH="${OMNI_PHASES_PATH:-${OF_ROOT_DIR}/omni.phases.sh}"
 if [[ -f "$OMNI_PHASES_PATH" ]]; then
   # shellcheck source=/dev/null
   . "$OMNI_PHASES_PATH"
@@ -92,6 +89,21 @@ else
   echo "lib/bootstrap.sh: missing omni.phases.sh at $OMNI_PHASES_PATH (phase metadata is required)" >&2
   exit 1
 fi
+
+# Derived values based on loaded config/settings
+if [[ "${PROJECT_ROOT}" == "." ]]; then
+  PROJECT_ROOT="$(cd "${SCRIPTS_DIR}/../.." && pwd)"
+fi
+if [[ -z "${INSTALL_DIR+x}" ]]; then
+  if [[ "${INSTALL_TARGET:-test}" == "prod" ]]; then
+    INSTALL_DIR="${INSTALL_DIR_PROD}"
+  else
+    INSTALL_DIR="${INSTALL_DIR_TEST}"
+  fi
+fi
+: "${OMNIFORGE_SETUP_MARKER:=${PROJECT_ROOT}/.omniforge_setup_complete}"
+: "${BOOTSTRAP_STATE_FILE:=${PROJECT_ROOT}/.bootstrap_state}"
+: "${GIT_REMOTE_URL:=${GIT_REMOTE_URL:-}}"
 
 # Delegate to common.sh for full loader stack
 # shellcheck source=/dev/null

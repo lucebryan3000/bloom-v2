@@ -39,9 +39,9 @@ _COMMON_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Scripts directory is parent of lib
 SCRIPTS_DIR="${SCRIPTS_DIR:-${_COMMON_LIB_DIR%/lib}}"
 
-# Config file paths (can be overridden before sourcing)
-: "${BOOTSTRAP_CONF:=${SCRIPTS_DIR}/bootstrap.conf}"
-: "${BOOTSTRAP_CONF_EXAMPLE:=${SCRIPTS_DIR}/bootstrap.conf.example}"
+# Legacy config path variables (kept for backward compatibility; runtime uses omni.*)
+: "${BOOTSTRAP_CONF:=${SCRIPTS_DIR}/omni.config}"
+: "${BOOTSTRAP_CONF_EXAMPLE:=}"
 
 # Export for use by libraries
 export SCRIPTS_DIR BOOTSTRAP_CONF BOOTSTRAP_CONF_EXAMPLE

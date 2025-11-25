@@ -405,14 +405,14 @@ main() {
 
     # Check if all required variables are set
     if ! indexer_validate_requirements; then
-        log_warn "Some required variables are not set in bootstrap.conf"
+        log_warn "Some required variables are not set in config"
         # Offer to inject missing variables
         if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
             echo ""
-            read -rp "Would you like to add missing variables to bootstrap.conf? [y/N] " inject_choice
+            read -rp "Would you like to add missing variables to omni.settings.sh? [y/N] " inject_choice
             if [[ "${inject_choice,,}" == "y" ]]; then
-                indexer_inject_missing_vars "${BOOTSTRAP_CONF}"
-                log_warn "Please update the added variables and run omni again"
+                indexer_inject_missing_vars "${OMNI_SETTINGS_PATH:-${SCRIPT_DIR}/omni.settings.sh}"
+                log_warn "Please update the added variables in omni.settings.sh and run omni again"
                 exit 1
             fi
         fi

@@ -55,7 +55,10 @@ _validate_files() {
         "${SCRIPT_DIR}/lib/bootstrap.sh"
         "${SCRIPT_DIR}/lib/menu.sh"
         "${SCRIPT_DIR}/lib/ascii.sh"
-        "${SCRIPT_DIR}/bootstrap.conf"
+        "${SCRIPT_DIR}/omni.config"
+        "${SCRIPT_DIR}/omni.settings.sh"
+        "${SCRIPT_DIR}/omni.profiles.sh"
+        "${SCRIPT_DIR}/omni.phases.sh"
     )
 
     for file in "${required_files[@]}"; do

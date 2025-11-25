@@ -357,7 +357,7 @@ _bootstrap_step_select_profile() {
             apply_stack_profile "$choice" || return 1
             ;;
         "")
-            # Use current default from bootstrap.conf
+            # Use current default from current config
             export STACK_PROFILE="$default_profile"
             apply_stack_profile "$default_profile" || return 1
             ;;
@@ -533,16 +533,22 @@ _bootstrap_step_download() {
 
 # Step 4: Configure PostgreSQL & Application
 _bootstrap_step_configure() {
-    # Load configuration from bootstrap.conf if available
+    # Load configuration from omni.* if available
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local omniforge_dir="$(cd "${script_dir}/.." && pwd)"
-    local bootstrap_conf="${omniforge_dir}/bootstrap.conf"
+    local config_path="${OMNI_CONFIG_PATH:-${omniforge_dir}/omni.config}"
+    local settings_path="${OMNI_SETTINGS_PATH:-${omniforge_dir}/omni.settings.sh}"
 
-    if [[ -f "$bootstrap_conf" ]]; then
-        source "$bootstrap_conf"
+    if [[ -f "$config_path" ]]; then
+        # shellcheck source=/dev/null
+        source "$config_path"
+    fi
+    if [[ -f "$settings_path" ]]; then
+        # shellcheck source=/dev/null
+        source "$settings_path"
     fi
 
-    # Initialize with values from bootstrap.conf (or defaults if not set)
+    # Initialize with values from omni.* (or defaults if not set)
     APP_NAME="${APP_NAME:-bloom2}"
     DB_NAME="${DB_NAME:-bloom2_db}"
     DB_USER="${DB_USER:-bloom2}"
@@ -723,7 +729,7 @@ _bootstrap_step_configure() {
         echo ""
         _menu_line "─" 66
         echo ""
-        echo "  [ENTER] Continue  [e] Edit bootstrap.conf  [r] Refresh  [b] Back"
+        echo "  [ENTER] Continue  [e] Edit omni.config  [r] Refresh  [b] Back"
         echo ""
     }
 
@@ -737,17 +743,17 @@ _bootstrap_step_configure() {
 
         case "$action" in
             e|edit)
-                # Edit bootstrap.conf directly
+                # Edit omni.config directly
                 if command -v micro &>/dev/null; then
-                    micro "$bootstrap_conf"
+                    micro "$config_path"
                 elif command -v nano &>/dev/null; then
-                    nano "$bootstrap_conf"
+                    nano "$config_path"
                 else
                     log_warn "No editor found (tried micro, nano)"
                     read -rp "  Press Enter to continue: " _
                 fi
                 # Reload configuration
-                source "$bootstrap_conf" 2>/dev/null
+                [[ -f "$config_path" ]] && source "$config_path" 2>/dev/null
                 APP_NAME="${APP_NAME:-bloom2}"
                 DB_NAME="${DB_NAME:-bloom2_db}"
                 DB_USER="${DB_USER:-bloom2}"
@@ -759,8 +765,9 @@ _bootstrap_step_configure() {
                 _show_config
                 ;;
             r|refresh)
-                # Reload from bootstrap.conf
-                source "$bootstrap_conf" 2>/dev/null
+                # Reload from omni.config / omni.settings.sh
+                [[ -f "$config_path" ]] && source "$config_path" 2>/dev/null
+                [[ -f "$settings_path" ]] && source "$settings_path" 2>/dev/null
                 APP_NAME="${APP_NAME:-bloom2}"
                 DB_NAME="${DB_NAME:-bloom2_db}"
                 DB_USER="${DB_USER:-bloom2}"
@@ -860,25 +867,28 @@ _bootstrap_step_configure() {
                 export APP_NAME DB_NAME DB_USER DB_PASSWORD DB_PORT DB_HOST
                 export BACKUP_LOCATION ENABLE_AUTO_BACKUP
 
-                # Update bootstrap.conf with new values
-                if [[ -f "$bootstrap_conf" ]]; then
-                    # Create a temporary file with updated values
-                    local temp_conf="${bootstrap_conf}.tmp.$$"
-                    cp "$bootstrap_conf" "$temp_conf"
-
-                    # Update each variable in the temporary file
+                # Update omni.config (Section 1 fields)
+                if [[ -f "$config_path" ]]; then
+                    local temp_conf="${config_path}.tmp.$$"
+                    cp "$config_path" "$temp_conf"
                     sed -i.bak "s/^APP_NAME=.*/APP_NAME=\"${APP_NAME}\"/" "$temp_conf"
                     sed -i.bak "s/^DB_NAME=.*/DB_NAME=\"${DB_NAME}\"/" "$temp_conf"
                     sed -i.bak "s/^DB_USER=.*/DB_USER=\"${DB_USER}\"/" "$temp_conf"
                     sed -i.bak "s/^DB_PASSWORD=.*/DB_PASSWORD=\"${DB_PASSWORD}\"/" "$temp_conf"
                     sed -i.bak "s/^DB_PORT=.*/DB_PORT=\"${DB_PORT}\"/" "$temp_conf"
                     sed -i.bak "s/^DB_HOST=.*/DB_HOST=\"${DB_HOST}\"/" "$temp_conf"
-                    sed -i.bak "s/^BACKUP_LOCATION=.*/BACKUP_LOCATION=\"${BACKUP_LOCATION}\"/" "$temp_conf"
-                    sed -i.bak "s/^ENABLE_AUTO_BACKUP=.*/ENABLE_AUTO_BACKUP=\"${ENABLE_AUTO_BACKUP}\"/" "$temp_conf"
-
-                    # Remove backup files and move temp to actual config
                     rm -f "${temp_conf}.bak"
-                    mv "$temp_conf" "$bootstrap_conf"
+                    mv "$temp_conf" "$config_path"
+                fi
+
+                # Update omni.settings.sh for backup settings
+                if [[ -f "$settings_path" ]]; then
+                    local temp_settings="${settings_path}.tmp.$$"
+                    cp "$settings_path" "$temp_settings"
+                    sed -i.bak "s/^BACKUP_LOCATION=.*/BACKUP_LOCATION=\"${BACKUP_LOCATION}\"/" "$temp_settings"
+                    sed -i.bak "s/^ENABLE_AUTO_BACKUP=.*/ENABLE_AUTO_BACKUP=\"${ENABLE_AUTO_BACKUP}\"/" "$temp_settings"
+                    rm -f "${temp_settings}.bak"
+                    mv "$temp_settings" "$settings_path"
                 fi
 
                 # Log the configuration summary to log file
@@ -981,13 +991,33 @@ _bootstrap_step_preflight() {
         ((errors++))
     fi
 
-    # Check bootstrap.conf
-    if [[ -f "${scripts_dir}/bootstrap.conf" ]]; then
-        echo "     ${LOG_GREEN}✓${LOG_NC} bootstrap.conf present"
+    # Check omni config files
+    local config_errors=0
+    if [[ -f "${scripts_dir}/omni.config" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} omni.config present"
     else
-        echo "     ${LOG_RED}✗${LOG_NC} bootstrap.conf missing"
-        ((errors++))
+        echo "     ${LOG_RED}✗${LOG_NC} omni.config missing"
+        ((config_errors++))
     fi
+    if [[ -f "${scripts_dir}/omni.settings.sh" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} omni.settings.sh present"
+    else
+        echo "     ${LOG_YELLOW}○${LOG_NC} omni.settings.sh missing"
+        ((warnings++))
+    fi
+    if [[ -f "${scripts_dir}/omni.profiles.sh" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} omni.profiles.sh present"
+    else
+        echo "     ${LOG_RED}✗${LOG_NC} omni.profiles.sh missing"
+        ((config_errors++))
+    fi
+    if [[ -f "${scripts_dir}/omni.phases.sh" ]]; then
+        echo "     ${LOG_GREEN}✓${LOG_NC} omni.phases.sh present"
+    else
+        echo "     ${LOG_RED}✗${LOG_NC} omni.phases.sh missing"
+        ((config_errors++))
+    fi
+    ((errors+=config_errors))
     echo ""
 
     # -------------------------------------------------------------------------
@@ -1124,9 +1154,9 @@ _bootstrap_step_preflight() {
     # Validate config
     if type config_validate_all &>/dev/null; then
         if config_validate_all 2>/dev/null; then
-            echo "     ${LOG_GREEN}✓${LOG_NC} bootstrap.conf validated"
+            echo "     ${LOG_GREEN}✓${LOG_NC} configuration validated"
         else
-            echo "     ${LOG_RED}✗${LOG_NC} bootstrap.conf has errors"
+            echo "     ${LOG_RED}✗${LOG_NC} configuration has errors"
             ((errors++))
         fi
     else
@@ -1752,10 +1782,11 @@ menu_options() {
         fi
     fi
 
-    # Get bootstrap.conf path for updates
+    # Config paths for updates
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local omniforge_dir="$(cd "${script_dir}/.." && pwd)"
-    local bootstrap_conf="${omniforge_dir}/bootstrap.conf"
+    local config_path="${OMNI_CONFIG_PATH:-${omniforge_dir}/omni.config}"
+    local settings_path="${OMNI_SETTINGS_PATH:-${omniforge_dir}/omni.settings.sh}"
 
     while true; do
         _menu_header
@@ -1798,20 +1829,20 @@ menu_options() {
                     1|test)
                         INSTALL_TARGET="test"
                         INSTALL_DIR="${INSTALL_DIR_TEST:-./test/install-1}"
-                        # Update bootstrap.conf
-                        if [[ -f "$bootstrap_conf" ]]; then
-                            sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="test"/' "$bootstrap_conf"
-                            rm -f "${bootstrap_conf}.bak"
+                        # Update omni.config
+                        if [[ -f "$config_path" ]]; then
+                            sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="test"/' "$config_path"
+                            rm -f "${config_path}.bak"
                         fi
                         echo "  [OK] Install target set to test"
                         ;;
                     2|prod)
                         INSTALL_TARGET="prod"
                         INSTALL_DIR="${INSTALL_DIR_PROD:-./app}"
-                        # Update bootstrap.conf
-                        if [[ -f "$bootstrap_conf" ]]; then
-                            sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="prod"/' "$bootstrap_conf"
-                            rm -f "${bootstrap_conf}.bak"
+                        # Update omni.config
+                        if [[ -f "$config_path" ]]; then
+                            sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="prod"/' "$config_path"
+                            rm -f "${config_path}.bak"
                         fi
                         echo "  [OK] Install target set to prod"
                         ;;
@@ -1842,10 +1873,10 @@ menu_options() {
                     6) STACK_PROFILE="custom_bos" ;;
                     *) echo "  [SKIP] No change"; sleep 1; continue ;;
                 esac
-                # Update bootstrap.conf
-                if [[ -f "$bootstrap_conf" ]]; then
-                    sed -i.bak "s/^STACK_PROFILE=.*/STACK_PROFILE=\"${STACK_PROFILE}\"/" "$bootstrap_conf"
-                    rm -f "${bootstrap_conf}.bak"
+                # Update omni.config
+                if [[ -f "$config_path" ]]; then
+                    sed -i.bak "s/^STACK_PROFILE=.*/STACK_PROFILE=\"${STACK_PROFILE}\"/" "$config_path"
+                    rm -f "${config_path}.bak"
                 fi
                 echo "  [OK] Profile set to ${STACK_PROFILE}"
                 sleep 1
@@ -1865,9 +1896,9 @@ menu_options() {
                     3) LOG_LEVEL="verbose" ;;
                     *) echo "  [SKIP] No change"; sleep 1; continue ;;
                 esac
-                if [[ -f "$bootstrap_conf" ]]; then
-                    sed -i.bak "s/^LOG_LEVEL=.*/LOG_LEVEL=\"${LOG_LEVEL}\"/" "$bootstrap_conf"
-                    rm -f "${bootstrap_conf}.bak"
+                if [[ -f "$settings_path" ]]; then
+                    sed -i.bak "s/^LOG_LEVEL=.*/LOG_LEVEL=\"${LOG_LEVEL}\"/" "$settings_path"
+                    rm -f "${settings_path}.bak"
                 fi
                 echo "  [OK] Log level set to ${LOG_LEVEL}"
                 sleep 1
@@ -1893,9 +1924,9 @@ menu_options() {
                     6) OMNI_LOGO="none" ;;
                     *) echo "  [SKIP] No change"; sleep 1; continue ;;
                 esac
-                if [[ -f "$bootstrap_conf" ]]; then
-                    sed -i.bak "s/^OMNI_LOGO=.*/OMNI_LOGO=\"${OMNI_LOGO}\"/" "$bootstrap_conf"
-                    rm -f "${bootstrap_conf}.bak"
+                if [[ -f "$settings_path" ]]; then
+                    sed -i.bak "s/^OMNI_LOGO=.*/OMNI_LOGO=\"${OMNI_LOGO}\"/" "$settings_path"
+                    rm -f "${settings_path}.bak"
                 fi
                 echo "  [OK] Logo style set to ${OMNI_LOGO}"
                 sleep 1
@@ -1924,9 +1955,9 @@ menu_options() {
                         ;;
                     *) echo "  [SKIP] No change"; sleep 1; continue ;;
                 esac
-                if [[ -f "$bootstrap_conf" ]]; then
-                    sed -i.bak "s/^MAX_CMD_SECONDS=.*/MAX_CMD_SECONDS=\"${MAX_CMD_SECONDS}\"/" "$bootstrap_conf"
-                    rm -f "${bootstrap_conf}.bak"
+                if [[ -f "$settings_path" ]]; then
+                    sed -i.bak "s/^MAX_CMD_SECONDS=.*/MAX_CMD_SECONDS=\"${MAX_CMD_SECONDS}\"/" "$settings_path"
+                    rm -f "${settings_path}.bak"
                 fi
                 echo "  [OK] Timeout set to $(( MAX_CMD_SECONDS / 60 )) min"
                 sleep 1
@@ -1944,9 +1975,9 @@ menu_options() {
                     2) GIT_SAFETY="false" ;;
                     *) echo "  [SKIP] No change"; sleep 1; continue ;;
                 esac
-                if [[ -f "$bootstrap_conf" ]]; then
-                    sed -i.bak "s/^GIT_SAFETY=.*/GIT_SAFETY=\"${GIT_SAFETY}\"/" "$bootstrap_conf"
-                    rm -f "${bootstrap_conf}.bak"
+                if [[ -f "$settings_path" ]]; then
+                    sed -i.bak "s/^GIT_SAFETY=.*/GIT_SAFETY=\"${GIT_SAFETY}\"/" "$settings_path"
+                    rm -f "${settings_path}.bak"
                 fi
                 echo "  [OK] Git safety set to ${GIT_SAFETY}"
                 sleep 1
@@ -2095,11 +2126,18 @@ menu_options() {
                 MAX_CMD_SECONDS="300"
                 GIT_SAFETY="true"
                 INSTALL_DIR="${INSTALL_DIR_TEST:-./test/install-1}"
-                # Update bootstrap.conf with defaults
-                if [[ -f "$bootstrap_conf" ]]; then
-                    sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="test"/' "$bootstrap_conf"
-                    sed -i.bak 's/^STACK_PROFILE=.*/STACK_PROFILE="standard"/' "$bootstrap_conf"
-                    rm -f "${bootstrap_conf}.bak"
+                # Update omni.config and omni.settings with defaults
+                if [[ -f "$config_path" ]]; then
+                    sed -i.bak 's/^INSTALL_TARGET=.*/INSTALL_TARGET="test"/' "$config_path"
+                    sed -i.bak 's/^STACK_PROFILE=.*/STACK_PROFILE="standard"/' "$config_path"
+                    rm -f "${config_path}.bak"
+                fi
+                if [[ -f "$settings_path" ]]; then
+                    sed -i.bak 's/^LOG_LEVEL=.*/LOG_LEVEL="status"/' "$settings_path"
+                    sed -i.bak 's/^OMNI_LOGO=.*/OMNI_LOGO="block"/' "$settings_path"
+                    sed -i.bak 's/^MAX_CMD_SECONDS=.*/MAX_CMD_SECONDS="300"/' "$settings_path"
+                    sed -i.bak 's/^GIT_SAFETY=.*/GIT_SAFETY="true"/' "$settings_path"
+                    rm -f "${settings_path}.bak"
                 fi
                 echo "  [OK] Reset to defaults"
                 sleep 1
