@@ -148,22 +148,22 @@ OmniForge automatically:
 │              Phase Execution Flow (Detailed)                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  phase_execute(phase_number)                                   │
-│      ├─> phase_is_enabled() check (enable:true/false)          │
+│  phase_execute(phase_number)                                    │
+│      ├─> phase_is_enabled() check (enable:true/false)           │
 │      │                                                          │
-│      ├─> phase_get_scripts() → reads BOOTSTRAP_PHASE_XX_*      │
+│      ├─> phase_get_scripts() → reads BOOTSTRAP_PHASE_XX_*       │
 │      │                                                          │
-│      ├─> phase_get_packages() → expands PKG_* definitions      │
+│      ├─> phase_get_packages() → expands PKG_* definitions       │
 │      │                                                          │
-│      ├─> for each script in phase:                             │
-│      │   ├─> state_has_succeeded() → SKIP if already done      │
+│      ├─> for each script in phase:                              │
+│      │   ├─> state_has_succeeded() → SKIP if already done       │
 │      │   │                                                      │
-│      │   ├─> run_cmd() with phase timeout                      │
-│      │   │   (sequencer handles retries, test criteria)        │
+│      │   ├─> run_cmd() with phase timeout                       │
+│      │   │   (sequencer handles retries, test criteria)         │
 │      │   │                                                      │
-│      │   └─> state_mark_success() on completion                │
+│      │   └─> state_mark_success() on completion                 │
 │      │                                                          │
-│      └─> report phase results                                  │
+│      └─> report phase results                                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 
