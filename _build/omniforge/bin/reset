@@ -6,33 +6,30 @@
 # Creates backup before deletion for safety
 # =============================================================================
 
-set -euo pipefail
+set -Eeuo pipefail
 IFS=$'\n\t'
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OMNIFORGE_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-PROJECT_ROOT="$(cd "${OMNIFORGE_ROOT}/../.." && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OMNI_ROOT="${OMNI_ROOT:-"${SCRIPT_DIR}/.."}"
 
-# Export for library functions
+# Central bootstrap loader (delegates to common.sh)
+# shellcheck source=/dev/null
+. "${OMNI_ROOT}/lib/bootstrap.sh"
+
+# Preserve previous explicit PROJECT_ROOT resolution
+PROJECT_ROOT="$(cd "${OMNI_ROOT}/../.." && pwd)"
 export PROJECT_ROOT
 
 # =============================================================================
 # Load Libraries
 # =============================================================================
 
-if [[ ! -f "${OMNIFORGE_ROOT}/lib/common.sh" ]]; then
-    echo "[ERROR] Required library not found: lib/common.sh" >&2
-    exit 1
-fi
-
-source "${OMNIFORGE_ROOT}/lib/common.sh"
-
-if [[ ! -f "${OMNIFORGE_ROOT}/lib/reset.sh" ]]; then
+if [[ ! -f "${OMNI_ROOT}/lib/reset.sh" ]]; then
     log_error "Required library not found: lib/reset.sh"
     exit 1
 fi
 
-source "${OMNIFORGE_ROOT}/lib/reset.sh"
+source "${OMNI_ROOT}/lib/reset.sh"
 
 # =============================================================================
 # Usage

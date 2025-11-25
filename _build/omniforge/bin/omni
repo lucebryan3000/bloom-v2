@@ -32,7 +32,8 @@
 #   lib/common.sh      (loads all library modules)
 # =============================================================================
 
-set -euo pipefail
+set -Eeuo pipefail
+IFS=$'\n\t'
 
 readonly CODENAME="OmniForge"
 
@@ -44,12 +45,12 @@ export TERM
 # PATH SETUP
 # =============================================================================
 
-# Determine script location
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OMNI_ROOT="${OMNI_ROOT:-"${SCRIPT_DIR}/.."}"
 
-# Source the common library (loads all modules)
-source "${SCRIPTS_DIR}/lib/common.sh"
+# Central bootstrap loader (delegates to common.sh)
+# shellcheck source=/dev/null
+. "${OMNI_ROOT}/lib/bootstrap.sh"
 
 # =============================================================================
 # USAGE
