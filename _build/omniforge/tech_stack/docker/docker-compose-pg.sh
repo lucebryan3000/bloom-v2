@@ -97,11 +97,12 @@ services:
       - "3000:3000"
     volumes:
       # Mount source for hot reload
-      - .:/app
+      - .:/workspace
       # Preserve node_modules from container
-      - /app/node_modules
+      - /workspace/node_modules
       # Named volume for pnpm store
       - pnpm_store:/root/.local/share/pnpm/store
+    working_dir: /workspace
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://\${DB_USER:-${DB_USER}}:\${DB_PASSWORD:-${DB_PASSWORD}}@postgres:\${DB_PORT:-5432}/\${DB_NAME:-${DB_NAME}}
@@ -331,6 +332,41 @@ EOF
     log_ok "Created scripts/docker-dev.sh"
 else
     log_skip "scripts/docker-dev.sh already exists"
+fi
+
+# Host Makefile with common Docker commands
+log_step "Creating Docker Makefile"
+
+if [[ ! -f "Makefile" ]]; then
+    cat > Makefile <<'EOF'
+COMPOSE_FILE ?= docker-compose.yml
+
+.PHONY: compose-up compose-down dev build test logs shell
+
+compose-up:
+	 docker compose -f $(COMPOSE_FILE) up -d app postgres
+
+compose-down:
+	 docker compose -f $(COMPOSE_FILE) down
+
+dev: compose-up
+	 docker compose -f $(COMPOSE_FILE) exec app pnpm dev
+
+build: compose-up
+	 docker compose -f $(COMPOSE_FILE) exec app pnpm build
+
+test: compose-up
+	 docker compose -f $(COMPOSE_FILE) exec app pnpm test
+
+logs:
+	 docker compose -f $(COMPOSE_FILE) logs -f app
+
+shell: compose-up
+	 docker compose -f $(COMPOSE_FILE) exec app sh
+EOF
+    log_ok "Created Makefile for Docker workflows"
+else
+    log_skip "Makefile already exists"
 fi
 
 # PostgreSQL init script (enables pgvector)

@@ -155,10 +155,10 @@ if [[ ! -f "Dockerfile.dev" ]]; then
 
 FROM node:${NODE_VERSION}-alpine
 
-WORKDIR /app
+WORKDIR /workspace
 
-# Install system dependencies
-RUN apk add --no-cache libc6-compat git
+# Install system dependencies needed by OmniForge scripts
+RUN apk add --no-cache bash git jq curl openssl libc6-compat
 
 # Install pnpm globally
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
