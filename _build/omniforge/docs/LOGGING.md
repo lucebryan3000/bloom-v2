@@ -60,7 +60,7 @@ Log: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 
 ```bash
 $ omni run --verbose
-[INFO] Loading configuration from bootstrap.conf...
+[INFO] Loading configuration from omni.config / omni.settings.sh...
 [DEBUG] Found 6 phases in phase-metadata
 [DEBUG] Phase 0 has 5 scripts
 [STEP] Checking dependencies...
@@ -100,7 +100,7 @@ _build/omniforge/logs/
 
 **Location**: `_build/_build/omniforge/logs/` (self-contained within OmniForge directory)
 
-**Configuration**: Set in `bootstrap.conf`
+**Configuration**: Set in `omni.config` / `omni.settings.sh`
 
 ```bash
 LOG_DIR="${OMNIFORGE_DIR}/logs"
@@ -156,7 +156,7 @@ For details, see: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_2025112
 **File**: Full details with timestamps
 
 ```
-[INFO] Loading configuration from bootstrap.conf
+[INFO] Loading configuration from omni.config / omni.settings.sh
 [DEBUG] Found 6 phases in phase-metadata
 [DEBUG] Phase 0 has 5 scripts
 [DEBUG] Checking git: /usr/bin/git (20.0.0)
@@ -221,7 +221,7 @@ Log: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 [2025-11-24 14:30:15] [INIT] PWD: /home/luce/apps/bloom2
 [2025-11-24 14:30:15] [INIT] LOG_LEVEL: status
 [2025-11-24 14:30:15] [INIT] DRY_RUN: false
-[2025-11-24 14:30:15] [INFO] Loading configuration from bootstrap.conf
+[2025-11-24 14:30:15] [INFO] Loading configuration from omni.config / omni.settings.sh
 [2025-11-24 14:30:15] [DEBUG] Loaded 451 lines of configuration
 [2025-11-24 14:30:15] [STEP] Validating environment...
 [2025-11-24 14:30:15] [EXEC] Running: node --version
@@ -290,7 +290,7 @@ For details, see: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_2025112
 
 ```bash
 $ omni run --verbose
-[INFO] Loading configuration from bootstrap.conf...
+[INFO] Loading configuration from omni.config / omni.settings.sh...
 [DEBUG] Found 6 phases in phase-metadata
 [DEBUG] Phase 0 (Foundation) has 5 scripts
 [DEBUG] Phase 1 (Database) has 4 scripts
@@ -362,7 +362,7 @@ For full details including errors: cat _build/omniforge/logs/omniforge_20251124_
 
 ### Environment Variables
 
-**In bootstrap.conf**:
+**In omni.settings.sh / omni.config**:
 ```bash
 # Log directory for OmniForge runs
 LOG_DIR="${PROJECT_ROOT}/omniforge/logs"
@@ -539,9 +539,9 @@ ls -la omniforge/
    omni run
    ```
 
-3. **Check bootstrap.conf**:
+3. **Check omni.settings.sh**:
    ```bash
-   grep LOG_DIR bootstrap.conf
+   grep LOG_DIR omni.settings.sh
    ```
 
 ### Problem: Too much disk space used by logs
@@ -561,7 +561,7 @@ ls -la omniforge/
    tar -czf _build/omniforge/logs/archive_$(date +%Y%m%d).tar.gz _build/omniforge/logs/*.log
    ```
 
-2. **Reduce log retention** in bootstrap.conf:
+2. **Reduce log retention** in omni.settings.sh:
    ```bash
    LOG_CLEANUP_DAYS="30"  # Changed from 90
    ```
@@ -638,7 +638,7 @@ The OmniForge logging system provides:
 ✅ **Console + File**: Console is user-friendly, file is detailed
 ✅ **Scenario-specific**: Different output for development, dry-run, CI/CD
 ✅ **Easy filtering**: Search and extract useful information
-✅ **Full configuration**: Via bootstrap.conf and environment variables
+✅ **Full configuration**: Via omni.* files and environment variables
 
 ---
 

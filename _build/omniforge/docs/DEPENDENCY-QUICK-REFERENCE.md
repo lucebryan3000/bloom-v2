@@ -8,7 +8,7 @@
 ## Quick Links
 
 ### Key Files
-- **bootstrap.conf** - Single source of truth for all configuration
+- **omni.* config** - Canonical configuration (bootstrap.conf is legacy/deprecated)
 - **lib/validation.sh** - Dependency validation & auto-remediation functions
 - **lib/common.sh** - Shared logging & utility functions
 - **tech_stack/_lib/pkg-install.sh** - NPM package installation helpers
@@ -51,7 +51,7 @@ LAYER 3: Configuration Variables (Every Script)
 
 ## Configuration Quick Reference
 
-### In bootstrap.conf
+### In omni.settings.sh / omni.config
 
 **Auto-Install Flags** (lines 265-268):
 ```bash
@@ -164,14 +164,14 @@ log_success "${SCRIPT_NAME} completed"
 
 ### Docker Not Found
 - [ ] Check if installed: `command -v docker`
-- [ ] Check AUTO_INSTALL_DOCKER flag in bootstrap.conf
+- [ ] Check AUTO_INSTALL_DOCKER flag in omni.settings.sh
 - [ ] Check permissions: `groups | grep docker`
 - [ ] Manual fix: `sudo apt install docker.io` (Ubuntu)
 - [See detailed troubleshooting](DEPENDENCY-ARCHITECTURE.md#problem-docker-not-found-after-omni---init)
 
 ### PostgreSQL Client Not Found
 - [ ] Check if installed: `command -v psql`
-- [ ] Check AUTO_INSTALL_PSQL flag in bootstrap.conf
+- [ ] Check AUTO_INSTALL_PSQL flag in omni.settings.sh
 - [ ] Check database running: `systemctl status postgresql`
 - [ ] Manual fix: `sudo apt install postgresql-client` (Ubuntu)
 - [See detailed troubleshooting](DEPENDENCY-ARCHITECTURE.md#problem-postgresql-client-not-found)
@@ -189,7 +189,7 @@ log_success "${SCRIPT_NAME} completed"
 
 ```
 _build/omniforge/
-├── bootstrap.conf                         # Config
+├── omni.config                            # Section 1 config
 ├── lib/
 │   ├── common.sh                         # Logging, utils
 │   ├── validation.sh                     # require_cmd, install_docker, install_psql
@@ -222,7 +222,7 @@ _build/omniforge/
 - **57+ tech_stack scripts** - All follow consistent patterns ✅
 - **6 phases** - Sequential initialization (0-5) ✅
 - **18 categories** - Organized by feature/layer ✅
-- **451 lines** in bootstrap.conf - Well-structured ✅
+- **omni.* files** are canonical (bootstrap.conf is legacy stub)
 - **3 dependency layers** - Comprehensive checking ✅
 
 ---
@@ -230,7 +230,7 @@ _build/omniforge/
 ## Security Notes
 
 - **DB_PASSWORD**: Secure random 14-character value
-- **NO hardcoded credentials**: All in bootstrap.conf
+- **NO hardcoded credentials**: Configured via omni.* and env
 - **Parameter validation**: All required params checked
 - **Fail-fast behavior**: Exit on missing required dependencies
 - **Auto-install can be disabled**: Set AUTO_INSTALL_*=false for strict environments

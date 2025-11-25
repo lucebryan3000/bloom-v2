@@ -61,7 +61,7 @@ node --version
 
 ```
 _build/omniforge/
-├── bootstrap.conf              # Single source of truth for all configuration
+├── omni.config / omni.settings.sh / omni.profiles.sh / omni.phases.sh   # Canonical configuration (omni.* config is legacy)
 ├── omni.sh                     # Main CLI entry point
 ├── lib/                        # Core library functions (21 files)
 │   ├── common.sh              # Shared logging, file ops
@@ -83,7 +83,7 @@ _build/omniforge/
 
 ```
 1. User runs: omni --init
-2. omni.sh sources bootstrap.conf (configuration)
+2. omni.sh sources lib/bootstrap.sh which loads omni.* (omni.* config is legacy/stub)
 3. omni.sh sources lib/common.sh (logging, utilities)
 4. omni.sh calls preflight_check() from lib/validation.sh
 5. Preflight checks: git, node, pnpm, docker, psql
@@ -164,13 +164,13 @@ Examples:
 **Common Variables**:
 | Variable | Set In | Used By | Purpose |
 |----------|--------|---------|---------|
-| PROJECT_ROOT | bootstrap.conf | All scripts | Project root directory |
-| INSTALL_DIR | bootstrap.conf | All scripts | Installation target directory |
-| APP_NAME | bootstrap.conf | UI generation | Application display name |
-| DB_NAME | bootstrap.conf | Database scripts | Database name |
-| DB_PASSWORD | bootstrap.conf | Docker Compose | PostgreSQL password |
-| DB_HOST | bootstrap.conf | App config | Database hostname (default: localhost) |
-| DB_PORT | bootstrap.conf | App config | Database port (default: 5432) |
+| PROJECT_ROOT | omni.settings.sh | All scripts | Project root directory |
+| INSTALL_DIR | omni.settings.sh | All scripts | Installation target directory |
+| APP_NAME | omni.config | UI generation | Application display name |
+| DB_NAME | omni.config | Database scripts | Database name |
+| DB_PASSWORD | omni.config | Docker Compose | PostgreSQL password |
+| DB_HOST | omni.config | App config | Database hostname (default: localhost) |
+| DB_PORT | omni.config | App config | Database port (default: 5432) |
 
 ---
 
@@ -272,7 +272,7 @@ Check AUTO_INSTALL_DOCKER flag
 
 **Configuration**:
 ```bash
-# bootstrap.conf
+## omni.* config (omni.* config legacy)
 AUTO_INSTALL_DOCKER="${AUTO_INSTALL_DOCKER:-true}"
 ```
 
@@ -308,7 +308,7 @@ Check AUTO_INSTALL_PSQL flag
 
 **Configuration**:
 ```bash
-# bootstrap.conf
+## omni.* config (omni.* config legacy)
 AUTO_INSTALL_PSQL="${AUTO_INSTALL_PSQL:-true}"
 ```
 
@@ -333,7 +333,7 @@ For strict CI/CD environments, disable auto-install:
 export AUTO_INSTALL_DOCKER=false
 export AUTO_INSTALL_PSQL=false
 
-# Or in bootstrap.conf
+# Defined in omni.* config
 AUTO_INSTALL_DOCKER="false"
 AUTO_INSTALL_PSQL="false"
 
@@ -477,9 +477,9 @@ log_success "Docker Compose PostgreSQL Stack created"
 
 ## Configuration Reference
 
-### bootstrap.conf Settings
+#### omni.* config (omni.* config legacy) Settings
 
-**Dependency Configuration** [bootstrap.conf:260-270](bootstrap.conf#L260):
+**Dependency Configuration** [omni.config / omni.settings.sh:260-270](omni.* config#L260):
 
 ```bash
 # =============================================================================
@@ -505,7 +505,7 @@ PREFLIGHT_REMEDIATE="${PREFLIGHT_REMEDIATE:-true}"
 PREFLIGHT_SKIP_MISSING="${PREFLIGHT_SKIP_MISSING:-false}"
 ```
 
-**Feature Flags** [bootstrap.conf:140-152](bootstrap.conf#L140):
+**Feature Flags** [omni.config / omni.settings.sh:140-152](omni.* config#L140):
 
 ```bash
 # Stack features - enable/disable by profile
@@ -521,7 +521,7 @@ ENABLE_TEST_INFRA="${ENABLE_TEST_INFRA:-false}"    # Testing framework
 ENABLE_CODE_QUALITY="${ENABLE_CODE_QUALITY:-false}"  # Code quality tools
 ```
 
-**Security** [bootstrap.conf:180-185](bootstrap.conf#L180):
+**Security** [omni.config / omni.settings.sh:180-185](omni.* config#L180):
 
 ```bash
 # Database credentials (auto-generated, never hardcoded in repo)
@@ -550,7 +550,7 @@ DB_PORT="${DB_PORT:-5432}"
 command -v docker
 
 # Check AUTO_INSTALL_DOCKER flag
-grep "AUTO_INSTALL_DOCKER" bootstrap.conf
+grep "AUTO_INSTALL_DOCKER" omni.settings.sh
 
 # Check if docker installation ran
 grep "install_docker" ~/.bootstrap_state 2>/dev/null || echo "Not in state file"
@@ -740,7 +740,7 @@ The OmniForge dependency management system provides:
 ✅ **Comprehensive checking** across three layers (system binaries, npm packages, configuration)
 ✅ **Automatic remediation** for critical dependencies (docker, psql)
 ✅ **Idempotent execution** preventing duplicate installations
-✅ **Flexible configuration** via bootstrap.conf and environment variables
+✅ **Flexible configuration** via omni.* config and environment variables
 ✅ **Graceful degradation** with warnings and skip options
 ✅ **Cross-platform support** with OS-aware package management
 

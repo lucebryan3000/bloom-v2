@@ -28,7 +28,7 @@ git diff _build/omniforge/<file>
 
 **Expected Modified Files**:
 - `omni.sh` - Added reset command
-- `bootstrap.conf` - Added verify-build.sh to Phase 4
+- `omni.* config` - Added verify-build.sh to Phase 4
 - `tech_stack/foundation/init-typescript.sh` - Auto-exclusion patterns
 - `OMNIFORGE.md` - Reset documentation
 
@@ -138,7 +138,7 @@ Document each change with:
      - Updated workflow section (lines 148-166)
    - Purpose: Integrate reset command into omni CLI
 
-2. `bootstrap.conf`
+2. `omni.* config`
    - Changes:
      - Added `quality/verify-build.sh` to Phase 4 execution
    - Purpose: Automated build verification after deployment
@@ -299,7 +299,7 @@ Purpose: Safe deployment reset with backup
 
 ### 2. Build Verification (2 files)
 - tech_stack/quality/verify-build.sh (NEW)
-- bootstrap.conf (MODIFIED)
+- omni.* config (MODIFIED)
 
 Purpose: Automated build testing
 

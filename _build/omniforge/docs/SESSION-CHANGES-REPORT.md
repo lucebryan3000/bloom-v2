@@ -1,7 +1,7 @@
 # OmniForge Session Changes Report
 
 **Session Date**: 2025-11-24
-**Git Baseline**: commit `16dc779` (chore: update bootstrap.conf local settings)
+**Git Baseline**: commit `16dc779` (chore: update omni.* config local settings)
 **Session Focus**: Reset deployment, fix build errors, add reset system to omni.sh
 
 ---
@@ -78,8 +78,8 @@ This session successfully:
 
 ---
 
-### 2. bootstrap.conf
-**Path**: `_build/omniforge/bootstrap.conf`
+### 2. omni.* config
+**Path**: `_build/omniforge/omni.* config`
 **Changes**: +2 additions
 
 #### Modification:
@@ -369,7 +369,7 @@ Delete all test deployments? [y/N]
 5. **Verification Report**: Generates `logs/verification-report.md`
 
 **Integration**:
-Added to Phase 4 of `bootstrap.conf`, runs automatically after all other scripts complete.
+Added to Phase 4 of `omni.* config`, runs automatically after all other scripts complete.
 
 **Output Files**:
 - `logs/typecheck.log` - TypeScript output
@@ -519,7 +519,7 @@ Added to Phase 4 of `bootstrap.conf`, runs automatically after all other scripts
 - Enhanced scripts: `init-typescript.sh`, `verify-build.sh`
 - New utilities: `test-deploy.sh`, `test-cleanup.sh`
 - Documentation: All new *.md files
-- Bootstrap config: `bootstrap.conf`
+- Bootstrap config: `omni.* config`
 
 **Reset Script Template**:
 Includes complete bash script for safe reset with:
@@ -657,7 +657,7 @@ src/app/layout.tsx|2025-11-24T01:28:58-06:00|core/00-nextjs
 
 ### 2. Build Verification (2 files)
 - **tech_stack/quality/verify-build.sh** (NEW) - Build verification script
-- **bootstrap.conf** (MODIFIED) - Added to Phase 4
+- **omni.* config** (MODIFIED) - Added to Phase 4
 
 **Purpose**: Automated build testing after deployment
 **Impact**: Catch build errors immediately after deployment
@@ -818,7 +818,7 @@ Reset respects OmniForge state system:
 - Uses same validation system
 - Maintains compatibility
 
-#### bootstrap.conf Integration
+#### omni.* config Integration
 - Added verify-build.sh to Phase 4
 - Maintains phase ordering
 - No breaking changes
@@ -1045,7 +1045,7 @@ This session successfully achieved all goals:
 
 ### Modified (4 files)
 1. omni.sh - Reset command integration
-2. bootstrap.conf - Build verification
+2. omni.* config - Build verification
 3. init-typescript.sh - Auto-exclusions
 4. OMNIFORGE.md - Reset documentation
 

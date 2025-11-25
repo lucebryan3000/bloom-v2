@@ -90,7 +90,7 @@ jq '.exclude += [
 
 ### 3. Bootstrap Configuration Update
 
-**File**: `_build/omniforge/bootstrap.conf`
+**File**: omni.* config (bootstrap.conf is legacy/stub)
 
 **Change**: Added `quality/verify-build.sh` as the final script in Phase 4.
 
@@ -190,7 +190,7 @@ All changes are **backward compatible**:
 ### OmniForge System Files
 1. `_build/omniforge/tech_stack/foundation/init-typescript.sh` - Enhanced
 2. `_build/omniforge/tech_stack/quality/verify-build.sh` - Created
-3. `_build/omniforge/bootstrap.conf` - Added verify-build.sh
+3. omni.* config (bootstrap.conf is legacy/stub) - Added verify-build.sh
 
 ## Rollout Plan
 
@@ -198,7 +198,7 @@ All changes are **backward compatible**:
 - ✅ Fixed bloom2 project build errors
 - ✅ Enhanced init-typescript.sh
 - ✅ Created verify-build.sh
-- ✅ Updated bootstrap.conf
+- ✅ Updated omni.* config
 
 ### Future Deployments
 - ✅ Auto-exclusions prevent TypeScript errors
