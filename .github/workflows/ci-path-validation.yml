@@ -1,0 +1,20 @@
+name: CI Path Validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci-path:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate OmniForge host CI path
+        run: |
+          chmod +x scripts/ci-path-check.sh
+          scripts/ci-path-check.sh
+        env:
+          DOCKER_EXEC_MODE: host
+          DOCKER_REQUIRED: true
