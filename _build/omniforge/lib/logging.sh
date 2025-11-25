@@ -311,7 +311,13 @@ log_init() {
 
     # Set default LOG_DIR if not set
     if [[ -z "${LOG_DIR:-}" ]]; then
-        LOG_DIR="${TMPDIR:-/tmp}"
+        if [[ -n "${OMNIFORGE_DIR:-}" ]]; then
+            LOG_DIR="${OMNIFORGE_DIR%/}/logs"
+        elif [[ -n "${SCRIPTS_DIR:-}" ]]; then
+            LOG_DIR="${SCRIPTS_DIR%/}/logs"
+        else
+            LOG_DIR="${TMPDIR:-/tmp}"
+        fi
     fi
 
     mkdir -p "$LOG_DIR"
