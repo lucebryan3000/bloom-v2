@@ -69,7 +69,15 @@ for _v in "${_OF_SECTION1_VARS[@]}"; do
 done
 unset _OF_SECTION1_VARS _OF_ENV_OVERRIDES _v
 
-# Load staged profile helpers (data comes from bootstrap.conf)
+# Load profile data (canonical) and helpers
+OMNI_PROFILES_PATH="${OMNI_PROFILES_PATH:-${OF_ROOT_DIR}/omni.profiles.sh}"
+if [[ -f "$OMNI_PROFILES_PATH" ]]; then
+  # shellcheck source=/dev/null
+  . "$OMNI_PROFILES_PATH"
+else
+  echo "lib/bootstrap.sh: missing omni.profiles.sh at $OMNI_PROFILES_PATH (profile data is required)" >&2
+  exit 1
+fi
 if [[ -f "${OF_ROOT_DIR}/lib/omni_profiles.sh" ]]; then
   # shellcheck source=/dev/null
   . "${OF_ROOT_DIR}/lib/omni_profiles.sh"

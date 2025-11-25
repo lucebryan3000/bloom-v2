@@ -292,15 +292,6 @@ menu_bootstrap() {
 
 # Step 1: Select Stack Profile
 _bootstrap_step_select_profile() {
-    # Load profile definitions from bootstrap.conf
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local omniforge_dir="$(cd "${script_dir}/.." && pwd)"
-    local bootstrap_conf="${omniforge_dir}/bootstrap.conf"
-
-    if [[ -f "$bootstrap_conf" ]]; then
-        source "$bootstrap_conf"
-    fi
-
     # Determine default profile number from STACK_PROFILE
     local default_profile="${STACK_PROFILE:-asset_manager}"
     local default_num=5  # fallback to asset_manager (recommended)
