@@ -13,6 +13,11 @@
 # Dependencies:
 #   lib/common.sh
 # =============================================================================
+# Contract:
+#   Inputs: PROJECT_ROOT, ENABLE_PDF_EXPORTS/ENABLE_CODE_QUALITY flags, export package pins
+#   Outputs: export infrastructure files (src/export/*), updates package.json scripts/config
+#   Runtime: Adds export system scaffolding; reads flags to include optional exports
+# =============================================================================
 
 set -euo pipefail
 IFS=$'\n\t'

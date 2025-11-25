@@ -21,6 +21,10 @@
 #
 # Requires:
 #   - PROJECT_ROOT, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+# Contract:
+#   Inputs: PROJECT_ROOT, DB_NAME, DB_USER, DB_PASSWORD (.env), DB_HOST, DB_PORT, APP_ENV_FILE
+#   Outputs: drizzle.config.ts, src/db/index.ts, src/db/schema/index.ts, drizzle/ dir, .env (ensures DB_* + DATABASE_URL)
+#   Runtime: Generates database scaffolding; depends on compose services for Postgres
 # =============================================================================
 
 set -euo pipefail

@@ -21,6 +21,10 @@
 #   - PROJECT_ROOT, APP_NAME, NODE_VERSION
 #   - DB_NAME, DB_USER, DB_PASSWORD, DB_PORT
 #   - POSTGRES_VERSION, PGVECTOR_IMAGE (optional)
+# Contract:
+#   Inputs: APP_NAME, APP_ENV_FILE, DB_NAME, DB_USER, DB_PASSWORD (.env), PGVECTOR_IMAGE, NODE_VERSION
+#   Outputs: docker-compose.yml, docker-compose.prod.yml, scripts/docker-dev.sh, Makefile, db init SQL
+#   Runtime: Compose definitions for app + database; bootstrap-only (used by docker compose)
 # =============================================================================
 
 set -euo pipefail
@@ -59,6 +63,8 @@ fi
 secrets_ensure_core_env
 
 ENV_FILE_PATH="${APP_ENV_FILE:-.env}"
+
+log_info "Compose image pins: app base node:${NODE_VERSION}-alpine, postgres image ${PGVECTOR_IMAGE}"
 
 cd "$INSTALL_DIR"
 

@@ -10,6 +10,11 @@
 # Creates:
 #   - src/env.ts (environment validation schema)
 # =============================================================================
+# Contract:
+#   Inputs: PROJECT_ROOT, APP_ENV_FILE, env keys from omni.config (.env)
+#   Outputs: src/env.ts validation schema
+#   Runtime: Validates required env keys; referenced at app runtime
+# =============================================================================
 
 set -euo pipefail
 IFS=$'\n\t'

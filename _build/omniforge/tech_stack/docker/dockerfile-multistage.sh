@@ -14,6 +14,10 @@
 #
 # Requires:
 #   - PROJECT_ROOT, APP_NAME, NODE_VERSION, PNPM_VERSION
+# Contract:
+#   Inputs: APP_NAME, NODE_VERSION, PNPM_VERSION
+#   Outputs: Dockerfile (prod), Dockerfile.dev (dev), .dockerignore
+#   Runtime: Template generation for Docker builds; bootstrap-only
 # =============================================================================
 
 set -euo pipefail
@@ -41,6 +45,8 @@ fi
 : "${APP_NAME:?APP_NAME not set}"
 : "${NODE_VERSION:=20}"
 : "${PNPM_VERSION:=9}"
+
+log_info "Resolved Node image tag: node:${NODE_VERSION}-alpine (pnpm ${PNPM_VERSION})"
 
 cd "$INSTALL_DIR"
 

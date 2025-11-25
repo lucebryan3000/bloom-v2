@@ -325,6 +325,21 @@ phase_execute() {
         fi
     fi
 
+    local docker_required
+    docker_required=$(phase_get_config_field "$phase_num" "docker_required") || true
+    if [[ "${docker_required:-false}" == "true" && "${DOCKER_REQUIRED:-true}" == "true" ]]; then
+        if [[ "${DOCKER_EXEC_MODE:-container}" == "container" && -z "${INSIDE_OMNI_DOCKER:-}" ]]; then
+            log_error "Phase $phase_num ($phase_name) requires Docker container mode."
+            return 1
+        fi
+        if [[ "${DOCKER_EXEC_MODE:-container}" == "host" ]]; then
+            if ! require_docker_env; then
+                log_error "Phase $phase_num ($phase_name) requires Docker; ensure Docker is available."
+                return 1
+            fi
+        fi
+    fi
+
     # Use new phase start logging
     log_phase_start "$phase_num" "$phase_name"
 

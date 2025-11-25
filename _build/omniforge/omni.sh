@@ -246,6 +246,8 @@ COMMANDS:
                     - Displays which phases/scripts have run
                     - Shows success/failure status
 
+    stack           Stack helpers (up/down/ps) for app/postgres
+
     build           Build and verify the project (post-initialization)
                     - Runs: pnpm install, lint, typecheck, build
                     - Use after 'run' completes to compile the project
@@ -302,6 +304,7 @@ PHASE=""
 CLEAN_PATH=""
 CLEAN_LEVEL=""
 RESET_YES=false
+STACK_ARGS=()
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -357,7 +360,7 @@ while [[ $# -gt 0 ]]; do
             RESET_YES=true
             shift
             ;;
-        menu|run|list|status|build|forge|compile|clean|reset)
+        menu|run|list|status|build|forge|compile|clean|reset|stack)
             # Map 'forge' and 'compile' to 'build' for backward compat
             if [[ "$1" == "forge" || "$1" == "compile" ]]; then
                 COMMAND="build"
@@ -378,6 +381,12 @@ while [[ $# -gt 0 ]]; do
         --from)
             # Ignored - use --phase instead
             shift 2
+            ;;
+        stack)
+            COMMAND="stack"
+            shift
+            STACK_ARGS=("$@")
+            break
             ;;
         phase)
             COMMAND="run"
@@ -434,6 +443,10 @@ case "${COMMAND:-}" in
         _validate_bin "forge"
         show_logo
         exec "${SCRIPT_DIR}/bin/forge" "${ARGS[@]}"
+        ;;
+    stack)
+        _validate_bin "stack"
+        exec "${SCRIPT_DIR}/bin/stack" "${STACK_ARGS[@]}"
         ;;
     clean)
         # Load libraries for clean function

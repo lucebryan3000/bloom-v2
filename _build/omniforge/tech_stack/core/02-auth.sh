@@ -20,6 +20,11 @@
 #   - PROJECT_ROOT
 #   - core/01-database to be completed (Drizzle ORM)
 # =============================================================================
+# Contract:
+#   Inputs: PROJECT_ROOT, DB_* env, APP_NAME, APP_ENV_FILE, ENABLE_AUTHJS
+#   Outputs: src/lib/auth.ts, API route handler, auth schema, .env.example updates for Auth.js
+#   Runtime: Bootstraps Auth.js integration; depends on database scaffolding
+# =============================================================================
 
 set -euo pipefail
 IFS=$'\n\t'

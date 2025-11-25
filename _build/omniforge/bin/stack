@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# =============================================================================
+# bin/stack - Docker stack helpers (bootstrap-only convenience)
+# =============================================================================
+# Part of OmniForge - Infinite Architectures. Instant Foundation.
+#
+# Usage: omni stack <up|down|ps>
+# Notes: Run on the host with Docker available. Not intended for post-bootstrap lifecycle.
+# =============================================================================
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OMNI_ROOT="${OMNI_ROOT:-"${SCRIPT_DIR}/.."}"
+
+# shellcheck source=/dev/null
+. "${OMNI_ROOT}/lib/bootstrap.sh"
+
+usage() {
+    cat <<USAGE
+Stack helpers (bootstrap convenience)
+
+Usage: omni stack <up|down|ps>
+  up    Start core services (app + postgres)
+  down  Stop all stack services
+  ps    Show stack status
+USAGE
+}
+
+if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+    log_error "[docker] Stack commands must run on the host (docker compose available)."
+    exit 1
+fi
+
+cmd="${1:-}"; shift || true
+
+case "$cmd" in
+    up)
+        secrets_ensure_core_env
+        require_docker_env || exit 1
+        omni_docker_compose up -d app postgres
+        ;;
+    down)
+        require_docker_env || exit 1
+        omni_docker_compose down
+        ;;
+    ps)
+        require_docker_env || exit 1
+        omni_docker_compose ps
+        ;;
+    ""|-h|--help)
+        usage
+        exit 0
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac

@@ -16,7 +16,7 @@
 
 PHASE_METADATA_0="number:0|name:Project Foundation|description:Initialize Next.js, TypeScript, project structure"
 
-PHASE_CONFIG_00_FOUNDATION="enabled:true|timeout:300|exec:sequential|prereq:strict|deps:git:https://git-scm.com,node:https://nodejs.org,pnpm:https://pnpm.io"
+PHASE_CONFIG_00_FOUNDATION="enabled:true|timeout:300|exec:sequential|docker_required:true|prereq:strict|deps:git:https://git-scm.com,node:https://nodejs.org,pnpm:https://pnpm.io"
 
 PHASE_PACKAGES_00_FOUNDATION="
 PKG_NEXT
@@ -45,7 +45,7 @@ foundation/init-directory-structure.sh
 
 PHASE_METADATA_1="number:1|name:Infrastructure & Database|description:Docker, PostgreSQL, Drizzle, environment setup (takes longest)"
 
-PHASE_CONFIG_01_INFRASTRUCTURE="enabled:true|timeout:1200|exec:sequential|prereq:strict|deps:docker:https://docker.com,psql:https://postgresql.org"
+PHASE_CONFIG_01_INFRASTRUCTURE="enabled:true|timeout:1200|exec:sequential|docker_required:true|prereq:strict|deps:docker:https://docker.com,psql:https://postgresql.org"
 
 PHASE_PACKAGES_01_INFRASTRUCTURE="
 PKG_DRIZZLE_ORM
@@ -79,7 +79,7 @@ env/server-action-template.sh
 
 PHASE_METADATA_2="number:2|name:Core Features|description:Authentication, AI, state management, background jobs, logging"
 
-PHASE_CONFIG_02_CORE="enabled:true|timeout:900|exec:sequential|prereq:warn|deps:openssl:builtin"
+PHASE_CONFIG_02_CORE="enabled:true|timeout:900|exec:sequential|docker_required:true|prereq:warn|deps:openssl:builtin"
 
 PHASE_PACKAGES_02_CORE="
 PKG_NEXT_AUTH
@@ -118,7 +118,7 @@ observability/pino-pretty-dev.sh
 
 PHASE_METADATA_3="number:3|name:User Interface|description:shadcn/ui components, printing, component organization"
 
-PHASE_CONFIG_03_UI="enabled:true|timeout:600|exec:sequential|prereq:warn|deps:"
+PHASE_CONFIG_03_UI="enabled:true|timeout:600|exec:sequential|docker_required:true|prereq:warn|deps:"
 
 PHASE_PACKAGES_03_UI="
 PKG_CLSX|enabled:false
@@ -142,7 +142,7 @@ ui/components-structure.sh
 
 PHASE_METADATA_4="number:4|name:Extensions & Quality|description:Intelligence, exports, testing, code quality (pick what you need)"
 
-PHASE_CONFIG_04_EXTENSIONS="enabled:true|timeout:1800|exec:sequential|prereq:warn|deps:"
+PHASE_CONFIG_04_EXTENSIONS="enabled:true|timeout:1800|exec:sequential|docker_required:true|prereq:warn|deps:"
 
 PHASE_PACKAGES_04_EXTENSIONS="
 PKG_MARKDOWN_IT|enabled:false

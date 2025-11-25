@@ -7,6 +7,11 @@
 # Phase: 3
 # Purpose: Wrapper script that delegates Vercel AI SDK setup to features/ai-sdk.sh
 # =============================================================================
+# Contract:
+#   Inputs: PROJECT_ROOT, ENABLE_AI_SDK, API key env placeholders
+#   Outputs: Delegates to features/ai-sdk.sh (env example updates, AI scaffolding)
+#   Runtime: Runs during bootstrap when AI stack enabled
+# =============================================================================
 
 set -euo pipefail
 IFS=$'\n\t'
