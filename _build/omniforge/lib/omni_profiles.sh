@@ -4,6 +4,8 @@
 #
 # Staged copy of stack profile helper functions from bootstrap.conf.
 # NOT wired into runtime yet; bootstrap.conf remains canonical.
+# Data (PROFILE_* arrays, AVAILABLE_PROFILES) lives in bootstrap.conf and must
+# be loaded before these helpers are called.
 #
 
 apply_stack_profile() {
@@ -61,4 +63,3 @@ get_profile_metadata() {
     # Get value using eval (Bash 5.3 compatible)
     eval "echo \${${profile_var}[$key]:-}"
 }
-
