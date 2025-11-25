@@ -797,48 +797,106 @@ Maintain this list in the playbook for Claude to reference without filesystem qu
 
 ---
 
-## Example Session: Add Logging Framework
+## Example Sessions
 
-### **Phase 1: Planning (Claude Sonnet)**
+### **Example 1: Clean Up Documentation Folder**
 
-```markdown
-I'll break this into 5 tasks:
+**Task**: "Clean up the .md docs in .claude folder"
 
-**Claude Haiku Tasks:**
-1. Analyze existing logging implementation to understand current patterns
+#### **Phase 1: Planning (Claude Sonnet)**
 
-**Codex CLI Tasks:**
-2. Generate TypeScript logger class with Winston integration
-3. Generate log rotation config
-4. Update project documentation with logging guide
-
-**Claude Sonnet Task:**
-5. Validate integration and consistency
+**TodoWrite Format (CORRECT):**
+```
+[] Bash: List all .md files in .claude/ directory (sequential)
+[] Bash: Check file sizes and last modified dates (sequential)
+[] Sonnet: Analyze docs and create cleanup plan (sequential)
+[] Bash: Create .claude/archive/ directory (sequential)
+[] Bash: Move SETUP-SUMMARY.md to archive (parallel)
+[] Bash: Move QUICK-REFERENCE.md to archive (parallel)
+[] Bash: Move REFACTORING-PLAN.md to archive (parallel)
+[] Bash: Move PLAYBOOK-documentation-update.md to archive (parallel)
+[] Codex: Generate archive/README.md with file history (sequential)
+[] Sonnet: Update PLAYBOOK-hybrid-codex.md references (sequential)
+[] Bash: Validate final structure with ls -la (sequential)
+[] Sonnet: Review cleanup and mark complete (sequential)
 ```
 
-### **Phase 2: Execution (Parallel)**
+**Key insights:**
+- ✅ **Model prefix** shows WHO executes (Bash, Sonnet, Codex, Haiku)
+- ✅ **Execution mode** shows WHEN (sequential vs parallel)
+- ✅ **Parallel moves** are independent (different files)
+- ✅ **Codex generates** documentation from context
+- ✅ **Sonnet validates** at Phase 3
+
+#### **Phase 2: Execution (Sonnet Direct)**
+
+Since all tasks are simple file operations (Bash) or Sonnet direct execution, no Haiku agents or Codex CLI needed.
+
+**What actually happened:**
+```bash
+# Sonnet executed directly (no subagents needed for simple task)
+ls -lah .claude/
+mkdir -p .claude/archive
+mv .claude/{SETUP-SUMMARY,QUICK-REFERENCE,REFACTORING-PLAN,PLAYBOOK-documentation-update}.md .claude/archive/
+# Created archive/README.md with Write tool
+# Updated PLAYBOOK-hybrid-codex.md with Edit tool
+```
+
+#### **Phase 3: Validation (Claude Sonnet)**
+
+```bash
+# Verify structure
+find .claude -name "*.md" | sort
+
+# Commit changes
+git add .claude/
+git commit -m "docs(claude): clean up documentation folder"
+git push origin main
+```
+
+**Result**: 4 files archived (40KB), 2 active docs remain, clean structure
+
+---
+
+### **Example 2: Add Logging Framework**
+
+**Task**: "Implement Winston logging framework"
+
+#### **Phase 1: Planning (Claude Sonnet)**
+
+**TodoWrite Format (CORRECT):**
+```
+[] Bash: Check if logger already exists in src/lib/ (sequential)
+[] Haiku: Read and analyze existing logging patterns (sequential)
+[] Codex: Generate Winston logger class with rotation (parallel)
+[] Codex: Generate log rotation configuration file (parallel)
+[] Codex: Update project README with logging guide (parallel)
+[] Bash: Run TypeScript compiler on generated files (sequential)
+[] Bash: Run ESLint on generated files (sequential)
+[] Sonnet: Review outputs and mark complete (sequential)
+```
+
+#### **Phase 2: Execution (Parallel)**
 
 **Claude spawns Haiku agent:**
 ```
-Task 1: Read and analyze src/lib/logger.ts (existing)
+Task: Read and analyze src/lib/logger.ts (existing)
 Report: current logging patterns, output formats, configuration
 ```
 
-**User runs Codex commands:**
+**User runs Codex commands (in parallel):**
 ```bash
-# Task 2
+# These 3 commands can run simultaneously (different output files)
 codex exec -m gpt-5.1-codex-max \
   "Generate Winston logger for Node.js app. \
   Support: console, file rotation, JSON format, log levels (debug/info/warn/error). \
   Output to src/lib/logger-winston.ts"
 
-# Task 3
 codex exec -m gpt-5.1-codex \
   "Generate Winston log rotation config. \
   Max file: 10MB, max files: 5, daily rotation. \
   Output to src/config/logger.config.ts"
 
-# Task 4
 codex exec -m gpt-5.1-codex \
   --add-file docs/README.md \
   --add-file src/lib/logger-winston.ts \
@@ -846,7 +904,7 @@ codex exec -m gpt-5.1-codex \
   Include: setup, usage examples, configuration, log levels"
 ```
 
-### **Phase 3: Validation (Claude Sonnet)**
+#### **Phase 3: Validation (Claude Sonnet)**
 
 ```bash
 # Claude runs validation
@@ -864,6 +922,8 @@ Claude reviews outputs, checks consistency, marks todos complete.
 Context usage: ~35k tokens used this session.
 Would you like to /clear the conversation history? (Y/n)
 ```
+
+**Result**: Winston logging integrated, 3 files generated via Codex, validated by Sonnet
 
 ---
 
@@ -911,6 +971,12 @@ codex exec -m gpt-5.1-codex-max \
 ---
 
 ## Version History
+
+- **v1.1** (2025-11-24): Added real-world examples with correct TodoWrite format
+  - Example 1: Documentation cleanup (Sonnet-only workflow)
+  - Example 2: Logging framework (Hybrid workflow with Codex)
+  - Demonstrated proper model prefix and execution mode syntax
+  - Fixed inconsistency between playbook requirements and actual usage
 
 - **v1.0** (2025-11-24): Initial hybrid workflow with Codex CLI integration
   - Three-tier architecture (Sonnet → Haiku + Codex → Sonnet)
