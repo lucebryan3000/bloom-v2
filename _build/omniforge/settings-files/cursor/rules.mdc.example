@@ -16,7 +16,7 @@
 //   4. Rules apply to files matching the glob patterns
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can populate initial values from bootstrap.conf:
+//   Bootstrap scripts can populate initial values from omni.* config:
 //   - NEXT_VERSION, NODE_VERSION -> Framework version constraints
 //   - ENABLE_PYTHON -> Whether Python rules apply
 //   After setup, this file is the authoritative source for Cursor rules.

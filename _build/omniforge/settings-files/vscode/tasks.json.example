@@ -16,7 +16,7 @@
 //   4. Run tasks via Command Palette or keyboard shortcuts
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   Bootstrap scripts can set initial values from omni.* config:
 //   - ENABLE_PYTHON -> Include/exclude Python-related tasks
 //   - Package manager commands, paths adjusted per project
 //   After setup, this file is the authoritative source for task definitions.

@@ -13,10 +13,10 @@
 #   1. Copy this file to ~/.codex/config.toml for user-level config
 #   2. Or copy to .codex/config.toml in your project root for project-specific
 #   3. Uncomment and modify settings as needed
-#   4. Initial values can reference bootstrap.conf, then this becomes source of truth
+#   4. Initial values can reference omni.config/omni.settings.sh, then this becomes source of truth
 #
 # BOOTSTRAP INTEGRATION:
-#   On first run, bootstrap scripts can populate values from bootstrap.conf:
+#   On first run, bootstrap scripts can populate values from omni.*:
 #   - APP_NAME -> used in MCP server naming
 #   - DB_NAME, DB_USER -> used in database tool configs
 #   After setup, this file is the authoritative source for Codex configuration.

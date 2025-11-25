@@ -7,7 +7,7 @@
 # Phase: 0 (Foundation)
 # Purpose: Create standard project directory structure
 #
-# Creates all directories defined in PROJECT_DIRECTORIES from bootstrap.conf.
+# Creates all directories defined in PROJECT_DIRECTORIES from omni.settings.sh.
 # =============================================================================
 
 set -euo pipefail
@@ -31,7 +31,7 @@ log_step "${SCRIPT_NAME}"
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
 cd "$INSTALL_DIR"
 
-# Create directories from bootstrap.conf PROJECT_DIRECTORIES
+# Create directories from omni.settings PROJECT_DIRECTORIES
 log_info "Creating project directories..."
 
 # Use PROJECT_DIRECTORIES if defined, otherwise use defaults

@@ -15,7 +15,7 @@
 #   3. Enable "Require review from Code Owners" in branch protection rules
 #
 # BOOTSTRAP INTEGRATION:
-#   Bootstrap scripts can customize based on bootstrap.conf:
+#   Bootstrap scripts can customize based on omni.* config:
 #   - Team/username placeholders for your organization
 #   After setup, this file is the authoritative source for code ownership.
 #

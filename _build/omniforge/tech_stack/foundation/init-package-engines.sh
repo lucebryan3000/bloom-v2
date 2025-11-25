@@ -8,7 +8,7 @@
 # Purpose: Ensure package.json has correct engine constraints
 #
 # Verifies and updates the "engines" field in package.json to match
-# the versions specified in bootstrap.conf.
+# the versions specified in omni.settings.sh.
 # =============================================================================
 
 set -euo pipefail

@@ -28,7 +28,7 @@ log_step "${SCRIPT_NAME}"
 : "${PROJECT_ROOT:?PROJECT_ROOT not set}"
 cd "$INSTALL_DIR"
 
-# Default test directory (configurable via bootstrap.conf)
+# Default test directory (configurable via omni.settings.sh)
 SRC_TEST_DIR="${SRC_TEST_DIR:-__tests__}"
 
 # Create test directory structure

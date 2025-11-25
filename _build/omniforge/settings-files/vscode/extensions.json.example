@@ -16,7 +16,7 @@
 //   4. Add project-specific extensions as needed
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can customize based on bootstrap.conf:
+//   Bootstrap scripts can customize based on omni.* config:
 //   - ENABLE_PYTHON -> Include/exclude Python extensions
 //   - Tech stack choices -> Relevant framework extensions
 //   After setup, this file is the authoritative source for extension recommendations.

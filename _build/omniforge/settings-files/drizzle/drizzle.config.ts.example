@@ -15,7 +15,7 @@
 //   3. Run migrations with: pnpm db:generate && pnpm db:migrate
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can set initial values from bootstrap.conf:
+//   Bootstrap scripts can set initial values from omni.* config:
 //   - DB_NAME, DB_USER, DB_PASSWORD -> DATABASE_URL construction
 //   - POSTGRES_VERSION -> dialect version hints
 //   After setup, this file is the authoritative source for Drizzle configuration.

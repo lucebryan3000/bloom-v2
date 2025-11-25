@@ -360,7 +360,7 @@ Export system integrates with:
 
 ## Environment & Configuration
 
-Set these in `bootstrap.conf`:
+Set these in `omni.settings.sh` / `omni.config`:
 
 ```bash
 ENABLE_PDF_EXPORTS="true"

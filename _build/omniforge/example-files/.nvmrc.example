@@ -14,15 +14,15 @@
 #   2. Run 'nvm use' or 'fnm use' to switch to the specified version
 #   3. CI/CD can use actions/setup-node with node-version-file: '.nvmrc'
 #
-# BOOTSTRAP INTEGRATION:
-#   This version is synchronized with NODE_VERSION in bootstrap.conf
-#   - bootstrap.conf NODE_VERSION="20.18.1"
+# OMNI INTEGRATION:
+#   This version is synchronized with NODE_VERSION in omni.settings.sh
+#   - omni.settings.sh NODE_VERSION="20.18.1"
 #   After setup, this file is the authoritative source for Node.js version.
 #
 # ==============================================================================
 
-# Node.js LTS version (matches bootstrap.conf NODE_VERSION)
-# Last updated to match bootstrap.conf: NODE_VERSION="20.18.1"
+# Node.js LTS version (matches omni.settings.sh NODE_VERSION)
+# Last updated to match omni.settings.sh: NODE_VERSION="20.18.1"
 20.18.1
 
 # Alternative: Use major version alias for flexibility on patch releases

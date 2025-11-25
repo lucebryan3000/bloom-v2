@@ -16,7 +16,7 @@
 //   4. Run migrations: npx sequelize-cli db:migrate
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can include this based on bootstrap.conf:
+//   Bootstrap scripts can include this based on omni.* config:
 //   - If using Sequelize for specific tasks (seeders, raw SQL migrations)
 //   After setup, this file is the authoritative source for Sequelize CLI paths.
 //

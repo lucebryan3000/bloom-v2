@@ -14,7 +14,7 @@
 //   3. Run tests with: pnpm test
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can customize based on bootstrap.conf:
+//   Bootstrap scripts can customize based on omni.* config:
 //   - Test directory structure
 //   - Coverage thresholds
 //   After setup, this file is the authoritative source for Vitest configuration.

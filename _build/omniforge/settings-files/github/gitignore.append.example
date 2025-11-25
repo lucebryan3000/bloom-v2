@@ -15,7 +15,7 @@
 #   3. Bootstrap scripts can merge this automatically
 #
 # BOOTSTRAP INTEGRATION:
-#   Bootstrap scripts append these patterns based on bootstrap.conf:
+#   Bootstrap scripts append these patterns based on omni.* config:
 #   - ENABLE_PYTHON -> Include Python exclusions
 #   - Base patterns always included
 #   After setup, these patterns are part of your .gitignore.

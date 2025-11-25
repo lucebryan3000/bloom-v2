@@ -14,7 +14,7 @@
 #   3. Uses gitignore-style glob patterns
 #
 # BOOTSTRAP INTEGRATION:
-#   Bootstrap scripts can adjust patterns based on bootstrap.conf:
+#   Bootstrap scripts can adjust patterns based on omni.settings.sh:
 #   - Project structure -> Migration paths, output directories
 #   After setup, this file is the authoritative source for ESLint exclusions.
 #

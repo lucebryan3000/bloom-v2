@@ -16,7 +16,7 @@
 //   4. Run tests with: pnpm test:e2e
 //
 // BOOTSTRAP INTEGRATION:
-//   Bootstrap scripts can customize based on bootstrap.conf:
+//   Bootstrap scripts can customize based on omni.* config:
 //   - Base URL, ports
 //   - Browser configurations
 //   After setup, this file is the authoritative source for Playwright configuration.

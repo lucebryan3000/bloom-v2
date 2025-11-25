@@ -210,7 +210,7 @@ All intelligence scripts use these core types (defined in `src/lib/` and `src/sc
 
 ## Environment & Configuration
 
-Set these in `bootstrap.conf` to control intelligence features:
+Set these in `omni.settings.sh` / `omni.config` to control intelligence features:
 
 ```bash
 # Feature flags (intelligence phase)
