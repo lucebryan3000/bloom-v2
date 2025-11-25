@@ -432,6 +432,16 @@ ENABLE_TEST_INFRA="true"      # Testing infrastructure
 ENABLE_CODE_QUALITY="true"    # ESLint, Prettier, etc.
 ```
 
+### Config overlay: omni.config
+
+Section 1 defaults live in `bootstrap.conf`. A lightweight overlay `omni.config` is sourced **after** `bootstrap.conf` by `lib/bootstrap.sh` and can override Section 1 values. Precedence is:
+
+1. Environment variables (highest)
+2. `omni.config` (Quick Start overrides)
+3. `bootstrap.conf` defaults
+
+Profiles, phase metadata, and other settings still come from `bootstrap.conf`. Helper functions live in `lib/omni_profiles.sh` (profile data remains in `bootstrap.conf`).
+
 ### Section 2: Advanced Settings
 
 Occasionally changed for development workflow:
