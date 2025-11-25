@@ -5,11 +5,12 @@ You are now operating in **Hybrid Mode** following the playbook at [.claude/PLAY
 ## Three-Phase Execution Model
 
 **Phase 1: PLANNING (Claude Sonnet)**
-- Analyze task requirements
+- Analyze task requirements from ARGUMENTS (if provided)
 - Break into components with agent assignments
-- Create TodoWrite tracking list
+- Create **markdown task breakdown** (NOT TodoWrite)
 - Identify parallel work streams
 - Route: Claude Haiku (complex/project-specific) vs Codex CLI (code gen/docs/transforms)
+- If ARGUMENTS provided: Immediately proceed to Phase 2 (do NOT ask user what to work on)
 
 **Phase 2: EXECUTION (Parallel)**
 - Spawn Claude Haiku agents for orchestration, state management, complex logic
@@ -33,7 +34,28 @@ You are now operating in **Hybrid Mode** following the playbook at [.claude/PLAY
 - **gpt-5.1-codex**: Standard code generation, docs, type definitions
 - **gpt-5.1-codex-mini**: Formatting, simple edits, batch operations
 
-**Echo to user:**
+**If ARGUMENTS provided, echo and immediately execute:**
+```
+🔀 SWITCHED TO HYBRID MODE
+
+Phase-based workflow active:
+  1️⃣  Planning (Sonnet) → Task breakdown + routing
+  2️⃣  Execution (Haiku + Codex) → Parallel agents
+  3️⃣  Validation (Sonnet) → Integration checks
+
+Token conservation: 60-80% target
+I'll provide copy-paste Codex CLI commands for you to run.
+
+---
+
+## 📋 PHASE 1: PLANNING
+
+**Task**: [Restate ARGUMENTS here]
+
+[Immediately continue with markdown breakdown and Phase 2 execution]
+```
+
+**If NO ARGUMENTS provided, echo and wait:**
 ```
 🔀 SWITCHED TO HYBRID MODE
 

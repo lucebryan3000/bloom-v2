@@ -140,7 +140,7 @@ EOF
     awk '
       /SECTION 1: QUICK START - USER CONFIGURABLE/ { exit }
       { print }
-    ' "$BOOTSTRAP_CONF" >>"$OMNI_CONFIG"
+    ' "$BOOTSTRAP_CONF" >>"$OMNI_CONFIG" || err "Failed to copy header from bootstrap.conf"
 
     printf '\n# =============================================================================\n' >>"$OMNI_CONFIG"
     printf '# STAGED SECTION 1: QUICK START (mirror from bootstrap.conf)\n' >>"$OMNI_CONFIG"
@@ -150,10 +150,11 @@ EOF
 
     # Copy SECTION 1 body from bootstrap.conf
     awk '
-      /SECTION 1: QUICK START - USER CONFIGURABLE/ { in_section=1 }
+      /SECTION 1: QUICK START - USER CONFIGURABLE/ { in_section=1; found=1 }
       /SECTION 2: ADVANCED SETTINGS/ { if (in_section) exit }
       in_section { print }
-    ' "$BOOTSTRAP_CONF" >>"$OMNI_CONFIG"
+      END { if (!found) exit 1 }
+    ' "$BOOTSTRAP_CONF" >>"$OMNI_CONFIG" || err "SECTION 1 marker missing in bootstrap.conf"
   fi
 
   # --- 2) Create lib/omni_profiles.sh and copy profile functions ------------
@@ -177,9 +178,10 @@ EOF
     # Extract the three functions from bootstrap.conf and append to omni_profiles.sh
     # We rely on function definitions of the form: name() { ... }
     awk '
-      /^[[:space:]]*apply_stack_profile[[:space:]]*\(\)[[:space:]]*\{/   { capture=1; depth=0 }
-      /^[[:space:]]*get_profile_by_number[[:space:]]*\(\)[[:space:]]*\{/ { capture=1; depth=0 }
-      /^[[:space:]]*get_profile_metadata[[:space:]]*\(\)[[:space:]]*\{/  { capture=1; depth=0 }
+      BEGIN { found=0 }
+      /^[[:space:]]*apply_stack_profile[[:space:]]*\(\)[[:space:]]*\{/   { capture=1; depth=0; found++ }
+      /^[[:space:]]*get_profile_by_number[[:space:]]*\(\)[[:space:]]*\{/ { capture=1; depth=0; found++ }
+      /^[[:space:]]*get_profile_metadata[[:space:]]*\(\)[[:space:]]*\{/  { capture=1; depth=0; found++ }
 
       capture {
         print
@@ -197,7 +199,8 @@ EOF
           depth=0
         }
       }
-    ' "$BOOTSTRAP_CONF" >>"$OMNI_PROFILES" || warn "Could not reliably extract profile functions; please review lib/omni_profiles.sh manually."
+      END { if (found < 3) exit 1 }
+    ' "$BOOTSTRAP_CONF" >>"$OMNI_PROFILES" || err "Failed to extract profile helpers from bootstrap.conf"
   fi
 
   # --- 3) Append a staging note to the bottom of bootstrap.conf  ------------
@@ -300,7 +303,7 @@ EOF
 
   validate_bash_file "$BOOTSTRAP_CONF"   || err "bootstrap.conf failed bash -n"
   validate_bash_file "$OMNI_CONFIG"      || err "omni.config failed bash -n"
-  validate_bash_file "$OMNI_PROFILES"    || warn "lib/omni_profiles.sh failed bash -n; please review manually."
+  validate_bash_file "$OMNI_PROFILES"    || err "lib/omni_profiles.sh failed bash -n"
   validate_bash_file "$BOOTSTRAP_LIB"    || err "lib/bootstrap.sh failed bash -n"
 
   log "Phase 1 staging complete."

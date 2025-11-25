@@ -36,7 +36,7 @@ $ omni run
   [OK] typescript setup (8s)
 [OK] Phase 0 completed in 20s
 
-Log: /home/luce/apps/bloom2/omniforge/logs/omniforge_20251124_143015.log
+Log: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 ```
 
 ### Dry-Run Mode
@@ -53,7 +53,7 @@ $ omni run --dry-run
 [DRY] Would create: src/app/layout.tsx
 ...
 
-Log: /home/luce/apps/bloom2/omniforge/logs/omniforge_20251124_143015.log
+Log: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 ```
 
 ### Verbose Output
@@ -85,7 +85,7 @@ $ omni run --quiet
 ## Log Directory Structure
 
 ```
-omniforge/logs/
+_build/omniforge/logs/
 ├── omniforge_20251124_143015.log      # Latest run
 ├── omniforge_20251124_142530.log      # Previous run
 ├── omniforge_20251124_141200.log      # Earlier run
@@ -98,12 +98,12 @@ omniforge/logs/
 
 ### Directory Configuration
 
-**Location**: `omniforge/logs/` (relative to project root)
+**Location**: `_build/_build/omniforge/logs/` (self-contained within OmniForge directory)
 
 **Configuration**: Set in `bootstrap.conf`
 
 ```bash
-LOG_DIR="${PROJECT_ROOT}/omniforge/logs"
+LOG_DIR="${OMNIFORGE_DIR}/logs"
 ```
 
 **Automatic Features**:
@@ -125,7 +125,7 @@ LOG_DIR="${PROJECT_ROOT}/omniforge/logs"
 
 ```
 [ERROR] Phase 2 failed: Missing docker
-For details, see: /home/luce/apps/bloom2/omniforge/logs/omniforge_20251124_143015.log
+For details, see: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 ```
 
 **Use Case**: CI/CD pipelines, automated runs
@@ -209,7 +209,7 @@ $ omni run
 [OK] All phases completed successfully! (35s total)
 [INFO] ========================================
 
-Log: /home/luce/apps/bloom2/omniforge/logs/omniforge_20251124_143015.log
+Log: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 ```
 
 **Log File** (`omniforge_20251124_143015.log`):
@@ -261,7 +261,7 @@ $ omni run --dry-run
 [INFO] Ready to run with: omni run
 [INFO] ========================================
 
-Log: /home/luce/apps/bloom2/omniforge/logs/dry-run_20251124_143000.log
+Log: /home/luce/apps/bloom2/_build/omniforge/logs/dry-run_20251124_143000.log
 ```
 
 ### Scenario 3: CI/CD Pipeline (Quiet Mode)
@@ -275,7 +275,7 @@ $ omni run --quiet 2>&1
 [OK] Phase 4 completed
 [OK] Phase 5 completed
 
-For details, see: /home/luce/apps/bloom2/omniforge/logs/omniforge_20251124_143015.log
+For details, see: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
 ```
 
 **Log File** provides full details for diagnostics:
@@ -352,8 +352,8 @@ $ omni run
 [WARN] One or more phases had errors
 [INFO] Completed 2 of 3 phases (14/18 scripts)
 
-Log: /home/luce/apps/bloom2/omniforge/logs/omniforge_20251124_143015.log
-For full details including errors: cat omniforge/logs/omniforge_20251124_143015.log | grep ERROR
+Log: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_20251124_143015.log
+For full details including errors: cat _build/omniforge/logs/omniforge_20251124_143015.log | grep ERROR
 ```
 
 ---
@@ -441,8 +441,8 @@ omni run
 
 ### File Retention
 
-- **Current logs**: Kept in `omniforge/logs/`
-- **Archived logs**: Kept in `omniforge/logs/archive/` for 90 days
+- **Current logs**: Kept in `_build/omniforge/logs/`
+- **Archived logs**: Kept in `_build/omniforge/logs/archive/` for 90 days
 - **Automatic rotation**: After 30 days, logs moved to `archive/`
 - **Automatic cleanup**: After 90 days, archived logs deleted
 
@@ -454,53 +454,53 @@ omni run
 
 ```bash
 # View latest log
-tail -f omniforge/logs/omniforge_*.log
+tail -f _build/omniforge/logs/omniforge_*.log
 
 # View with timestamps
-tail -f omniforge/logs/omniforge_*.log | grep -E "STEP|ERROR|OK"
+tail -f _build/omniforge/logs/omniforge_*.log | grep -E "STEP|ERROR|OK"
 
 # Search for errors
-grep ERROR omniforge/logs/omniforge_*.log
+grep ERROR _build/omniforge/logs/omniforge_*.log
 
 # See last 50 lines
-tail -50 omniforge/logs/omniforge_*.log
+tail -50 _build/omniforge/logs/omniforge_*.log
 ```
 
 ### Filter Log Output
 
 ```bash
 # Show only errors
-grep ERROR omniforge/logs/omniforge_*.log
+grep ERROR _build/omniforge/logs/omniforge_*.log
 
 # Show only warnings
-grep WARN omniforge/logs/omniforge_*.log
+grep WARN _build/omniforge/logs/omniforge_*.log
 
 # Show execution timeline
-grep -E "STEP|OK" omniforge/logs/omniforge_*.log
+grep -E "STEP|OK" _build/omniforge/logs/omniforge_*.log
 
 # Show just the summary
-tail -10 omniforge/logs/omniforge_*.log
+tail -10 _build/omniforge/logs/omniforge_*.log
 ```
 
 ### Compare Runs
 
 ```bash
 # Compare two recent runs
-diff <(grep "STEP\|OK\|ERROR" omniforge/logs/omniforge_20251124_143015.log) \
-     <(grep "STEP\|OK\|ERROR" omniforge/logs/omniforge_20251124_140530.log)
+diff <(grep "STEP\|OK\|ERROR" _build/omniforge/logs/omniforge_20251124_143015.log) \
+     <(grep "STEP\|OK\|ERROR" _build/omniforge/logs/omniforge_20251124_140530.log)
 
 # Show what changed
-grep -v "STEP\|OK" omniforge/logs/omniforge_20251124_143015.log
+grep -v "STEP\|OK" _build/omniforge/logs/omniforge_20251124_143015.log
 ```
 
 ### Extract Timing Information
 
 ```bash
 # Show execution times per script
-grep "OK" omniforge/logs/omniforge_*.log | grep -oE '\([0-9]+s\)'
+grep "OK" _build/omniforge/logs/omniforge_*.log | grep -oE '\([0-9]+s\)'
 
 # Calculate total time
-grep "completed" omniforge/logs/omniforge_*.log | tail -1
+grep "completed" _build/omniforge/logs/omniforge_*.log | tail -1
 ```
 
 ---
@@ -516,7 +516,7 @@ grep "completed" omniforge/logs/omniforge_*.log | tail -1
 **Diagnosis**:
 ```bash
 # Check if LOG_DIR exists
-ls -la omniforge/logs/
+ls -la _build/omniforge/logs/
 
 # Check if LOG_FILE is set
 echo $LOG_FILE
@@ -535,7 +535,7 @@ ls -la omniforge/
 
 2. **Verify LOG_FILE is set**:
    ```bash
-   export LOG_FILE="/path/to/omniforge/logs/omniforge_$(date +%Y%m%d_%H%M%S).log"
+   export LOG_FILE="/path/to/_build/omniforge/logs/omniforge_$(date +%Y%m%d_%H%M%S).log"
    omni run
    ```
 
@@ -547,7 +547,7 @@ ls -la omniforge/
 ### Problem: Too much disk space used by logs
 
 **Symptoms**:
-- `omniforge/logs/` directory is large
+- `_build/omniforge/logs/` directory is large
 - Running out of disk space
 
 **Solutions**:
@@ -558,7 +558,7 @@ ls -la omniforge/
    find omniforge/logs -name "*.log" -mtime +30 -delete
 
    # Archive old logs
-   tar -czf omniforge/logs/archive_$(date +%Y%m%d).tar.gz omniforge/logs/*.log
+   tar -czf _build/omniforge/logs/archive_$(date +%Y%m%d).tar.gz _build/omniforge/logs/*.log
    ```
 
 2. **Reduce log retention** in bootstrap.conf:
@@ -582,18 +582,18 @@ ls -la omniforge/
 
 1. **Search all logs**:
    ```bash
-   grep -r "search_term" omniforge/logs/
+   grep -r "search_term" _build/omniforge/logs/
    ```
 
 2. **Find by timestamp**:
    ```bash
    # If you know when something happened
-   grep "2025-11-24 14:30" omniforge/logs/*.log
+   grep "2025-11-24 14:30" _build/omniforge/logs/*.log
    ```
 
 3. **Find by error message**:
    ```bash
-   grep -r "ERROR" omniforge/logs/ | grep "specific_error"
+   grep -r "ERROR" _build/omniforge/logs/ | grep "specific_error"
    ```
 
 ---
@@ -602,23 +602,23 @@ ls -la omniforge/
 
 1. **Check logs after failed runs**:
    ```bash
-   omni run || cat omniforge/logs/omniforge_*.log
+   omni run || cat _build/omniforge/logs/omniforge_*.log
    ```
 
 2. **Save important logs**:
    ```bash
-   cp omniforge/logs/omniforge_*.log backups/
+   cp _build/omniforge/logs/omniforge_*.log backups/
    ```
 
 3. **Archive before git operations**:
    ```bash
    # Don't commit log files
-   echo "omniforge/logs/" >> .gitignore
+   echo "_build/omniforge/logs/" >> .gitignore
    ```
 
 4. **Monitor long-running deployments**:
    ```bash
-   tail -f omniforge/logs/omniforge_*.log
+   tail -f _build/omniforge/logs/omniforge_*.log
    ```
 
 5. **Combine verbose mode with filtering**:

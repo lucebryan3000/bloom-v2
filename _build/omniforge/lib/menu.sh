@@ -2058,7 +2058,7 @@ menu_options() {
                 else
                     echo "  Found log files:"
                     [[ $temp_count -gt 0 ]] && echo "    - ${temp_count} session log(s) in temp"
-                    [[ $omni_count -gt 0 ]] && echo "    - ${omni_count} log(s) in omniforge/logs/"
+                    [[ $omni_count -gt 0 ]] && echo "    - ${omni_count} log(s) in _build/omniforge/logs/"
                     [[ $download_count -gt 0 ]] && echo "    - ${download_count} download log(s)"
                     echo ""
                     echo "  ${LOG_CYAN}1)${LOG_NC} Clear session logs only (${temp_count})"

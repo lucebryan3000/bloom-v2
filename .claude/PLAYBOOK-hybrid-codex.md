@@ -12,15 +12,16 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Phase 1: PLANNING (Claude Sonnet)                          │
-│ - Analyze task requirements                                 │
-│ - Create task breakdown with agent assignments             │
-│ - Generate todo list with TodoWrite tool                   │
-│ - Identify parallel work streams                           │
-│ - Route tasks: Claude Haiku vs Codex CLI                   │
+│ - Analyze task requirements from slash command arguments   │
+│ - Create markdown task breakdown (NOT TodoWrite)           │
+│ - Identify agent routing: Haiku vs Codex CLI               │
+│ - Generate Codex CLI commands if applicable                │
 │ - IDENTIFY EXISTING FILES (edit-first, create only if new) │
 │ - Check context usage and recommend /clear if needed       │
 │ - AUTO-EXECUTE: Proceed to Phase 2 without user approval   │
 │   (ONLY stop if: user input needed OR major error occurs)  │
+│ - DO NOT ask "what would you like to work on?" if task     │
+│   is already provided in slash command arguments           │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -49,6 +50,71 @@
 │ - Prompt user: "Large task completed. Run /clear? (Y/n)"  │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Phase 1 Output Format (CRITICAL)
+
+**When /mode-hybrid is invoked with task arguments:**
+
+### ✅ CORRECT Format:
+
+```markdown
+🔀 SWITCHED TO HYBRID MODE
+
+Phase-based workflow active:
+  1️⃣  Planning (Sonnet) → Task breakdown + routing
+  2️⃣  Execution (Haiku + Codex) → Parallel agents
+  3️⃣  Validation (Sonnet) → Integration checks
+
+Token conservation: 60-80% target
+I'll provide copy-paste Codex CLI commands for you to run.
+
+---
+
+## 📋 PHASE 1: PLANNING
+
+**Task**: [Restate user's task from slash command arguments]
+
+**Breakdown**:
+1. [First subtask]
+2. [Second subtask]
+3. [Third subtask]
+
+**Agent Routing**:
+- ✅ Claude Haiku (Task agent) - [Reason why Haiku is appropriate]
+- ✅ Codex CLI - [If applicable, which commands]
+- ❌ Codex CLI - Not applicable (diagnostic work, not code generation)
+
+**Execution Plan**:
+- [Describe approach]
+- [Key files to investigate]
+- [Expected outputs]
+
+---
+
+## 🚀 PHASE 2: EXECUTION
+
+[Immediately proceed with spawning Task agents OR executing directly]
+```
+
+### ❌ INCORRECT Format (What I Did Wrong):
+
+```markdown
+🔀 SWITCHED TO HYBRID MODE
+...
+Ready to optimize! What would you like to work on?  ← WRONG: Task already provided!
+
+🎯 Task: [...]
+Update Todos  ← WRONG: Should be markdown breakdown, not TodoWrite
+```
+
+**Key Mistakes to Avoid:**
+1. ❌ Don't use TodoWrite in Phase 1 - Use markdown task breakdown
+2. ❌ Don't ask "What would you like to work on?" if task is in slash command args
+3. ❌ Don't echo hybrid mode message then stop - Continue immediately to Phase 2
+4. ✅ DO provide clear markdown plan with agent routing justification
+5. ✅ DO immediately execute (spawn agents or run tools) unless blocked
 
 ---
 
