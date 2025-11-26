@@ -255,3 +255,7 @@ TODO_DEV.md
 # Ignore local pnpm store and test install artifacts
 .pnpm-store/
 test/install-*/
+
+# Ignore cached npm tarballs
+_build/omniforge/.download-cache/npm/
+test/install-1/
