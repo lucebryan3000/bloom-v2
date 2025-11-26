@@ -55,6 +55,24 @@ pkg_require_manager() {
     fi
 }
 
+# Require a usable workspace (INSTALL_DIR/PROJECT_ROOT with package.json)
+pkg_require_workspace() {
+    local workdir="${INSTALL_DIR:-${PROJECT_ROOT:-}}"
+    if [[ -z "$workdir" ]]; then
+        log_error "INSTALL_DIR/PROJECT_ROOT not set; unable to locate workspace for package installs."
+        return 1
+    fi
+    if [[ ! -d "$workdir" ]]; then
+        log_error "Workspace directory does not exist: ${workdir}"
+        return 1
+    fi
+    if [[ ! -f "${workdir}/package.json" ]]; then
+        log_error "package.json not found in workspace: ${workdir}"
+        return 1
+    fi
+    return 0
+}
+
 # =============================================================================
 # CACHE UTILITIES
 # =============================================================================
@@ -129,7 +147,7 @@ pkg_install_from_cache() {
 
 # Install packages with cache-first strategy
 # Usage: pkg_install "next" "react" "react-dom"
-pkg_install() {
+_pkg_install_once() {
     local packages=("$@")
     local cache_installs=()
     local network_installs=()
@@ -183,9 +201,30 @@ pkg_install() {
     return 0
 }
 
+pkg_install() {
+    local packages=("$@")
+    local attempts="${PKG_INSTALL_RETRIES:-3}"
+    local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
+    local gap="${PKG_INSTALL_GAP:-2}"
+    local i
+
+    pkg_require_manager || return 1
+    pkg_require_workspace || return 1
+
+    for ((i=1; i<=attempts; i++)); do
+        if _pkg_install_once "${packages[@]}"; then
+            sleep "$gap" || true
+            return 0
+        fi
+        log_warn "pkg_install retry ${i}/${attempts} failed for: ${packages[*]}"
+        sleep "$delay" || true
+    done
+    return 1
+}
+
 # Install dev dependencies with cache-first strategy
 # Usage: pkg_install_dev "typescript" "@types/node"
-pkg_install_dev() {
+_pkg_install_dev_once() {
     local packages=("$@")
     local cache_installs=()
     local network_installs=()
@@ -239,37 +278,34 @@ pkg_install_dev() {
     return 0
 }
 
-# Retry wrappers (lightweight) ------------------------------------------------
-pkg_install_retry() {
+pkg_install_dev() {
+    local packages=("$@")
     local attempts="${PKG_INSTALL_RETRIES:-3}"
     local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
     local gap="${PKG_INSTALL_GAP:-2}"
     local i
+
+    pkg_require_manager || return 1
+    pkg_require_workspace || return 1
+
     for ((i=1; i<=attempts; i++)); do
-        if pkg_install "$@"; then
+        if _pkg_install_dev_once "${packages[@]}"; then
             sleep "$gap" || true
             return 0
         fi
-        log_warn "pkg_install retry $i/$attempts failed for: $*"
+        log_warn "pkg_install_dev retry ${i}/${attempts} failed for: ${packages[*]}"
         sleep "$delay" || true
     done
     return 1
 }
 
+# Retry wrappers (lightweight) ------------------------------------------------
+pkg_install_retry() {
+    PKG_INSTALL_RETRIES="${PKG_INSTALL_RETRIES:-3}" PKG_INSTALL_RETRY_DELAY="${PKG_INSTALL_RETRY_DELAY:-2}" PKG_INSTALL_GAP="${PKG_INSTALL_GAP:-2}" pkg_install "$@"
+}
+
 pkg_install_dev_retry() {
-    local attempts="${PKG_INSTALL_RETRIES:-3}"
-    local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
-    local gap="${PKG_INSTALL_GAP:-2}"
-    local i
-    for ((i=1; i<=attempts; i++)); do
-        if pkg_install_dev "$@"; then
-            sleep "$gap" || true
-            return 0
-        fi
-        log_warn "pkg_install_dev retry $i/$attempts failed for: $*"
-        sleep "$delay" || true
-    done
-    return 1
+    PKG_INSTALL_RETRIES="${PKG_INSTALL_RETRIES:-3}" PKG_INSTALL_RETRY_DELAY="${PKG_INSTALL_RETRY_DELAY:-2}" PKG_INSTALL_GAP="${PKG_INSTALL_GAP:-2}" pkg_install_dev "$@"
 }
 
 # =============================================================================
