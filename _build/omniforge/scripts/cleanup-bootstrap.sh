@@ -28,6 +28,9 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 CONFIRM="false"
 DRY="false"
 KEEP_APP="false"
+LOG_DIR="${PROJECT_ROOT}/_build/omniforge/logs/cleanup"
+LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
+LOG_RETENTION="${LOG_RETENTION:-7}"
 
 for arg in "$@"; do
   case "$arg" in
@@ -65,6 +68,14 @@ remove_path() {
   rm -rf "$target"
   log "Removed ${reason}: ${target#$PROJECT_ROOT/}"
 }
+
+# Ensure log directory
+mkdir -p "${LOG_DIR}"
+
+# If not dry-run, tee output to log file
+if [[ "$DRY" == "false" ]]; then
+  exec > >(tee -a "$LOG_FILE") 2>&1
+fi
 
 log "Project root: ${PROJECT_ROOT}"
 confirm_or_exit
@@ -110,5 +121,16 @@ fi
 # 4) Remove install dirs we use for runs
 remove_path "${PROJECT_ROOT}/full-stack-live" "install directory"
 remove_path "${PROJECT_ROOT}/workspace" "install directory (if created)"
+
+# 5) Prune old cleanup logs
+if [[ "$DRY" == "false" ]]; then
+  find "${LOG_DIR}" -type f -name "cleanup_*.log" -printf '%T@ %p\n' 2>/dev/null \
+    | sort -nr \
+    | awk "NR>${LOG_RETENTION}" \
+    | cut -d' ' -f2- \
+    | while read -r oldlog; do
+        rm -f "$oldlog" && log "Pruned old log: ${oldlog##*/}"
+      done
+fi
 
 log "Cleanup complete."
