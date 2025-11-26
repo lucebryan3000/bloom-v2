@@ -140,6 +140,8 @@ FORCE=false
 DRY_RUN_SET_BY_USER="false"
 [[ -n "${DRY_RUN+x}" ]] && DRY_RUN_SET_BY_USER="true"
 DRY_RUN="${DRY_RUN:-false}"
+INSTALL_DIR_SET_BY_USER="false"
+[[ -n "${INSTALL_DIR+x}" ]] && INSTALL_DIR_SET_BY_USER="true"
 SINGLE_PHASE=""
 LIST_ONLY=false
 SHOW_STATUS=false
@@ -238,6 +240,11 @@ done
 main() {
     local exit_code=0
 
+    # Apply profile-driven dry-run default before loading config
+    if [[ "${DRY_RUN_SET_BY_USER}" != "true" && "${STACK_PROFILE:-}" == "tech_stack" ]]; then
+        DRY_RUN=true
+    fi
+
     # Load configuration first (needed for prereq versions)
     config_load
     config_validate
@@ -252,6 +259,21 @@ main() {
                 DRY_RUN=true
             fi
         fi
+        # Fallback: ensure tech_stack defaults to dry-run even if map missing
+        if [[ "${STACK_PROFILE:-}" == "tech_stack" && "${DRY_RUN}" != "true" ]]; then
+            DRY_RUN=true
+        fi
+    fi
+
+    # If dry-run and a DRY_RUN_DIR is configured, use it unless user set INSTALL_DIR explicitly
+    if [[ "${DRY_RUN:-false}" == "true" && -n "${DRY_RUN_DIR:-}" && "${INSTALL_DIR_SET_BY_USER}" != "true" ]]; then
+        if [[ "${DRY_RUN_DIR}" = /* ]]; then
+            INSTALL_DIR="${DRY_RUN_DIR}"
+        else
+            # Resolve relative to PROJECT_ROOT
+            INSTALL_DIR="$(cd "${PROJECT_ROOT:-.}" && pwd)/${DRY_RUN_DIR#./}"
+        fi
+        mkdir -p "${INSTALL_DIR}" || true
     fi
 
     # Initialize logging
@@ -509,6 +531,14 @@ main() {
 
     # Show execution recap and next steps
     phase_show_recap
+
+    # Show log output hint (and tail for dry-run) before exiting
+    log_show_file_hint
+    if [[ "${DRY_RUN:-false}" == "true" && -n "${LOG_FILE:-}" && -f "${LOG_FILE}" ]]; then
+        echo ""
+        echo "===== LOG OUTPUT (tail, dry-run) ====="
+        tail -n 80 "${LOG_FILE}"
+    fi
 
     exit $exit_code
 }

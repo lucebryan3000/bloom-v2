@@ -42,6 +42,7 @@
 
 : "${BACKUP_LOCATION:=./backups}"
 : "${ENABLE_AUTO_BACKUP:=true}"
+: "${DRY_RUN_DIR:=./dry-run}"
 
 # -----------------------------------------------------------------------------
 # SECTION 3: SYSTEM CONFIGURATION

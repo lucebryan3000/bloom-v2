@@ -57,9 +57,13 @@ prereq_node_version_ok() {
         return 1
     fi
 
-    local current
-    current=$(node --version 2>/dev/null | sed 's/v//' | cut -d. -f1)
-    [[ "$current" -ge "$required" ]]
+    local current current_major
+    current=$(node --version 2>/dev/null | sed 's/v//' )
+    current_major=$(echo "$current" | cut -d. -f1)
+    [[ "$current_major" =~ ^[0-9]+$ ]] || return 1
+    local required_major="$required"
+    required_major=$(echo "$required_major" | cut -d. -f1)
+    [[ "$current_major" -ge "$required_major" ]]
 }
 
 # Check if pnpm meets minimum version
@@ -71,9 +75,13 @@ prereq_pnpm_version_ok() {
         return 1
     fi
 
-    local current
-    current=$(pnpm --version 2>/dev/null | cut -d. -f1)
-    [[ "$current" -ge "$required" ]]
+    local current current_major
+    current=$(pnpm --version 2>/dev/null)
+    current_major=$(echo "$current" | cut -d. -f1)
+    [[ "$current_major" =~ ^[0-9]+$ ]] || return 1
+    local required_major="$required"
+    required_major=$(echo "$required_major" | cut -d. -f1)
+    [[ "$current_major" -ge "$required_major" ]]
 }
 
 # Check all prerequisites and return missing ones

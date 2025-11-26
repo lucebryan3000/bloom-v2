@@ -89,19 +89,21 @@ autodetect_write_to_config() {
 
     log_info "Writing auto-detected values to omni.config"
 
-    # Use sed to update values
-    local sed_cmd="sed -i"
-    [[ "$(uname)" == "Darwin" ]] && sed_cmd="sed -i ''"
+    # Use sed to update values (avoid IFS issues by using arrays)
+    local sed_cmd=(sed -i)
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sed_cmd=(sed -i '')
+    fi
 
     # Update APP_NAME if still default
     if grep -q '^APP_NAME="Bloom"' "$config_file"; then
-        $sed_cmd "s/^APP_NAME=.*/APP_NAME=\"${AUTO_DETECTED_PROJECT_NAME}\"/" "$config_file"
+        "${sed_cmd[@]}" "s/^APP_NAME=.*/APP_NAME=\"${AUTO_DETECTED_PROJECT_NAME}\"/" "$config_file"
     fi
 
     # Update GIT_REMOTE_URL
     if [[ -n "${AUTO_DETECTED_GIT_REMOTE}" ]]; then
         if grep -q '^GIT_REMOTE_URL=' "$config_file"; then
-            $sed_cmd "s|^GIT_REMOTE_URL=.*|GIT_REMOTE_URL=\"${AUTO_DETECTED_GIT_REMOTE}\"|" "$config_file"
+            "${sed_cmd[@]}" "s|^GIT_REMOTE_URL=.*|GIT_REMOTE_URL=\"${AUTO_DETECTED_GIT_REMOTE}\"|" "$config_file"
         else
             echo "GIT_REMOTE_URL=\"${AUTO_DETECTED_GIT_REMOTE}\"" >> "$config_file"
         fi
@@ -109,7 +111,7 @@ autodetect_write_to_config() {
 
     # Mark as initialized
     if grep -q '^OMNIFORGE_CONFIG_INITIALIZED=' "$config_file"; then
-        $sed_cmd 's/^OMNIFORGE_CONFIG_INITIALIZED=.*/OMNIFORGE_CONFIG_INITIALIZED="true"/' "$config_file"
+        "${sed_cmd[@]}" 's/^OMNIFORGE_CONFIG_INITIALIZED=.*/OMNIFORGE_CONFIG_INITIALIZED="true"/' "$config_file"
     else
         echo 'OMNIFORGE_CONFIG_INITIALIZED="true"' >> "$config_file"
     fi

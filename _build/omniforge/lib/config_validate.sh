@@ -172,23 +172,30 @@ _validate_database() {
 _validate_versions() {
     # NODE_VERSION
     local node_ver="${NODE_VERSION:-20}"
-    if [[ ! "$node_ver" =~ ^[0-9]+$ ]]; then
-        _validation_error "NODE_VERSION" "Must be a major version number (e.g., 20)"
-    elif [[ "$node_ver" -lt 18 ]]; then
+    local node_major=""
+    if [[ "$node_ver" =~ ^([0-9]+)(\.[0-9]+){0,2}$ ]]; then
+        node_major="${BASH_REMATCH[1]}"
+    else
+        _validation_error "NODE_VERSION" "Must be a version like 20 or 20.18.1"
+    fi
+    if [[ -n "$node_major" && "$node_major" -lt 18 ]]; then
         _validation_warn "NODE_VERSION" "Version $node_ver is below recommended minimum (18)"
     fi
 
     # PNPM_VERSION
     local pnpm_ver="${PNPM_VERSION:-9}"
-    if [[ ! "$pnpm_ver" =~ ^[0-9]+$ ]]; then
-        _validation_error "PNPM_VERSION" "Must be a major version number (e.g., 9)"
+    local pnpm_major=""
+    if [[ "$pnpm_ver" =~ ^([0-9]+)(\.[0-9]+){0,2}$ ]]; then
+        pnpm_major="${BASH_REMATCH[1]}"
+    else
+        _validation_error "PNPM_VERSION" "Must be a version like 9 or 9.15.0"
     fi
 
     # Check if installed versions match
     if command -v node &>/dev/null; then
         local installed_node
         installed_node=$(node --version 2>/dev/null | sed 's/v//' | cut -d. -f1)
-        if [[ "$installed_node" -lt "$node_ver" ]]; then
+        if [[ -n "$node_major" && "$installed_node" -lt "$node_major" ]]; then
             _validation_warn "NODE_VERSION" "Installed version ($installed_node) is older than configured ($node_ver)"
         fi
     fi

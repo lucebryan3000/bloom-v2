@@ -239,8 +239,10 @@ phase_run_script() {
     log_status "RUN" "$script_name"
 
     if [[ "${DRY_RUN:-false}" == "true" ]]; then
-        log_status "SKIP" "$script_name" "dry-run"
+        log_status "DRY" "$script_name" "would run"
         _execution_record_skip "$script_rel" "dry-run"
+        # Simulate success to exercise success-path side effects without executing
+        state_mark_success "$script_rel"
         return 0
     fi
 
@@ -728,24 +730,15 @@ phase_show_recap() {
     echo ""
 
     # Statistics
-    echo "Duration: ${minutes}m ${seconds}s"
-    echo "Phases completed: $_PHASE_STATS_COMPLETED"
-    echo "Phases skipped: $_PHASE_STATS_SKIPPED"
-    [[ $_PHASE_STATS_FAILED -gt 0 ]] && echo "Phases failed: $_PHASE_STATS_FAILED"
-    echo ""
-
-    # Next steps based on what was installed
-    log_info "=========================================="
-    log_info "  NEXT STEPS"
-    log_info "=========================================="
-    echo ""
-
-    # Show script-level statistics from execution tracking
-    echo "Scripts completed: ${#_COMPLETED_SCRIPTS[@]}"
-    echo "Scripts skipped: ${#_SKIPPED_SCRIPTS[@]}"
-    if [[ ${#_FAILED_SCRIPTS[@]} -gt 0 ]]; then
-        echo "Scripts failed: ${#_FAILED_SCRIPTS[@]}"
+    log_info "Summary:"
+    local mode_str="live"
+    if [[ "${DRY_RUN:-false}" == "true" ]]; then
+        mode_str="dry-run (no commands executed)"
     fi
+    echo "  Mode: ${mode_str}"
+    echo "  Duration: ${minutes}m ${seconds}s"
+    echo "  Phases: completed=$_PHASE_STATS_COMPLETED skipped=$_PHASE_STATS_SKIPPED failed=$_PHASE_STATS_FAILED"
+    echo "  Scripts: completed=${#_COMPLETED_SCRIPTS[@]} skipped=${#_SKIPPED_SCRIPTS[@]} failed=${#_FAILED_SCRIPTS[@]}"
     echo ""
 
     # Check for failures (either phase-level or script-level)
@@ -753,6 +746,8 @@ phase_show_recap() {
     [[ $_PHASE_STATS_FAILED -gt 0 || ${#_FAILED_SCRIPTS[@]} -gt 0 ]] && has_failures=true
 
     if [[ "$has_failures" == "false" ]]; then
+        log_success "No failures detected"
+        echo ""
         log_info "=========================================="
         log_info "  NEXT STEPS"
         log_info "=========================================="

@@ -415,6 +415,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Default to run when DRY_RUN is set and no explicit command was provided
+if [[ -z "${COMMAND:-}" && "${DRY_RUN:-false}" == "true" ]]; then
+    COMMAND="run"
+fi
+
 # Apply profile default dry-run if user did not request one explicitly
 if [[ "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
     if declare -p PROFILE_DRY_RUN >/dev/null 2>&1; then
@@ -425,12 +430,34 @@ if [[ "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
     fi
 fi
 
+# If dry-run is active now and no explicit command was provided, default to run
+if [[ -z "${COMMAND:-}" && "${DRY_RUN:-false}" == "true" ]]; then
+    COMMAND="run"
+fi
+
+# Ensure tech_stack defaults to dry-run unless user explicitly set DRY_RUN
+if [[ "${STACK_PROFILE:-}" == "tech_stack" && "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
+    DRY_RUN=true
+fi
+
 # Build arguments for bin scripts (array to avoid quoting issues)
 ARGS=()
-[[ "$DRY_RUN" == "true" ]] && ARGS+=("--dry-run")
+if [[ "$DRY_RUN" == "true" ]]; then
+    ARGS+=("--dry-run")
+fi
 [[ "$VERBOSE" == "true" ]] && ARGS+=("--verbose")
 [[ "$FORCE" == "true" ]] && ARGS+=("--force")
 [[ -n "$PHASE" ]] && ARGS+=("--phase" "$PHASE")
+
+# Tech stack profile defaults to dry-run unless user set otherwise
+if [[ "${STACK_PROFILE:-}" == "tech_stack" && "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
+    DRY_RUN=true
+    ARGS+=("--dry-run")
+fi
+
+# Export flags for downstream bin scripts
+export DRY_RUN
+export DOCKER_EXEC_MODE
 
 # Validate required files before execution
 _validate_files
@@ -448,8 +475,13 @@ case "${COMMAND:-}" in
         ;;
     run)
         _validate_bin "omni"
-        show_logo
-        exec "${SCRIPT_DIR}/bin/omni" "${ARGS[@]}"
+        # Force dry-run for tech_stack unless user explicitly set otherwise
+        run_dry="${DRY_RUN}"
+        if [[ "${STACK_PROFILE:-}" == "tech_stack" && "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
+            run_dry="true"
+            [[ ! " ${ARGS[*]} " =~ --dry-run ]] && ARGS+=("--dry-run")
+        fi
+        DRY_RUN="${run_dry}" exec "${SCRIPT_DIR}/bin/omni" --run "${ARGS[@]}"
         ;;
     list)
         _validate_bin "status"
