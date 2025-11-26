@@ -178,3 +178,27 @@ This makes it hard to know per-profile/phase coverage, required config, UX aroun
 
 * **Today:** indexer scrapes simple header comments, emits `script_path|phase|required_vars|dependencies`, no YAML parsing, no profiles/flags/id.
 * **Target (per FRD):** indexer parses `#!meta` to pull `id`, `phase`, `profile_tags`, `uses_from_omni_*`, `dependencies`, `top_flags`, derives `required_vars`, and emits enriched lines. Legacy parsing remains as fallback with warnings.
+
+## 10. Outstanding Gaps and Resolution Plan
+
+### Confirmed gaps
+
+* Indexer does not yet parse YAML, normalize phases, or collapse aliases; `.omniforge_index` is already 7 fields but uses stubbed metadata.
+* `parse_stack_flags` helper is not implemented; scripts do not yet read `mode` from `omni.profiles.sh`.
+* Scripts lack `#!meta` blocks with `uses_cache` and accurate `uses_from_omni_*`; wrappers lack `alias_of`.
+* Consumers (`omni.sh`, `lib/menu.sh`, any others) still expect the legacy 4-field index.
+* `.download-cache` contains duplicate tarball versions; some packages may be missing an explicit tarball even if unpacked folders exist.
+
+### Fix now (execution order)
+
+1) Implement `parse_stack_flags` in `lib/common.sh` and add `mode` to `omni.profiles.sh`; wire one or two pilot scripts to validate dry-run/skip/no-dev/no-verify/force flows and profile seeding.
+2) Update indexer consumers (`omni.sh`, `lib/menu.sh`, other readers) to parse 7-field `.omniforge_index`, then regenerate the index (overwriting in place) after YAML parsing lands.
+3) Prune duplicate cache tarballs to the chosen versions (e.g., next, @types/react, @types/node, @typescript-eslint/eslint-plugin) so `uses_cache` stays unambiguous; note any required tarballs to backfill.
+
+### Remaining to close before Phase 2+
+
+* Finish YAML parsing in `lib/indexer.sh`, including alias collapse and phase normalization; warn/fall back when metadata is missing.
+* Add `#!meta` with `uses_cache`, `alias_of`, `uses_from_omni_*`, and flags to the seven pilot scripts, then the rest.
+* Regenerate `.omniforge_index` after consumers are updated; keep only the 7-field format (no v2 file).
+* Add a lint/check to enforce metadata presence, required-var derivation (`${VAR:?`/`${VAR:-` and sourced omni vars), `uses_cache`, and `bash -n` hygiene.
+* Track and backfill any missing cache artifacts (tarballs) for all tech_stack dependencies; document “network fallback” only when unavoidable.

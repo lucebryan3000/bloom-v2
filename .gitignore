@@ -251,3 +251,7 @@ TODO_DEV.md
 ################################################################################
 # END .gitignore
 ################################################################################
+
+# Ignore local pnpm store and test install artifacts
+.pnpm-store/
+test/install-*/
