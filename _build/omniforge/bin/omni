@@ -519,6 +519,12 @@ main() {
     echo ""
 
     # Git safety check
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        GIT_SAFETY="false"
+        ALLOW_DIRTY="true"
+        export GIT_SAFETY ALLOW_DIRTY
+        log_debug "[docker] Skipping git safety inside container (bound volume may look dirty)"
+    fi
     git_ensure_clean
 
     # Single phase or all phases
