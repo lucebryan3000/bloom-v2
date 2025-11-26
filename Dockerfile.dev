@@ -1,0 +1,36 @@
+# =============================================================================
+# Bloom - Development Dockerfile
+# =============================================================================
+# Development container with hot reload and full tooling
+# Build: docker build -f Dockerfile.dev -t bloom:dev .
+# Run:   docker compose up
+# =============================================================================
+
+FROM node:20-alpine
+
+WORKDIR /workspace
+
+# Install system dependencies needed by OmniForge scripts
+RUN apk add --no-cache bash git jq curl openssl libc6-compat
+
+# Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@9 --activate
+
+# Copy package files first for better caching
+COPY package.json pnpm-lock.yaml* ./
+
+# Install all dependencies (including devDependencies)
+RUN pnpm install --frozen-lockfile
+
+# Don't copy source - mounted as volume for hot reload
+# COPY . .
+
+# Development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV WATCHPACK_POLLING=true
+
+EXPOSE 3000
+
+# Default command for development
+CMD ["pnpm", "dev"]

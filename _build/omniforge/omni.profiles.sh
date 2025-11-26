@@ -121,3 +121,13 @@ declare -A PROFILE_TECH_STACK=(
 
 # Available profiles (order matters - shown in this order in menu)
 AVAILABLE_PROFILES=("ai_automation" "fpa_dashboard" "collab_editor" "erp_gateway" "asset_manager" "tech_stack")
+
+# Default dry-run behavior per profile (used if user does not specify -n/--dry-run)
+declare -A PROFILE_DRY_RUN=(
+    [ai_automation]="false"
+    [fpa_dashboard]="false"
+    [collab_editor]="false"
+    [erp_gateway]="false"
+    [asset_manager]="false"
+    [tech_stack]="true"
+)

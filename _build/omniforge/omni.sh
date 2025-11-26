@@ -304,6 +304,8 @@ EOF
 
 # Default values
 COMMAND=""
+DRY_RUN_SET_BY_USER="false"
+[[ -n "${DRY_RUN+x}" ]] && DRY_RUN_SET_BY_USER="true"
 DRY_RUN="${DRY_RUN:-false}"
 VERBOSE="${VERBOSE:-false}"
 FORCE=false
@@ -326,6 +328,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -n|--dry-run)
             DRY_RUN=true
+            DRY_RUN_SET_BY_USER="true"
             shift
             ;;
         -v|--verbose)
@@ -411,6 +414,16 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Apply profile default dry-run if user did not request one explicitly
+if [[ "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
+    if declare -p PROFILE_DRY_RUN >/dev/null 2>&1; then
+        default_profile_dry="${PROFILE_DRY_RUN[${STACK_PROFILE:-}]:-}"
+        if [[ "${default_profile_dry}" == "true" ]]; then
+            DRY_RUN="true"
+        fi
+    fi
+fi
 
 # Build arguments for bin scripts (array to avoid quoting issues)
 ARGS=()
