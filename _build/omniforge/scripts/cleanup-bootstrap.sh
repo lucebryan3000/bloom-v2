@@ -77,11 +77,7 @@ if [[ "$DRY" == "false" ]]; then
     LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
     exec > >(tee -a "$LOG_FILE") 2>&1
   else
-    LOG_DIR="/tmp/omniforge-cleanup"
-    mkdir -p "${LOG_DIR}" || true
-    LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
-    log "[WARN] Default log dir not writable, using ${LOG_DIR}"
-    exec > >(tee -a "$LOG_FILE") 2>&1
+    log "[WARN] Log dir not writable; logging disabled (fix permissions on ${LOG_DIR})"
   fi
 else
   log "[dry-run] Logging disabled in dry-run mode"
