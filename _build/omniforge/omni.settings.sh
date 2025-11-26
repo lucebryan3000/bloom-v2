@@ -65,8 +65,8 @@
 : "${TOOLS_DIR:=${PROJECT_ROOT}/.tools}"
 : "${LOG_DIR:=${OMNIFORGE_DIR}/logs}"
 
-: "${INSTALL_DIR_TEST:=./test/install-1}"
-: "${INSTALL_DIR_PROD:=./app}"
+: "${INSTALL_DIR_TEST:=./docker-staging/test/install-1}"
+: "${INSTALL_DIR_PROD:=./docker-staging/app}"
 
 : "${SRC_DIR:=src}"
 : "${SRC_APP_DIR:=${SRC_DIR}/app}"
