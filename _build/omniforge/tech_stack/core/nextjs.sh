@@ -119,20 +119,20 @@ pkg_preflight_check "${DEPS[@]}" "${DEV_DEPS[@]}"
 # Install dependencies (if not already present)
 log_info "Installing production dependencies..."
 if ! pkg_verify_all "${DEPS[@]}"; then
-    pkg_install "${DEPS[@]}" || {
+    if ! pkg_install_retry "${DEPS[@]}"; then
         log_error "Failed to install dependencies"
         exit 1
-    }
+    fi
 else
     log_skip "Production dependencies already installed"
 fi
 
 log_info "Installing dev dependencies..."
 if ! pkg_verify_all "${DEV_DEPS[@]}"; then
-    pkg_install_dev "${DEV_DEPS[@]}" || {
+    if ! pkg_install_dev_retry "${DEV_DEPS[@]}"; then
         log_error "Failed to install dev dependencies"
         exit 1
-    }
+    fi
 else
     log_skip "Dev dependencies already installed"
 fi

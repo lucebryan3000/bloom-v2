@@ -235,6 +235,35 @@ pkg_install_dev() {
     return 0
 }
 
+# Retry wrappers (lightweight) ------------------------------------------------
+pkg_install_retry() {
+    local attempts="${PKG_INSTALL_RETRIES:-3}"
+    local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
+    local i
+    for ((i=1; i<=attempts; i++)); do
+        if pkg_install "$@"; then
+            return 0
+        fi
+        log_warn "pkg_install retry $i/$attempts failed for: $*"
+        sleep "$delay" || true
+    done
+    return 1
+}
+
+pkg_install_dev_retry() {
+    local attempts="${PKG_INSTALL_RETRIES:-3}"
+    local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
+    local i
+    for ((i=1; i<=attempts; i++)); do
+        if pkg_install_dev "$@"; then
+            return 0
+        fi
+        log_warn "pkg_install_dev retry $i/$attempts failed for: $*"
+        sleep "$delay" || true
+    done
+    return 1
+}
+
 # =============================================================================
 # VERIFICATION FUNCTIONS
 # =============================================================================

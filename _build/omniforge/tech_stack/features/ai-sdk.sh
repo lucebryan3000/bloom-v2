@@ -64,12 +64,12 @@ DEPS=("${PKG_VERCEL_AI}" "${PKG_AI_SDK_OPENAI}" "${PKG_AI_SDK_ANTHROPIC}")
 # Show cache status
 pkg_preflight_check "${DEPS[@]}"
 
-# Install dependencies
+# Install dependencies (with retry)
 log_info "Installing AI SDK packages..."
-pkg_install "${DEPS[@]}" || {
+if ! pkg_install_retry "${DEPS[@]}"; then
     log_error "Failed to install AI SDK packages"
     exit 1
-}
+fi
 
 # Verify installation
 log_info "Verifying installation..."
