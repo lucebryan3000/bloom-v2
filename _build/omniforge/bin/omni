@@ -140,6 +140,7 @@ FORCE=false
 DRY_RUN_SET_BY_USER="false"
 [[ -n "${DRY_RUN+x}" ]] && DRY_RUN_SET_BY_USER="true"
 DRY_RUN="${DRY_RUN:-false}"
+EXECUTION_MODE="${EXECUTION_MODE:-fail-fast}"
 INSTALL_DIR_SET_BY_USER="false"
 [[ -n "${INSTALL_DIR+x}" ]] && INSTALL_DIR_SET_BY_USER="true"
 SINGLE_PHASE=""
