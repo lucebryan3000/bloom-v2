@@ -599,33 +599,37 @@ phase_preflight_check() {
     read -ra phases <<< "$(phase_discover)"
     IFS="$OLD_IFS"
 
-    for phase_num in "${phases[@]}"; do
-        if ! phase_is_enabled "$phase_num"; then
-            continue
-        fi
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        log_debug "Skipping dependency checks inside container (host covers deps)"
+    else
+        for phase_num in "${phases[@]}"; do
+            if ! phase_is_enabled "$phase_num"; then
+                continue
+            fi
 
-        local deps prereq
-        deps=$(phase_get_config_field "$phase_num" "deps") || true
-        prereq=$(phase_get_config_field "$phase_num" "prereq") || true
-        prereq="${prereq:-warn}"
+            local deps prereq
+            deps=$(phase_get_config_field "$phase_num" "deps") || true
+            prereq=$(phase_get_config_field "$phase_num" "prereq") || true
+            prereq="${prereq:-warn}"
 
-        if [[ -n "$deps" ]]; then
-            local phase_name
-            phase_name=$(phase_get_name "$phase_num")
-            log_debug "Checking Phase $phase_num ($phase_name) dependencies..."
+            if [[ -n "$deps" ]]; then
+                local phase_name
+                phase_name=$(phase_get_name "$phase_num")
+                log_debug "Checking Phase $phase_num ($phase_name) dependencies..."
 
-            if ! check_phase_deps "$deps" "$prereq"; then
-                # In dry-run mode, treat all dependency issues as warnings
-                if [[ "$dry_run_mode" == "true" ]]; then
-                    warnings=$((warnings + 1))
-                elif [[ "$prereq" == "strict" ]]; then
-                    errors=$((errors + 1))
-                else
-                    warnings=$((warnings + 1))
+                if ! check_phase_deps "$deps" "$prereq"; then
+                    # In dry-run mode, treat all dependency issues as warnings
+                    if [[ "$dry_run_mode" == "true" ]]; then
+                        warnings=$((warnings + 1))
+                    elif [[ "$prereq" == "strict" ]]; then
+                        errors=$((errors + 1))
+                    else
+                        warnings=$((warnings + 1))
+                    fi
                 fi
             fi
-        fi
-    done
+        done
+    fi
 
     # 2. Check all scripts exist
     log_step "Verifying all scripts exist..."
