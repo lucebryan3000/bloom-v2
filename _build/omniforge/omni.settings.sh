@@ -28,6 +28,10 @@
 : "${ENABLE_DOCKER:=true}"
 : "${DOCKER_EXEC_MODE:=container}"              # Options: host, container
 : "${DOCKER_COMPOSE_FILE:=docker-compose.yml}"
+: "${DOCKER_DIR:=docker}"
+: "${DOCKER_SERVICES_DIR:=${DOCKER_DIR}/services}"
+: "${DOCKER_PROMETHEUS_DIR:=${DOCKER_DIR}/prometheus}"
+: "${DOCKER_TRAEFIK_DIR:=${DOCKER_DIR}/traefik}"
 : "${APP_SERVICE_NAME:=app}"
 : "${APP_ENV_FILE:=.env}"
 : "${ENABLE_REDIS:=false}"

@@ -2,43 +2,61 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-if [ -f "${REPO_ROOT}/_build/omniforge/lib/common.sh" ]; then
+if [ -f "${OMNI_ROOT}/lib/common.sh" ]; then
   # shellcheck source=/dev/null
-  source "${REPO_ROOT}/_build/omniforge/lib/common.sh"
+  source "${OMNI_ROOT}/lib/common.sh"
+  source "${OMNI_ROOT}/tech_stack/_lib/pkg-install.sh"
 else
   log()   { echo "[meilisearch-setup] $*"; }
   warn()  { echo "[meilisearch-setup][WARN] $*" >&2; }
   error() { echo "[meilisearch-setup][ERROR] $*" >&2; exit 1; }
 fi
 
-cd "${REPO_ROOT}"
+resolve_project_path() {
+  local path="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$path" = /* ]]; then
+    echo "$path"
+  else
+    echo "${base%/}/${path#./}"
+  fi
+}
 
-if ! command -v pnpm >/dev/null 2>&1; then
-  error "pnpm is not installed or not on PATH. Aborting."
-fi
+display_project_path() {
+  local abs="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$abs" == "$base"* ]]; then
+    echo "./${abs#$base/}"
+  else
+    echo "$abs"
+  fi
+}
+
+cd "${INSTALL_DIR}"
 
 ########################################
 # 1) Install Meilisearch JS client
 ########################################
 
 log "Installing Meilisearch client…"
-pnpm add meilisearch -D
+pkg_install_dev "meilisearch"
 
 ########################################
 # 2) Docker service fragment
 ########################################
 
-SERVICES_DIR="${REPO_ROOT}/docker/services"
+SERVICES_DIR="$(resolve_project_path "${DOCKER_SERVICES_DIR:-docker/services}")"
 mkdir -p "${SERVICES_DIR}"
 
 MEILI_YML="${SERVICES_DIR}/meilisearch.yml"
+MEILI_YML_DISPLAY="$(display_project_path "${MEILI_YML}")"
 
 if [ -f "${MEILI_YML}" ]; then
-  warn "Meilisearch docker fragment already exists at docker/services/meilisearch.yml; skipping."
+  warn "Meilisearch docker fragment already exists at ${MEILI_YML_DISPLAY}; skipping."
 else
-  log "Creating docker/services/meilisearch.yml…"
+  log "Creating ${MEILI_YML_DISPLAY}…"
 
   cat > "${MEILI_YML}" <<'YAML'
 services:
@@ -79,7 +97,7 @@ log "Meilisearch setup complete.
 
 To run:
 
-  docker compose -f docker-compose.yml -f docker/services/meilisearch.yml up -d meilisearch
+  docker compose -f ${DOCKER_COMPOSE_FILE:-docker-compose.yml} -f ${MEILI_YML_DISPLAY} up -d meilisearch
 
 Web console: http://localhost:7700
 "

@@ -10,8 +10,10 @@
 #   - Phase membership
 #   - Caching for fast preflight checks
 #
-# Index Format (JSON-like, stored in .omniforge_index):
-#   script_path|phase|required_vars|dependencies
+# Index Format (stored in .omniforge_index):
+#   script_path|id|phase|profile_tags|required_vars|dependencies|top_flags
+#   - id falls back to script_path when metadata is missing
+#   - profile_tags and top_flags default to empty when metadata is missing
 #
 # Exports:
 #   indexer_start_background, indexer_wait, indexer_get_required_vars,
@@ -113,14 +115,19 @@ _build_index() {
 
     while IFS= read -r -d '' script_path; do
         local script_rel="${script_path#$tech_stack_dir/}"
-        local required_vars phase deps
+        local id profile_tags top_flags phase required_vars deps
+
+        # TODO: replace stubbed metadata with YAML parsing when available
+        id="$script_rel"
+        profile_tags="[]"
+        top_flags=""
 
         required_vars=$(_extract_required_vars "$script_path")
         phase=$(_extract_phase "$script_path")
         deps=$(_extract_dependencies "$script_path")
 
-        # Write to index: script|phase|required_vars|dependencies
-        echo "${script_rel}|${phase:-unknown}|${required_vars:-}|${deps:-}" >> "$temp_index"
+        # Write to index: script|id|phase|profile_tags|required_vars|dependencies|top_flags
+        echo "${script_rel}|${id}|${phase:-unknown}|${profile_tags}|${required_vars:-}|${deps:-}|${top_flags}" >> "$temp_index"
 
         ((script_count++))
 
@@ -233,8 +240,8 @@ indexer_get_required_vars() {
         return 1
     fi
 
-    # Find script in index and extract required vars (field 3)
-    grep "^${script_rel}|" "$INDEX_FILE" | cut -d'|' -f3
+    # Find script in index and extract required vars (field 5)
+    grep "^${script_rel}|" "$INDEX_FILE" | cut -d'|' -f5
 }
 
 # Get all required variables for a phase
@@ -247,7 +254,7 @@ indexer_get_phase_requirements() {
     fi
 
     # Find all scripts in phase and collect unique required vars
-    grep "|${phase_num}|" "$INDEX_FILE" | cut -d'|' -f3 | tr ',' '\n' | sort -u | grep -v '^$'
+    grep "|${phase_num}|" "$INDEX_FILE" | cut -d'|' -f5 | tr ',' '\n' | sort -u | grep -v '^$'
 }
 
 # Get all required variables across all phases
@@ -258,7 +265,7 @@ indexer_get_all_requirements() {
     fi
 
     # Collect all required vars from all scripts
-    cut -d'|' -f3 "$INDEX_FILE" | tr ',' '\n' | sort -u | grep -v '^$'
+    cut -d'|' -f5 "$INDEX_FILE" | tr ',' '\n' | sort -u | grep -v '^$'
 }
 
 # =============================================================================
@@ -313,7 +320,7 @@ indexer_show_requirements() {
     # Group by phase
     local current_phase=""
 
-    while IFS='|' read -r script phase vars deps; do
+    while IFS='|' read -r script id phase profiles vars deps flags; do
         if [[ "$phase" != "$current_phase" ]]; then
             current_phase="$phase"
             echo ""
@@ -321,9 +328,12 @@ indexer_show_requirements() {
         fi
 
         echo "  $script"
+        [[ -n "$id" ]] && echo "    Id: $id"
+        [[ -n "$profiles" ]] && echo "    Profiles: $profiles"
         [[ -n "$vars" ]] && echo "    Required: $vars"
         [[ -n "$deps" ]] && echo "    Depends: $deps"
-    done < <(sort -t'|' -k2 "$INDEX_FILE")
+        [[ -n "$flags" ]] && echo "    Flags: $flags"
+    done < <(sort -t'|' -k3 "$INDEX_FILE")
 }
 
 # =============================================================================

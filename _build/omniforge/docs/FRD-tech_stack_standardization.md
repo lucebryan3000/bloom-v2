@@ -43,7 +43,7 @@ This makes it hard to know per-profile/phase coverage, required config, UX aroun
 ### 4.2 Tech Stack Tree (high level)
 
 * Core/foundation: `foundation/`, `core/`, `env/`, `quality/`, `testing/`.
-* Infra/support: `db/`, `docker/`, top-level `redis-setup.sh`, `meilisearch-setup.sh`, `minio-setup.sh`, `traefik-setup.sh`.
+* Infra/support: `db/`, `docker/` (including redis/meilisearch/minio/traefik/observability service fragments).
 * Feature/optional: `ai/`, `features/`, `jobs/`, `observability/`, `monitoring/`, `state/`, `ui/`, `export/`, `intelligence/`.
 * Helper: `tech_stack/_lib/pkg-install.sh`.
 * Several wrappers delegate via `exec` (e.g., `db/drizzle-setup.sh`, `auth/authjs-setup.sh`, `ai/vercel-ai-setup.sh`, `testing/vitest-setup.sh`) and do not mark their own success.
@@ -125,38 +125,41 @@ This makes it hard to know per-profile/phase coverage, required config, UX aroun
 * Recon tech_stack scripts and indexer; list installed tools, required vars, header formats, inconsistencies.
 
 ### Phase 1 – Seed Metadata + Cache Declarations (7 scripts)
+* Order: (1) draft metadata fields; (2) add `uses_cache`; (3) capture required vars; (4) run `bash -n`.
 * Scripts: `core/nextjs.sh`, `core/database.sh`, `core/auth.sh`, `features/ai-sdk.sh`, `jobs/pgboss-setup.sh`, `observability/pino-logger.sh`, `features/testing.sh`.
 * Add `#!meta` with FR1 fields, ids without ordinals, `uses_cache` entries (all deps expected in `.download-cache`), `alias_of` for wrappers as needed.
 * Document required vars per `${VAR:?`/`${VAR:-` and sourced omni settings/config.
 * Run `bash -n` and summarize metadata per script.
 
 ### Phase 2 – Base Flags + parse_stack_flags (same 7 scripts)
-* Implement `parse_stack_flags` in `lib/common.sh` (CLI > env > profile mode precedence) exporting `DRY_RUN`, `SKIP_INSTALL`, `DEV_ONLY`, `NO_DEV`, `FORCE`, `NO_VERIFY`.
-* In scripts, set `SCRIPT_PREFIX`, honor flags in preflight/install/file writes/verify, skip success mark on dry-run, support `OMNI_<PREFIX>_SKIP` as needed.
-* Run `bash -n`, `./tools/omniforge_refactor.sh phase2`, and `--dry-run` per script.
+* Order: (1) implement `parse_stack_flags` in `lib/common.sh` (CLI > env > profile mode precedence) exporting `DRY_RUN`, `SKIP_INSTALL`, `DEV_ONLY`, `NO_DEV`, `FORCE`, `NO_VERIFY`; (2) add `mode` defaults in `omni.profiles.sh`; (3) wire scripts with `SCRIPT_PREFIX` and flag behaviors; (4) verify via `bash -n`/`refactor.sh`/`--dry-run`.
+* In scripts, honor flags in preflight/install/file writes/verify, skip success mark on dry-run, support `OMNI_<PREFIX>_SKIP` as needed.
 
 ### Phase 3 – Indexer Upgrade (overwrite existing index)
-* Update `lib/indexer.sh` to parse `#!meta` (fallback to legacy if absent) and overwrite `.omniforge_index` with `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags` (no v2 file).
+* Order: (1) update `lib/indexer.sh` to parse `#!meta` (fallback legacy) and overwrite `.omniforge_index` with `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags`; (2) audit/update consumers expecting old fields; (3) regenerate index and validate outputs.
 * Derive required vars from `uses_from_*` plus legacy Requires; coerce non-numeric phases with warnings.
-* Regenerate index and verify the 7 scripts emit full entries.
 
 ### Phase 4 – Full Rollout + Lint/CI
-* Apply metadata/flags/cache declarations to all `_build/omniforge/tech_stack/**/*.sh`; wrappers use `alias_of` and avoid redundant success marking.
-* Ensure numeric phases, accurate `profile_tags`, `uses_from_*`, `uses_cache`; enforce required-var derivation via lint/CI; standardize flag behavior.
-* Run `bash -n` across scripts, `./tools/omniforge_refactor.sh phase2`, regenerate index, and resolve warnings.
+* Order: (1) apply metadata/flags/cache declarations to all `_build/omniforge/tech_stack/**/*.sh`; (2) ensure numeric phases, accurate `profile_tags`, `uses_from_*`, `uses_cache`; (3) enforce required-var derivation via lint/CI; (4) run `bash -n` across scripts, `./tools/omniforge_refactor.sh phase2`, regenerate index, resolve warnings.
+* Wrappers use `alias_of` and avoid redundant success marking; standardize flag behavior.
 
 ### Phase 5 – Validation and Templates
-* Maintain `_build/omniforge/tech_stack/_templates/script.sh` to reflect the canonical pattern.
-* Add a check script (lint) to enforce presence/quality of `#!meta`, required-var rules, cache declarations; optionally hook into CI.
+* Order: (1) maintain `_build/omniforge/tech_stack/_templates/script.sh` to reflect the canonical pattern; (2) add a check script (lint) to enforce presence/quality of `#!meta`, required-var rules, cache declarations; (3) optionally hook lint into CI.
 
 ### Cross-Cutting Rules (approved)
 
 * Ids follow path names with no leading ordinals/prefixes; wrappers should use `alias_of`.
-* All tech_stack dependencies should be cached in `.download-cache` and declared via `uses_cache` metadata.
+* All tech_stack dependencies should be cached in `.download-cache` and declared via `uses_cache` metadata; track any missing cache artifacts for backfill.
 * Required-var derivation must follow `${VAR:?`/`${VAR:-` usage and sourced omni settings/config; enforce via lint/CI.
 * Phase 2/3/4 changes are approved; base flags, in-place indexer update (overwrite existing index), and full rollout proceed.
 * Respect base flag behaviors across install/file/verify paths; do not mark success on dry-run.
 * Keep metadata machine-friendly; prefer simple ids, consistent phases/profiles.
+* Coordinate shared-file edits (omni.sh/bin/settings) carefully to avoid clobbering existing user changes.
+* Wrapper handling: use `alias_of`, avoid redundant success markers, and have indexer collapse alias entries.
+* Indexer overwrite: audit/update any consumers expecting old index fields before rollout.
+* Phase normalization: enforce numeric phases; warn/coerce non-numeric values.
+* pkg-install integration: scripts must short-circuit on dry-run/skip/no-dev; consider no-op dry-run logging in helpers.
+* Env defaults: backfill required vars (INSTALL_DIR, SRC_LIB_DIR, DEV_SERVER_URL, etc.) via settings or injection when metadata rollout tightens validation.
 
 ### Optional – Script Template
 

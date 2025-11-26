@@ -23,12 +23,15 @@ PKG_NEXT
 PKG_REACT
 PKG_REACT_DOM
 PKG_TYPESCRIPT
-PKG_TYPES_NODE|enabled:false
-PKG_TYPES_REACT|enabled:false
-PKG_TYPES_REACT_DOM|enabled:false
+PKG_TYPES_NODE
+PKG_TYPES_REACT
+PKG_TYPES_REACT_DOM
 "
 
 BOOTSTRAP_PHASE_00_FOUNDATION="
+_combined_scripts/install-package-package-json.sh
+_combined_scripts/install-package-next.sh
+_combined_scripts/install-package-typescript.sh
 foundation/init-nextjs.sh
 foundation/init-typescript.sh
 foundation/init-package-engines.sh
@@ -215,6 +218,9 @@ BOOTSTRAP_PHASE_05_USER_DEFINED="
 # Old code may reference BOOTSTRAP_STEPS_DEFAULT - it's now auto-generated from phases
 
 BOOTSTRAP_STEPS_DEFAULT="
+_combined_scripts/install-package-package-json.sh
+_combined_scripts/install-package-next.sh
+_combined_scripts/install-package-typescript.sh
 foundation/init-nextjs.sh
 foundation/init-typescript.sh
 foundation/init-package-engines.sh

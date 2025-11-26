@@ -39,6 +39,34 @@ require_cmd() {
     return 0
 }
 
+# Ensure required database clients exist (container-safe)
+# Usage: ensure_db_client "postgres" | "sqlite"
+ensure_db_client() {
+    local db_type="${1:-postgres}"
+
+    # If running inside OmniForge container and apk exists, install as needed
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" && -x "/sbin/apk" ]]; then
+        case "$db_type" in
+            postgres)
+                if ! command -v psql &>/dev/null; then
+                    log_info "Installing PostgreSQL client (psql) inside container..."
+                    apk add --no-cache postgresql-client >/dev/null 2>&1 || {
+                        log_warn "Failed to install postgresql-client; psql may be unavailable"
+                    }
+                fi
+                ;;
+            sqlite|litesql)
+                if ! command -v sqlite3 &>/dev/null; then
+                    log_info "Installing SQLite client inside container..."
+                    apk add --no-cache sqlite >/dev/null 2>&1 || {
+                        log_warn "Failed to install sqlite client"
+                    }
+                fi
+                ;;
+        esac
+    fi
+}
+
 # Check Node.js version meets minimum
 # Usage: require_node_version 20
 require_node_version() {

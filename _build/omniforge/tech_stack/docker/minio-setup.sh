@@ -2,43 +2,61 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-if [ -f "${REPO_ROOT}/_build/omniforge/lib/common.sh" ]; then
+if [ -f "${OMNI_ROOT}/lib/common.sh" ]; then
   # shellcheck source=/dev/null
-  source "${REPO_ROOT}/_build/omniforge/lib/common.sh"
+  source "${OMNI_ROOT}/lib/common.sh"
+  source "${OMNI_ROOT}/tech_stack/_lib/pkg-install.sh"
 else
   log()   { echo "[minio-setup] $*"; }
   warn()  { echo "[minio-setup][WARN] $*" >&2; }
   error() { echo "[minio-setup][ERROR] $*" >&2; exit 1; }
 fi
 
-cd "${REPO_ROOT}"
+resolve_project_path() {
+  local path="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$path" = /* ]]; then
+    echo "$path"
+  else
+    echo "${base%/}/${path#./}"
+  fi
+}
 
-if ! command -v pnpm >/dev/null 2>&1; then
-  error "pnpm is not installed or not on PATH. Aborting."
-fi
+display_project_path() {
+  local abs="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$abs" == "$base"* ]]; then
+    echo "./${abs#$base/}"
+  else
+    echo "$abs"
+  fi
+}
+
+cd "${INSTALL_DIR}"
 
 ########################################
 # 1) Install Node MinIO client
 ########################################
 
 log "Installing MinIO/S3 client for Node…"
-pnpm add minio -D
+pkg_install_dev "minio"
 
 ########################################
 # 2) Docker service fragment
 ########################################
 
-SERVICES_DIR="${REPO_ROOT}/docker/services"
+SERVICES_DIR="$(resolve_project_path "${DOCKER_SERVICES_DIR:-docker/services}")"
 mkdir -p "${SERVICES_DIR}"
 
 MINIO_YML="${SERVICES_DIR}/minio.yml"
+MINIO_YML_DISPLAY="$(display_project_path "${MINIO_YML}")"
 
 if [ -f "${MINIO_YML}" ]; then
-  warn "MinIO docker fragment already exists at docker/services/minio.yml; skipping."
+  warn "MinIO docker fragment already exists at ${MINIO_YML_DISPLAY}; skipping."
 else
-  log "Creating docker/services/minio.yml…"
+  log "Creating ${MINIO_YML_DISPLAY}…"
 
   cat > "${MINIO_YML}" <<'YAML'
 services:
@@ -90,7 +108,7 @@ log "MinIO setup complete.
 
 To run:
 
-  docker compose -f docker-compose.yml -f docker/services/minio.yml up -d minio
+  docker compose -f ${DOCKER_COMPOSE_FILE:-docker-compose.yml} -f ${MINIO_YML_DISPLAY} up -d minio
 
 Console will be at: http://localhost:9001
 "

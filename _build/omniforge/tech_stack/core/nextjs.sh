@@ -67,8 +67,12 @@ cd "$INSTALL_DIR"
 
 log_step "Initializing package.json"
 
-if [[ ! -f "package.json" ]]; then
-    cat > package.json <<EOF
+# Always write a fresh package.json (overwrites stubs)
+if [[ -f "package.json" ]]; then
+    cp package.json package.json.bak 2>/dev/null || true
+fi
+
+cat > package.json <<EOF
 {
   "name": "${APP_NAME}",
   "version": "${APP_VERSION}",
@@ -86,10 +90,7 @@ if [[ ! -f "package.json" ]]; then
   }
 }
 EOF
-    log_ok "Created package.json"
-else
-    log_skip "package.json already exists"
-fi
+log_ok "Wrote package.json"
 
 # =============================================================================
 # DEPENDENCY INSTALLATION

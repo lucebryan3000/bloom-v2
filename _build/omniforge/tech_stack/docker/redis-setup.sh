@@ -2,45 +2,62 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 # Try to load Omniforge common helpers if they exist
-if [ -f "${REPO_ROOT}/_build/omniforge/lib/common.sh" ]; then
+if [ -f "${OMNI_ROOT}/lib/common.sh" ]; then
   # shellcheck source=/dev/null
-  source "${REPO_ROOT}/_build/omniforge/lib/common.sh"
+  source "${OMNI_ROOT}/lib/common.sh"
+  source "${OMNI_ROOT}/tech_stack/_lib/pkg-install.sh"
 else
   log()   { echo "[redis-setup] $*"; }
   warn()  { echo "[redis-setup][WARN] $*" >&2; }
   error() { echo "[redis-setup][ERROR] $*" >&2; exit 1; }
 fi
 
-cd "${REPO_ROOT}"
+resolve_project_path() {
+  local path="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$path" = /* ]]; then
+    echo "$path"
+  else
+    echo "${base%/}/${path#./}"
+  fi
+}
+
+display_project_path() {
+  local abs="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$abs" == "$base"* ]]; then
+    echo "./${abs#$base/}"
+  else
+    echo "$abs"
+  fi
+}
+
+cd "${INSTALL_DIR}"
 
 ########################################
 # 1) Install Node dependencies
 ########################################
 
-log "Installing Redis client + optional BullMQ support via pnpm…"
-
-if ! command -v pnpm >/dev/null 2>&1; then
-  error "pnpm is not installed or not on PATH. Aborting."
-fi
-
-pnpm add ioredis bullmq @types/ioredis -D
+log "Installing Redis client + optional BullMQ support…"
+pkg_install_dev "ioredis" "bullmq" "@types/ioredis"
 
 ########################################
 # 2) Ensure docker/services directory
 ########################################
 
-SERVICES_DIR="${REPO_ROOT}/docker/services"
+SERVICES_DIR="$(resolve_project_path "${DOCKER_SERVICES_DIR:-docker/services}")"
 mkdir -p "${SERVICES_DIR}"
 
 REDIS_YML="${SERVICES_DIR}/redis.yml"
+REDIS_YML_DISPLAY="$(display_project_path "${REDIS_YML}")"
 
 if [ -f "${REDIS_YML}" ]; then
-  warn "Redis service fragment already exists at docker/services/redis.yml; skipping creation."
+  warn "Redis service fragment already exists at ${REDIS_YML_DISPLAY}; skipping creation."
 else
-  log "Creating docker/services/redis.yml…"
+  log "Creating ${REDIS_YML_DISPLAY}…"
 
   cat > "${REDIS_YML}" <<'YAML'
 services:
@@ -86,5 +103,5 @@ log "Redis setup complete.
 
 To run with Redis in dev:
 
-  docker compose -f docker-compose.yml -f docker/services/redis.yml up -d redis
+  docker compose -f ${DOCKER_COMPOSE_FILE:-docker-compose.yml} -f ${REDIS_YML_DISPLAY} up -d redis
 "

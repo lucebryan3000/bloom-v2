@@ -409,7 +409,27 @@ main() {
     # NON-INTERACTIVE RUN MODE (--run or --phase)
     # =========================================================================
 
-    # Run enhanced configuration validation
+    # Run enhanced configuration validation (host preflight for deps/cache)
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        log_info "[docker] Skipping host preflight validation inside container"
+    else
+        if ! config_validate_all; then
+            log_error "Configuration validation failed"
+            config_suggest_fixes
+            log_show_file_hint
+            exit 1
+        fi
+        # Attempt dependency remediation and cache warmup on host
+        preflight_remediate_missing || true
+        preflight_download_packages "${OMNIFORGE_ROOT:-}"
+    fi
+
+    # In container mode, relax docker requirement (daemon not available)
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        export DOCKER_REQUIRED="false"
+    fi
+
+    # Run enhanced configuration validation (container path)
     if ! config_validate_all; then
         log_error "Configuration validation failed"
         config_suggest_fixes

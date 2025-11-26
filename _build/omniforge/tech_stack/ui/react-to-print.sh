@@ -13,6 +13,7 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="ui/react-to-print"
 readonly SCRIPT_NAME="Print Functionality (react-to-print)"
@@ -33,16 +34,10 @@ cd "$INSTALL_DIR"
 # =============================================================================
 
 log_info "Installing react-to-print..."
-
-if command -v pnpm &>/dev/null; then
-    pnpm add react-to-print
-elif command -v npm &>/dev/null; then
-    npm install react-to-print
-else
-    log_error "No package manager found (pnpm or npm)"
+pkg_install "react-to-print" || {
+    log_error "Failed to install react-to-print"
     exit 1
-fi
-
+}
 log_ok "Installed react-to-print"
 
 # =============================================================================

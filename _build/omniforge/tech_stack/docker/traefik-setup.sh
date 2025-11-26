@@ -2,36 +2,57 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-if [ -f "${REPO_ROOT}/_build/omniforge/lib/common.sh" ]; then
+if [ -f "${OMNI_ROOT}/lib/common.sh" ]; then
   # shellcheck source=/dev/null
-  source "${REPO_ROOT}/_build/omniforge/lib/common.sh"
+  source "${OMNI_ROOT}/lib/common.sh"
 else
   log()   { echo "[traefik-setup] $*"; }
   warn()  { echo "[traefik-setup][WARN] $*" >&2; }
   error() { echo "[traefik-setup][ERROR] $*" >&2; exit 1; }
 fi
 
-cd "${REPO_ROOT}"
+resolve_project_path() {
+  local path="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$path" = /* ]]; then
+    echo "$path"
+  else
+    echo "${base%/}/${path#./}"
+  fi
+}
 
-SERVICES_DIR="${REPO_ROOT}/docker/services"
-TRAEFIK_DIR="${REPO_ROOT}/docker/traefik"
+display_project_path() {
+  local abs="$1"
+  local base="${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+  if [[ "$abs" == "$base"* ]]; then
+    echo "./${abs#$base/}"
+  else
+    echo "$abs"
+  fi
+}
+
+cd "${PROJECT_ROOT:-${OMNI_ROOT}/..}"
+
+SERVICES_DIR="$(resolve_project_path "${DOCKER_SERVICES_DIR:-docker/services}")"
+TRAEFIK_DIR="$(resolve_project_path "${DOCKER_TRAEFIK_DIR:-docker/traefik}")"
 mkdir -p "${SERVICES_DIR}" "${TRAEFIK_DIR}"
 
 TRAEFIK_YML="${SERVICES_DIR}/traefik.yml"
+TRAEFIK_YML_DISPLAY="$(display_project_path "${TRAEFIK_YML}")"
+TRAEFIK_CONFIG_PATH="${TRAEFIK_DIR}/traefik.yml"
+TRAEFIK_CONFIG_DISPLAY="$(display_project_path "${TRAEFIK_CONFIG_PATH}")"
 
 ########################################
 # 1) Static Traefik config
 ########################################
 
-TRAEFIK_CONFIG="${TRAEFIK_DIR}/traefik.yml"
-
-if [ -f "${TRAEFIK_CONFIG}" ]; then
-  warn "Traefik config already exists at docker/traefik/traefik.yml; skipping."
+if [ -f "${TRAEFIK_CONFIG_PATH}" ]; then
+  warn "Traefik config already exists at ${TRAEFIK_CONFIG_DISPLAY}; skipping."
 else
-  log "Creating docker/traefik/traefik.yml…"
-  cat > "${TRAEFIK_CONFIG}" <<'YAML'
+  log "Creating ${TRAEFIK_CONFIG_DISPLAY}…"
+  cat > "${TRAEFIK_CONFIG_PATH}" <<'YAML'
 entryPoints:
   web:
     address: ":80"
@@ -52,11 +73,11 @@ fi
 ########################################
 
 if [ -f "${TRAEFIK_YML}" ]; then
-  warn "Traefik docker fragment already exists at docker/services/traefik.yml; skipping."
+  warn "Traefik docker fragment already exists at ${TRAEFIK_YML_DISPLAY}; skipping."
 else
-  log "Creating docker/services/traefik.yml…"
+  log "Creating ${TRAEFIK_YML_DISPLAY}…"
 
-  cat > "${TRAEFIK_YML}" <<'YAML'
+  cat > "${TRAEFIK_YML}" <<YAML
 services:
   traefik:
     image: traefik:v3.1
@@ -73,7 +94,7 @@ services:
       - "8080:8080"    # dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ${TRAEFIK_CONFIG_DISPLAY:-./docker/traefik/traefik.yml}:/etc/traefik/traefik.yml:ro
     networks:
       - appnet
 
@@ -95,5 +116,5 @@ Next steps:
         - \"traefik.http.services.app.loadbalancer.server.port=3000\"
 
   - Run:
-      docker compose -f docker-compose.yml -f docker/services/traefik.yml up -d traefik
+      docker compose -f ${DOCKER_COMPOSE_FILE:-docker-compose.yml} -f ${TRAEFIK_YML_DISPLAY} up -d traefik
 "
