@@ -123,13 +123,13 @@ fi
 : "${ENV_DATABASE_URL:=DATABASE_URL}"
 
 # Package definitions (Core Framework)
-: "${PKG_NEXT:=next@15}"
-: "${PKG_REACT:=react@19}"
-: "${PKG_REACT_DOM:=react-dom@19}"
-: "${PKG_TYPESCRIPT:=typescript@5}"
-: "${PKG_TYPES_NODE:=@types/node@20}"
-: "${PKG_TYPES_REACT:=@types/react@19}"
-: "${PKG_TYPES_REACT_DOM:=@types/react-dom@19}"
+: "${PKG_NEXT:=15}"
+: "${PKG_REACT:=19}"
+: "${PKG_REACT_DOM:=19}"
+: "${PKG_TYPESCRIPT:=5}"
+: "${PKG_TYPES_NODE:=20}"
+: "${PKG_TYPES_REACT:=19}"
+: "${PKG_TYPES_REACT_DOM:=19}"
 
 # Package definitions (Database & ORM)
 : "${PKG_DRIZZLE_ORM:=drizzle-orm}"

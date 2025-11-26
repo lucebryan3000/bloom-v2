@@ -89,10 +89,18 @@ pkg_cache_exists() {
 pkg_cache_find() {
     local pkg_name="$1"
     local found=""
+    local search_name="$pkg_name"
+
+    # Normalize scoped packages (@scope/name -> scope-name) to match cache naming
+    if [[ "$search_name" == @*/* ]]; then
+        search_name="${search_name#@}"           # drop leading @
+        search_name="${search_name/\//-}"        # replace scope separator with hyphen
+    fi
 
     if [[ -d "$PKG_CACHE_DIR" ]]; then
-        # Look for package-version.tgz pattern
-        found=$(find "$PKG_CACHE_DIR" -maxdepth 1 -name "${pkg_name}-*.tgz" -type f 2>/dev/null | head -1)
+        # Look for package-version.tgz pattern where version starts with a digit
+        found=$(find "$PKG_CACHE_DIR" -maxdepth 1 -type f -regextype posix-extended \
+            -regex ".*/${search_name}-[0-9][0-9A-Za-z.+-]*\\.tgz" 2>/dev/null | head -1)
         if [[ -n "$found" ]]; then
             basename "$found"
         fi

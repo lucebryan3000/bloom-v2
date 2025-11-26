@@ -329,13 +329,17 @@ phase_execute() {
     prereq=$(phase_get_config_field "$phase_num" "prereq") || true
     prereq="${prereq:-warn}"
     if [[ -n "$deps" ]]; then
-        if ! check_phase_deps "$deps" "$prereq"; then
-            # In dry-run mode, treat dependency failures as warnings and continue
-            if [[ "$dry_run_mode" == "true" ]]; then
-                log_warn "Phase $phase_num ($phase_name) dependency check failed (continuing in dry-run mode)"
-            elif [[ "$prereq" == "strict" ]]; then
-                log_error "Phase $phase_num ($phase_name) dependency check failed"
-                return 1
+        if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+            log_debug "[docker] Skipping dependency check for Phase $phase_num ($phase_name) inside container"
+        else
+            if ! check_phase_deps "$deps" "$prereq"; then
+                # In dry-run mode, treat dependency failures as warnings and continue
+                if [[ "$dry_run_mode" == "true" ]]; then
+                    log_warn "Phase $phase_num ($phase_name) dependency check failed (continuing in dry-run mode)"
+                elif [[ "$prereq" == "strict" ]]; then
+                    log_error "Phase $phase_num ($phase_name) dependency check failed"
+                    return 1
+                fi
             fi
         fi
     fi
