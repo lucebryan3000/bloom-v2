@@ -5,7 +5,7 @@
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Phase: 0 (Foundation)
-# Note: TypeScript setup is handled by core/00-nextjs.sh which creates tsconfig.json
+# Note: TypeScript setup is handled by core/nextjs.sh which creates tsconfig.json
 #
 # This script is a no-op since TypeScript config is part of the Next.js setup.
 # =============================================================================
@@ -27,7 +27,7 @@ fi
 
 log_step "${SCRIPT_NAME}"
 
-# TypeScript is configured by core/00-nextjs.sh
+# TypeScript is configured by core/nextjs.sh
 # This script validates and enhances the configuration
 
 if [[ ! -f "${INSTALL_DIR}/tsconfig.json" ]]; then

@@ -105,15 +105,20 @@ _validate_stack_profile() {
         minimal|api-only|full)
             return 0
             ;;
+        # Legacy alias for tech_stack
+        custom_bos)
+            _validation_warn "STACK_PROFILE" "Profile 'custom_bos' was renamed to 'tech_stack'; update omni.config"
+            return 0
+            ;;
         # New BOS-tailored profiles (from bootstrap.conf AVAILABLE_PROFILES)
-        ai_automation|fpa_dashboard|collab_editor|erp_gateway|asset_manager|custom_bos)
+        ai_automation|fpa_dashboard|collab_editor|erp_gateway|asset_manager|tech_stack)
             return 0
             ;;
         "")
             _validation_warn "STACK_PROFILE" "Not set, defaulting to 'asset_manager'"
             ;;
         *)
-            _validation_error "STACK_PROFILE" "Invalid value '$value'. Must be: ai_automation, fpa_dashboard, collab_editor, erp_gateway, asset_manager, custom_bos (or legacy: minimal, api-only, full)"
+            _validation_error "STACK_PROFILE" "Invalid value '$value'. Must be: ai_automation, fpa_dashboard, collab_editor, erp_gateway, asset_manager, tech_stack (or legacy: minimal, api-only, full; alias: custom_bos→tech_stack)"
             return 1
             ;;
     esac

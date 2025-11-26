@@ -15,7 +15,7 @@ APP_DESCRIPTION="Built with OmniForge"
 INSTALL_TARGET="test"
 
 # --- Stack Profile ---
-# Options: ai_automation, fpa_dashboard, collab_editor, erp_gateway, asset_manager, custom_bos
+# Options: ai_automation, fpa_dashboard, collab_editor, erp_gateway, asset_manager, tech_stack
 STACK_PROFILE="asset_manager"
 
 # --- Database Configuration ---

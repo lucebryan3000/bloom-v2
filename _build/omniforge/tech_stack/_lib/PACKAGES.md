@@ -14,7 +14,7 @@ This document defines the package groups installed by OmniForge and maps them to
 
 ---
 
-## Group 1: Core Framework (`core/00-nextjs.sh`)
+## Group 1: Core Framework (`core/nextjs.sh`)
 
 **Purpose**: Foundation - Next.js + React + TypeScript
 
@@ -35,7 +35,7 @@ pnpm add -D typescript @types/node @types/react @types/react-dom
 
 ---
 
-## Group 2: Database (`core/01-database.sh`)
+## Group 2: Database (`core/database.sh`)
 
 **Purpose**: PostgreSQL + Drizzle ORM
 
@@ -53,7 +53,7 @@ pnpm add -D drizzle-kit
 
 ---
 
-## Group 3: Authentication (`core/02-auth.sh`)
+## Group 3: Authentication (`core/auth.sh`)
 
 **Purpose**: Auth.js (NextAuth) setup
 
@@ -70,7 +70,7 @@ pnpm add next-auth @auth/core @auth/drizzle-adapter
 
 ---
 
-## Group 4: UI Framework (`core/03-ui.sh`)
+## Group 4: UI Framework (`core/ui.sh`)
 
 **Purpose**: shadcn/ui + Tailwind CSS
 

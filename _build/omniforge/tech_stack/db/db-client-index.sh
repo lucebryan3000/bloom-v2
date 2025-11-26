@@ -34,7 +34,7 @@ cd "$INSTALL_DIR"
 # Ensure db directory exists
 mkdir -p "${SRC_DB_DIR:-src/db}"
 
-# Verify db/index.ts exists (should be created by core/01-database)
+# Verify db/index.ts exists (should be created by core/database)
 if [[ ! -f "${SRC_DB_DIR:-src/db}/index.ts" ]]; then
     log_warn "src/db/index.ts not found - creating basic export"
     cat > "${SRC_DB_DIR:-src/db}/index.ts" << 'EOF'
@@ -45,7 +45,7 @@ if [[ ! -f "${SRC_DB_DIR:-src/db}/index.ts" ]]; then
 
 export * from './schema';
 
-// Note: Database connection should be added by core/01-database.sh
+// Note: Database connection should be added by core/database.sh
 // If you see this comment, run the database setup first.
 EOF
     log_ok "Created ${SRC_DB_DIR:-src/db}/index.ts"

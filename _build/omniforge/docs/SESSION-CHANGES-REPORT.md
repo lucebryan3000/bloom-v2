@@ -566,10 +566,10 @@ Proposed format for tracking every file created during deployment:
 ```
 # OmniForge Deployment Manifest
 [ROOT_CONFIGS]
-package.json|2025-11-24T01:28:57-06:00|core/00-nextjs
+package.json|2025-11-24T01:28:57-06:00|core/nextjs
 
 [SOURCE_FILES]
-src/app/layout.tsx|2025-11-24T01:28:58-06:00|core/00-nextjs
+src/app/layout.tsx|2025-11-24T01:28:58-06:00|core/nextjs
 ```
 
 **Execution Checklist**:

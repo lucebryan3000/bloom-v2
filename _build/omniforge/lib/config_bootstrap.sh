@@ -238,7 +238,7 @@ config_validate() {
 
 # Apply stack profile settings
 # Handles BOS profiles: ai_automation, fpa_dashboard, collab_editor,
-# erp_gateway, asset_manager, custom_bos
+# erp_gateway, asset_manager, tech_stack
 # Note: The data-driven apply_stack_profile() helpers live in lib/omni_profiles.sh.
 # This fallback provides the same functionality with explicit case handling.
 # Usage: config_apply_profile
@@ -248,13 +248,24 @@ config_apply_profile() {
     # Apply profile settings directly (associative arrays from bootstrap.conf
     # are not available here due to function scoping of 'declare -A')
     case "$profile" in
-        minimal|custom_bos)
+        minimal)
             log_info "Applying minimal stack profile"
             export ENABLE_AUTHJS="${ENABLE_AUTHJS:-false}"
             export ENABLE_AI_SDK="${ENABLE_AI_SDK:-false}"
             export ENABLE_PG_BOSS="${ENABLE_PG_BOSS:-false}"
             export ENABLE_PDF_EXPORTS="${ENABLE_PDF_EXPORTS:-false}"
             export ENABLE_SHADCN="${ENABLE_SHADCN:-false}"
+            ;;
+        custom_bos|tech_stack)
+            log_info "Applying tech_stack profile (enable full component suite)"
+            export ENABLE_AUTHJS="true"
+            export ENABLE_AI_SDK="true"
+            export ENABLE_PG_BOSS="true"
+            export ENABLE_PDF_EXPORTS="true"
+            export ENABLE_SHADCN="true"
+            export ENABLE_ZUSTAND="true"
+            export ENABLE_TEST_INFRA="true"
+            export ENABLE_CODE_QUALITY="true"
             ;;
         api-only|erp_gateway)
             log_info "Applying api-only stack profile"

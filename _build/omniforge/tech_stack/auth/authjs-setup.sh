@@ -5,7 +5,7 @@
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Phase: 2
-# Purpose: Wrapper script that delegates Auth.js setup to core/02-auth.sh
+# Purpose: Wrapper script that delegates Auth.js setup to core/auth.sh
 # =============================================================================
 
 set -euo pipefail
@@ -26,4 +26,4 @@ fi
 log_step "${SCRIPT_NAME}"
 
 # Delegate to core implementation
-exec "${SCRIPT_DIR}/../core/02-auth.sh"
+exec "${SCRIPT_DIR}/../core/auth.sh"

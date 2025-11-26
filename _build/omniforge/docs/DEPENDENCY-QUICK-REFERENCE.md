@@ -242,7 +242,7 @@ _build/omniforge/
 - **Full Architecture**: [DEPENDENCY-ARCHITECTURE.md](DEPENDENCY-ARCHITECTURE.md)
 - **OmniForge Docs**: [OMNIFORGE.md](OMNIFORGE.md)
 - **Code examples**: Look at representative scripts:
-  - Phase 0 NPM: [tech_stack/core/00-nextjs.sh](../tech_stack/core/00-nextjs.sh)
+  - Phase 0 NPM: [tech_stack/core/nextjs.sh](../tech_stack/core/nextjs.sh)
   - Phase 1 Config: [tech_stack/db/drizzle-schema-base.sh](../tech_stack/db/drizzle-schema-base.sh)
   - Phase 1 Binary: [tech_stack/docker/docker-compose-pg.sh](../tech_stack/docker/docker-compose-pg.sh)
 

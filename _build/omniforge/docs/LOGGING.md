@@ -32,7 +32,7 @@ $ omni run
 [OK] All preflight checks passed
 [STEP] Phase 0: Project Foundation...
 [STEP] Installing Next.js...
-  [OK] core/00-nextjs.sh (12s)
+  [OK] core/nextjs.sh (12s)
   [OK] typescript setup (8s)
 [OK] Phase 0 completed in 20s
 
@@ -142,7 +142,7 @@ For details, see: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_2025112
 [STEP] Installing pnpm...
 [OK] pnpm installed successfully
 [STEP] Phase 0: Project Foundation...
-  [OK] core/00-nextjs.sh (12s)
+  [OK] core/nextjs.sh (12s)
   [OK] db/drizzle-schema-base.sh (8s)
   [SKIP] observability/pino-logger.sh (already completed)
 [OK] Phase 0 completed in 20s
@@ -165,13 +165,13 @@ For details, see: /home/luce/apps/bloom2/_build/omniforge/logs/omniforge_2025112
 [STEP] Checking dependencies...
 [OK] All dependencies satisfied
 [STEP] Phase 0: Project Foundation...
-[STEP] Running: core/00-nextjs.sh
+[STEP] Running: core/nextjs.sh
 [DEBUG] Setting INSTALL_DIR=/home/luce/apps/bloom2
 [DEBUG] Creating package.json
 [DEBUG] Installing dependencies...
 [DEBUG] pnpm install output:
   added 256 packages in 12s
-[OK] core/00-nextjs.sh completed (12s)
+[OK] core/nextjs.sh completed (12s)
 ```
 
 **Use Case**: Debugging, detailed analysis
@@ -311,13 +311,13 @@ $ omni run --verbose
 [OK] All dependencies satisfied
 [STEP] Phase 0: Project Foundation...
 [DEBUG] Executing 5 scripts in sequence
-[STEP] Running: core/00-nextjs.sh
+[STEP] Running: core/nextjs.sh
 [DEBUG] Setting INSTALL_DIR=/home/luce/apps/bloom2
 [DEBUG] Creating package.json
 [DEBUG] Command: pnpm install next react react-dom
 [DEBUG] Output (first 20 lines):
   added 256 packages in 12s
-[OK] core/00-nextjs.sh (12s)
+[OK] core/nextjs.sh (12s)
 [STEP] Running: foundation/init-typescript.sh
 [DEBUG] Command: pnpm add -D typescript @types/node @types/react
 [DEBUG] Output:
@@ -340,7 +340,7 @@ $ omni run
 [STEP] Installing docker...
 [OK] docker installed successfully
 [STEP] Phase 0: Project Foundation...
-  [OK] core/00-nextjs.sh (12s)
+  [OK] core/nextjs.sh (12s)
 [STEP] Phase 1: Database...
   [OK] db/drizzle-schema-base.sh (5s)
   [STEP] docker-compose-pg.sh

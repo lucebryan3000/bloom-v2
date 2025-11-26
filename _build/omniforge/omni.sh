@@ -228,25 +228,28 @@ ${CODENAME} v${VERSION} - Infinite Architectures. Instant Foundation.
 Usage: omni [OPTIONS] [COMMAND]
 
 COMMANDS:
-    run             Execute phase scripts from omniforge.conf
-                    - Runs tech_stack/*.sh scripts in phase order (0-5)
-                    - Tracks state to avoid re-running completed phases
-                    - Use --force to re-run previously completed phases
+    menu            Interactive menu (default when no command is given)
+                    - Presents stack profiles from omni.profiles.sh to pick from
+                    - Saves selections into omni.config
 
-    clean           Clean/reset a previous installation
-                    - Deletes app folder, state files, and optionally Docker
-                    - Use --level 1-4 for quick/full/deep/nuclear clean
-                    - Use --path <dir> to specify installation path
+    run             Execute bootstrap phases from omni.phases.sh for the current stack profile
+                    - Runs tech_stack/*.sh scripts in defined phase order (0-5 by default) for the selected profile
+                    - Tracks .bootstrap_state to skip completed scripts
+                    - Use --force to re-run completed scripts; --phase N for a single phase (if enabled)
+                    - 'omni --init' is shorthand for 'omni run' (skip menu; pair with --dry-run to preview)
+                    - Set STACK_PROFILE=<name> or choose in omni.config/menu (see omni.profiles.sh for options)
 
-    list            List all phases and their scripts without executing
-                    - Shows phase metadata from omniforge.conf
-                    - Displays execution order and dependencies
+    clean           Clean/reset an installation
+                    - Interactive if no --path; non-interactive with --path <dir>
+                    - --level 1-4: quick/full/deep/nuclear (2+ clears .bootstrap_state)
 
-    status          Show completion status and state file contents
-                    - Displays which phases/scripts have run
-                    - Shows success/failure status
+    list            List all phases and their scripts (no execution)
+                    - Reads phase metadata from omni.phases.sh
 
-    stack           Stack helpers (up/down/ps) for app/postgres
+    status          Show completion status and config/state
+                    - Uses .bootstrap_state; see 'omni status --help' for list/config modes
+
+    stack           Docker helpers for bootstrap (host): up/down/ps core services
 
     build           Build and verify the project (post-initialization)
                     - Runs: pnpm install, lint, typecheck, build
@@ -254,38 +257,42 @@ COMMANDS:
                     - Validates the initialized project works correctly
 
     reset           Reset last deployment
-                    - Deletes deployment artifacts while preserving OmniForge system
-                    - Creates backup before deletion
+                    - Backs up key files, then deletes deployment artifacts/state
                     - Use --yes for non-interactive mode
 
 OPTIONS:
     -h, --help      Show this help
-    -n, --dry-run   Preview without executing (show what would run)
+    -n, --dry-run   Preview bootstrap/build without executing (combine with run/--init/forge; no effect with menu alone)
     -v, --verbose   Verbose output with detailed logging
-    -p, --phase N   Run only specific phase number (0-5)
+    -p, --phase N   Run only specific phase number (defined in omni.phases.sh)
     -f, --force     Force re-run (ignore previous success state)
     --path <dir>    Target installation path (for clean command)
     --level <1-4>   Clean level: 1=quick, 2=full, 3=deep, 4=nuclear
+    --yes           Skip confirmation prompts (for reset command)
 
 WORKFLOW:
-    1. omni menu     Interactive setup (recommended for first time)
-    2. omni run      Execute all phase scripts to initialize project
+    1. omni menu     Interactive setup + pick stack profile (recommended)
+    2. omni run      Execute all phase scripts for the chosen profile
     3. omni build    Build and verify the initialized project
     4. omni reset    Reset deployment for fresh start
     5. omni clean    Reset installation to test different configurations
 
 EXAMPLES:
     omni                           # Interactive menu (default)
+    omni --init --dry-run          # Preview bootstrap without running (skip menu)
     omni run                       # Run all phases
-    omni run --dry-run             # Preview what would execute
-    omni run --phase 0             # Run only phase 0
+    omni run --dry-run             # Preview what would execute (requires command)
+    STACK_PROFILE=minimal omni run # Run using a specific stack profile
+    omni run --phase 0             # Run only phase 0 (from omni.phases.sh) for current profile
     omni run --force               # Re-run all, ignore state
     omni list                      # List phases without running
-    omni status                    # Show completion progress
+    omni status                    # Show completion progress (.bootstrap_state)
+    omni status --config           # Show loaded configuration
     omni build                     # Build after initialization
     omni reset                     # Reset last deployment (interactive)
     omni reset --yes               # Reset without confirmation
     omni clean                     # Interactive clean menu
+    omni stack up                  # Start Docker app + postgres on host
     omni clean --path ./test/install-1 --level 2  # Full clean specific path
 
 EOF

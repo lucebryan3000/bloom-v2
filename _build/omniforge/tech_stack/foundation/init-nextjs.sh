@@ -5,9 +5,9 @@
 # Part of OmniForge - Infinite Architectures. Instant Foundation.
 #
 # Phase: 0 (Foundation)
-# Wraps: core/00-nextjs.sh
+# Wraps: core/nextjs.sh
 #
-# This script delegates to the consolidated core/00-nextjs.sh implementation.
+# This script delegates to the consolidated core/nextjs.sh implementation.
 # =============================================================================
 
 set -euo pipefail
@@ -17,4 +17,4 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TECH_STACK_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Delegate to consolidated implementation
-exec "${TECH_STACK_DIR}/core/00-nextjs.sh" "$@"
+exec "${TECH_STACK_DIR}/core/nextjs.sh" "$@"

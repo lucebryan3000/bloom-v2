@@ -292,17 +292,29 @@ menu_bootstrap() {
 
 # Step 1: Select Stack Profile
 _bootstrap_step_select_profile() {
-    # Determine default profile number from STACK_PROFILE
+    local total_profiles=${#AVAILABLE_PROFILES[@]}
+    if (( total_profiles == 0 )); then
+        log_error "No profiles defined (AVAILABLE_PROFILES is empty)"
+        return 1
+    fi
+
+    # Determine default profile number from STACK_PROFILE dynamically
     local default_profile="${STACK_PROFILE:-asset_manager}"
-    local default_num=5  # fallback to asset_manager (recommended)
-    case "$default_profile" in
-        ai_automation)  default_num=1 ;;
-        fpa_dashboard)  default_num=2 ;;
-        collab_editor)  default_num=3 ;;
-        erp_gateway)    default_num=4 ;;
-        asset_manager)  default_num=5 ;;
-        custom_bos)     default_num=6 ;;
-    esac
+    local default_num=1
+    local idx=1
+    local found_default=false
+    for profile in "${AVAILABLE_PROFILES[@]}"; do
+        if [[ "$profile" == "$default_profile" ]]; then
+            default_num=$idx
+            found_default=true
+            break
+        fi
+        ((idx++))
+    done
+    if [[ "$found_default" == "false" ]]; then
+        default_profile="${AVAILABLE_PROFILES[0]}"
+        default_num=1
+    fi
 
     _menu_header
     _menu_title "BOOTSTRAP PROJECT - Step 1/7: Select Stack Profile"
@@ -339,37 +351,34 @@ _bootstrap_step_select_profile() {
     _menu_line
     read -rp "  Select profile [1-${#AVAILABLE_PROFILES[@]}] (default: ${default_num}=${default_profile}): " choice
 
-    case "$choice" in
-        [1-6])
-            # Numeric input: convert to profile name and apply
-            local selected_profile
+    local selected_profile=""
+    if [[ -z "$choice" ]]; then
+        selected_profile="$default_profile"
+    elif [[ "$choice" =~ ^[0-9]+$ ]]; then
+        if (( choice >= 1 && choice <= total_profiles )); then
             selected_profile=$(get_profile_by_number "$choice")
-            if [[ -z "$selected_profile" ]]; then
-                log_error "Invalid profile number: $choice"
-                return 1
-            fi
-            export STACK_PROFILE="$selected_profile"
-            apply_stack_profile "$selected_profile" || return 1
-            ;;
-        ai_automation|fpa_dashboard|collab_editor|erp_gateway|asset_manager|custom_bos)
-            # Direct profile name input
-            export STACK_PROFILE="$choice"
-            apply_stack_profile "$choice" || return 1
-            ;;
-        "")
-            # Use current default from current config
-            export STACK_PROFILE="$default_profile"
-            apply_stack_profile "$default_profile" || return 1
-            ;;
-        b|back|q|quit)
+        else
+            log_error "Invalid profile number: $choice (must be 1-${total_profiles})"
             return 1
-            ;;
-        *)
+        fi
+    elif [[ "$choice" == "custom_bos" ]]; then
+        log_warn "Profile 'custom_bos' was renamed to 'tech_stack'; using tech_stack."
+        selected_profile="tech_stack"
+    else
+        for profile in "${AVAILABLE_PROFILES[@]}"; do
+            if [[ "$choice" == "$profile" ]]; then
+                selected_profile="$choice"
+                break
+            fi
+        done
+        if [[ -z "$selected_profile" ]]; then
             log_warn "Invalid selection. Using ${default_profile} profile as default."
-            export STACK_PROFILE="$default_profile"
-            apply_stack_profile "$default_profile" || return 1
-            ;;
-    esac
+            selected_profile="$default_profile"
+        fi
+    fi
+
+    export STACK_PROFILE="$selected_profile"
+    apply_stack_profile "$selected_profile" || return 1
 
     return 0
 }
@@ -1062,7 +1071,7 @@ _bootstrap_step_preflight() {
 
     # Define which scripts each profile needs
     # Core scripts are always required, features depend on profile
-    local -a core_scripts=("core/00-nextjs.sh" "core/01-database.sh")
+    local -a core_scripts=("core/nextjs.sh" "core/database.sh")
     local -a feature_scripts=()
 
     case "$profile" in
@@ -1071,21 +1080,21 @@ _bootstrap_step_preflight() {
             ;;
         starter)
             # + Auth + UI
-            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            core_scripts+=("core/auth.sh" "core/ui.sh")
             ;;
         standard)
             # + State + Testing
-            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            core_scripts+=("core/auth.sh" "core/ui.sh")
             feature_scripts=("features/state.sh" "features/testing.sh")
             ;;
         advanced)
             # + AI SDK
-            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            core_scripts+=("core/auth.sh" "core/ui.sh")
             feature_scripts=("features/state.sh" "features/testing.sh" "features/ai-sdk.sh")
             ;;
         enterprise)
             # Full stack + Code Quality
-            core_scripts+=("core/02-auth.sh" "core/03-ui.sh")
+            core_scripts+=("core/auth.sh" "core/ui.sh")
             feature_scripts=("features/state.sh" "features/testing.sh" "features/ai-sdk.sh" "features/code-quality.sh")
             ;;
     esac
@@ -1861,23 +1870,40 @@ menu_options() {
                 echo ""
                 echo "  Current: ${STACK_PROFILE:-asset_manager}"
                 echo ""
-                echo "  ${LOG_CYAN}1)${LOG_NC} ai_automation - Intelligent Process Automation (AI + Jobs)"
-                echo "  ${LOG_CYAN}2)${LOG_NC} fpa_dashboard - Financial Reporting (Auth + Exports)"
-                echo "  ${LOG_CYAN}3)${LOG_NC} collab_editor - Real-Time Documents (Jobs + State)"
-                echo "  ${LOG_CYAN}4)${LOG_NC} erp_gateway   - API Data Sync Layer (ETL Jobs)"
-                echo "  ${LOG_CYAN}5)${LOG_NC} asset_manager - Excel Replacement/CRUD (Recommended)"
-                echo "  ${LOG_CYAN}6)${LOG_NC} custom_bos    - Modular Builder (Minimal Start)"
+                local num=1
+                for profile in "${AVAILABLE_PROFILES[@]}"; do
+                    local name=$(get_profile_metadata "$profile" "name")
+                    local tagline=$(get_profile_metadata "$profile" "tagline")
+                    local marker=""
+                    [[ "$profile" == "${STACK_PROFILE:-}" ]] && marker=" ${LOG_GREEN}[current]${LOG_NC}"
+                    echo "  ${LOG_CYAN}${num})${LOG_NC} ${profile}${marker} - ${name:-$profile}"
+                    [[ -n "$tagline" ]] && echo "     ${tagline}"
+                    ((num++))
+                done
                 echo ""
-                read -rp "  Select [1-6]: " val
-                case "$val" in
-                    1) STACK_PROFILE="ai_automation" ;;
-                    2) STACK_PROFILE="fpa_dashboard" ;;
-                    3) STACK_PROFILE="collab_editor" ;;
-                    4) STACK_PROFILE="erp_gateway" ;;
-                    5) STACK_PROFILE="asset_manager" ;;
-                    6) STACK_PROFILE="custom_bos" ;;
-                    *) echo "  [SKIP] No change"; sleep 1; continue ;;
-                esac
+                read -rp "  Select [1-${#AVAILABLE_PROFILES[@]}] or name: " val
+                local selected=""
+                if [[ -z "$val" ]]; then
+                    selected="${STACK_PROFILE:-${AVAILABLE_PROFILES[0]}}"
+                elif [[ "$val" =~ ^[0-9]+$ ]] && (( val >= 1 && val <= ${#AVAILABLE_PROFILES[@]} )); then
+                    selected=$(get_profile_by_number "$val")
+                elif [[ "$val" == "custom_bos" ]]; then
+                    log_warn "Profile 'custom_bos' was renamed to 'tech_stack'; using tech_stack."
+                    selected="tech_stack"
+                else
+                    for profile in "${AVAILABLE_PROFILES[@]}"; do
+                        if [[ "$val" == "$profile" ]]; then
+                            selected="$profile"
+                            break
+                        fi
+                    done
+                fi
+                if [[ -z "$selected" ]]; then
+                    echo "  [SKIP] No change"
+                    sleep 1
+                    continue
+                fi
+                STACK_PROFILE="$selected"
                 # Update omni.config
                 if [[ -f "$config_path" ]]; then
                     sed -i.bak "s/^STACK_PROFILE=.*/STACK_PROFILE=\"${STACK_PROFILE}\"/" "$config_path"

@@ -100,24 +100,24 @@ declare -A PROFILE_ASSET_MANAGER=(
     [ENABLE_CODE_QUALITY]="true"
 )
 
-# Profile 6: CUSTOM_BOS - Modular Builder
-declare -A PROFILE_CUSTOM_BOS=(
-    [name]="CUSTOM_BOS"
-    [tagline]="Modular BOS Builder"
-    [description]="Clean slate to select features individually (minimal defaults)"
-    [time_estimate]="~45 minutes"
+# Profile 6: TECH_STACK - Full Tech Stack Coverage
+declare -A PROFILE_TECH_STACK=(
+    [name]="TECH_STACK"
+    [tagline]="Full Tech Stack Coverage"
+    [description]="Enable every component under tech_stack/ to validate end-to-end installs (great for --dry-run smoke checks)"
+    [time_estimate]="~90 minutes"
     [recommended]="false"
     [ENABLE_NEXTJS]="true"
     [ENABLE_DATABASE]="true"
-    [ENABLE_AUTHJS]="false"
-    [ENABLE_AI_SDK]="false"
-    [ENABLE_PG_BOSS]="false"
-    [ENABLE_SHADCN]="false"
-    [ENABLE_ZUSTAND]="false"
-    [ENABLE_PDF_EXPORTS]="false"
-    [ENABLE_TEST_INFRA]="false"
-    [ENABLE_CODE_QUALITY]="false"
+    [ENABLE_AUTHJS]="true"
+    [ENABLE_AI_SDK]="true"
+    [ENABLE_PG_BOSS]="true"
+    [ENABLE_SHADCN]="true"
+    [ENABLE_ZUSTAND]="true"
+    [ENABLE_PDF_EXPORTS]="true"
+    [ENABLE_TEST_INFRA]="true"
+    [ENABLE_CODE_QUALITY]="true"
 )
 
 # Available profiles (order matters - shown in this order in menu)
-AVAILABLE_PROFILES=("ai_automation" "fpa_dashboard" "collab_editor" "erp_gateway" "asset_manager" "custom_bos")
+AVAILABLE_PROFILES=("ai_automation" "fpa_dashboard" "collab_editor" "erp_gateway" "asset_manager" "tech_stack")
