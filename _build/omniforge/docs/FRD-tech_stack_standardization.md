@@ -124,27 +124,33 @@ This makes it hard to know per-profile/phase coverage, required config, UX aroun
 ### Phase 0 – Inventory and Mapping (done)
 * Recon tech_stack scripts and indexer; list installed tools, required vars, header formats, inconsistencies.
 
-### Phase 1 – Seed Metadata + Cache Declarations (7 scripts)
-* Order: (1) draft metadata fields; (2) add `uses_cache`; (3) capture required vars; (4) run `bash -n`.
+### Phase 1 – Enablers + Metadata Seeds (7 scripts)
+* Order: (1) implement enablers; (2) add initial metadata/uses_cache; (3) capture required vars; (4) run `bash -n`.
+* Enablers: implement `parse_stack_flags` in `lib/common.sh`; add `mode` to `omni.profiles.sh`; update indexer consumers (`omni.sh`, `lib/menu.sh`, others) to read the 7-field index; add a parsing stub in indexer for `#!meta` (alias collapse/phase normalization if feasible early); prune duplicate cache tarballs to chosen versions.
 * Scripts: `core/nextjs.sh`, `core/database.sh`, `core/auth.sh`, `features/ai-sdk.sh`, `jobs/pgboss-setup.sh`, `observability/pino-logger.sh`, `features/testing.sh`.
 * Add `#!meta` with FR1 fields, ids without ordinals, `uses_cache` entries (all deps expected in `.download-cache`), `alias_of` for wrappers as needed.
 * Document required vars per `${VAR:?`/`${VAR:-` and sourced omni settings/config.
-* Run `bash -n` and summarize metadata per script.
 
-### Phase 2 – Base Flags + parse_stack_flags (same 7 scripts)
-* Order: (1) implement `parse_stack_flags` in `lib/common.sh` (CLI > env > profile mode precedence) exporting `DRY_RUN`, `SKIP_INSTALL`, `DEV_ONLY`, `NO_DEV`, `FORCE`, `NO_VERIFY`; (2) add `mode` defaults in `omni.profiles.sh`; (3) wire scripts with `SCRIPT_PREFIX` and flag behaviors; (4) verify via `bash -n`/`refactor.sh`/`--dry-run`.
-* In scripts, honor flags in preflight/install/file writes/verify, skip success mark on dry-run, support `OMNI_<PREFIX>_SKIP` as needed.
+### Phase 2 – Base Flags Wiring (same 7 scripts)
+* Order: (1) wire scripts with `SCRIPT_PREFIX` and `parse_stack_flags` outputs; (2) honor flags in preflight/install/file writes/verify; (3) skip success mark on dry-run; (4) verify via `bash -n`/`refactor.sh`/`--dry-run`.
+* Support `OMNI_<PREFIX>_SKIP` as needed; ensure default behavior unchanged when flags absent.
 
 ### Phase 3 – Indexer Upgrade (overwrite existing index)
-* Order: (1) update `lib/indexer.sh` to parse `#!meta` (fallback legacy) and overwrite `.omniforge_index` with `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags`; (2) audit/update consumers expecting old fields; (3) regenerate index and validate outputs.
-* Derive required vars from `uses_from_*` plus legacy Requires; coerce non-numeric phases with warnings.
+* Order: (1) complete `#!meta` parsing, alias collapse, phase normalization; (2) overwrite `.omniforge_index` with `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags`; (3) update all consumers (`omni.sh`, `lib/menu.sh`, others) to parse the 7-field format; (4) regenerate index and validate outputs.
+* Derive required vars from `uses_from_*` plus legacy Requires; coerce non-numeric phases with warnings; warn/fallback when metadata is missing.
 
 ### Phase 4 – Full Rollout + Lint/CI
 * Order: (1) apply metadata/flags/cache declarations to all `_build/omniforge/tech_stack/**/*.sh`; (2) ensure numeric phases, accurate `profile_tags`, `uses_from_*`, `uses_cache`; (3) enforce required-var derivation via lint/CI; (4) run `bash -n` across scripts, `./tools/omniforge_refactor.sh phase2`, regenerate index, resolve warnings.
 * Wrappers use `alias_of` and avoid redundant success marking; standardize flag behavior.
+* Prune duplicate cache tarballs to chosen versions (e.g., next, types packages, typescript-eslint) to keep `uses_cache` unambiguous; document chosen versions.
 
 ### Phase 5 – Validation and Templates
 * Order: (1) maintain `_build/omniforge/tech_stack/_templates/script.sh` to reflect the canonical pattern; (2) add a check script (lint) to enforce presence/quality of `#!meta`, required-var rules, cache declarations; (3) optionally hook lint into CI.
+
+### Immediate Fix Set (to unblock phases)
+* Implement `parse_stack_flags` in `lib/common.sh` and add `mode` to `omni.profiles.sh`; wire one or two pilot scripts to validate flag flow and defaults.
+* Update indexer consumers (`omni.sh`, `lib/menu.sh`, any others) to parse the 7-field index before regenerating it again.
+* Prune duplicate cache tarballs to chosen versions so `uses_cache` remains unambiguous.
 
 ### Cross-Cutting Rules (approved)
 
@@ -157,6 +163,9 @@ This makes it hard to know per-profile/phase coverage, required config, UX aroun
 * Coordinate shared-file edits (omni.sh/bin/settings) carefully to avoid clobbering existing user changes.
 * Wrapper handling: use `alias_of`, avoid redundant success markers, and have indexer collapse alias entries.
 * Indexer overwrite: audit/update any consumers expecting old index fields before rollout.
+* Indexer must parse `#!meta`, normalize phases to numeric, and collapse aliases; update all consumers (omni.sh, menu.sh, etc.) to read the 7-field format before regenerating the index.
+* Flag plumbing prerequisites: add `mode` to `omni.profiles.sh` and implement `parse_stack_flags` in `lib/common.sh` before wiring scripts.
+* Version hygiene: prune duplicate cache tarballs to chosen versions to keep `uses_cache` unambiguous.
 * Phase normalization: enforce numeric phases; warn/coerce non-numeric values.
 * pkg-install integration: scripts must short-circuit on dry-run/skip/no-dev; consider no-op dry-run logging in helpers.
 * Env defaults: backfill required vars (INSTALL_DIR, SRC_LIB_DIR, DEV_SERVER_URL, etc.) via settings or injection when metadata rollout tightens validation.

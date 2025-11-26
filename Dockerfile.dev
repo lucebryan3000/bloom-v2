@@ -17,7 +17,7 @@ RUN apk add --no-cache bash git jq curl openssl libc6-compat
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
 # Copy entrypoint helper into image (also available via volume mount)
-COPY _build/omniforge/tech_stack/docker/app-entrypoint.sh /usr/local/bin/app-entrypoint.sh
+COPY docker/app-entrypoint.sh /usr/local/bin/app-entrypoint.sh
 RUN chmod +x /usr/local/bin/app-entrypoint.sh
 
 # Development environment
