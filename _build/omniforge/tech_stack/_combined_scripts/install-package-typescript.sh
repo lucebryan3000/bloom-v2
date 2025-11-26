@@ -23,7 +23,7 @@ cd "${INSTALL_DIR}"
 DEV_DEPS=("${PKG_TYPESCRIPT}" "${PKG_TYPES_NODE}" "${PKG_TYPES_REACT}" "${PKG_TYPES_REACT_DOM}")
 
 log_info "Installing dev deps: ${DEV_DEPS[*]}"
-pkg_install_dev "${DEV_DEPS[@]}" || {
+PNPM_FLAGS_OVERRIDE="${PNPM_FLAGS:-}" NODE_OPTIONS="${NODE_OPTIONS:-}" pkg_install_dev "${DEV_DEPS[@]}" || {
     log_error "Failed to install TypeScript/type definitions"
     exit 1
 }

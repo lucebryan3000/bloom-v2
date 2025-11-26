@@ -130,6 +130,8 @@ pkg_install() {
     local cache_installs=()
     local network_installs=()
     local failed=()
+    local pnpm_flags="${PNPM_FLAGS_OVERRIDE:-${PNPM_FLAGS:-}}"
+    local node_opts="${NODE_OPTIONS:-}"
 
     pkg_require_manager || return 1
 
@@ -155,7 +157,7 @@ pkg_install() {
         log_info "Installing from network: ${network_installs[*]}"
 
         if [[ "$PKG_MANAGER" == "pnpm" ]]; then
-            pnpm add "${network_installs[@]}" 2>&1 || {
+            NODE_OPTIONS="$node_opts" pnpm add ${pnpm_flags:+$pnpm_flags} "${network_installs[@]}" 2>&1 || {
                 log_error "Failed network install: ${network_installs[*]}"
                 failed+=("${network_installs[@]}")
             }
@@ -184,6 +186,8 @@ pkg_install_dev() {
     local cache_installs=()
     local network_installs=()
     local failed=()
+    local pnpm_flags="${PNPM_FLAGS_OVERRIDE:-${PNPM_FLAGS:-}}"
+    local node_opts="${NODE_OPTIONS:-}"
 
     pkg_require_manager || return 1
 
@@ -209,7 +213,7 @@ pkg_install_dev() {
         log_info "Installing dev deps from network: ${network_installs[*]}"
 
         if [[ "$PKG_MANAGER" == "pnpm" ]]; then
-            pnpm add -D "${network_installs[@]}" 2>&1 || {
+            NODE_OPTIONS="$node_opts" pnpm add -D ${pnpm_flags:+$pnpm_flags} "${network_installs[@]}" 2>&1 || {
                 log_error "Failed network install: ${network_installs[*]}"
                 failed+=("${network_installs[@]}")
             }

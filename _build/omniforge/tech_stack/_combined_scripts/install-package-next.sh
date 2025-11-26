@@ -23,7 +23,7 @@ cd "${INSTALL_DIR}"
 DEPS=("${PKG_NEXT}" "${PKG_REACT}" "${PKG_REACT_DOM}")
 
 log_info "Installing deps: ${DEPS[*]}"
-pkg_install "${DEPS[@]}" || {
+PNPM_FLAGS_OVERRIDE="${PNPM_FLAGS:-}" NODE_OPTIONS="${NODE_OPTIONS:-}" pkg_install "${DEPS[@]}" || {
     log_error "Failed to install Next.js/React deps"
     exit 1
 }
