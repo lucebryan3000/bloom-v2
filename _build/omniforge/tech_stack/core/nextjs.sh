@@ -87,6 +87,17 @@ cat > package.json <<EOF
   },
   "engines": {
     "node": ">=${NODE_VERSION}.0.0"
+  },
+  "dependencies": {
+    "next": "${PKG_NEXT}",
+    "react": "${PKG_REACT}",
+    "react-dom": "${PKG_REACT_DOM}"
+  },
+  "devDependencies": {
+    "typescript": "${PKG_TYPESCRIPT}",
+    "@types/node": "${PKG_TYPES_NODE}",
+    "@types/react": "${PKG_TYPES_REACT}",
+    "@types/react-dom": "${PKG_TYPES_REACT_DOM}"
   }
 }
 EOF
@@ -105,18 +116,26 @@ DEV_DEPS=("typescript" "@types/node" "@types/react" "@types/react-dom")
 # Show cache status
 pkg_preflight_check "${DEPS[@]}" "${DEV_DEPS[@]}"
 
-# Install dependencies
+# Install dependencies (if not already present)
 log_info "Installing production dependencies..."
-pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install dependencies"
-    exit 1
-}
+if ! pkg_verify_all "${DEPS[@]}"; then
+    pkg_install "${DEPS[@]}" || {
+        log_error "Failed to install dependencies"
+        exit 1
+    }
+else
+    log_skip "Production dependencies already installed"
+fi
 
 log_info "Installing dev dependencies..."
-pkg_install_dev "${DEV_DEPS[@]}" || {
-    log_error "Failed to install dev dependencies"
-    exit 1
-}
+if ! pkg_verify_all "${DEV_DEPS[@]}"; then
+    pkg_install_dev "${DEV_DEPS[@]}" || {
+        log_error "Failed to install dev dependencies"
+        exit 1
+    }
+else
+    log_skip "Dev dependencies already installed"
+fi
 
 # Verify installation
 log_info "Verifying installation..."
