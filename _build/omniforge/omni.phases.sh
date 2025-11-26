@@ -59,6 +59,7 @@ PKG_ZOD
 "
 
 BOOTSTRAP_PHASE_01_INFRASTRUCTURE="
+_combined_scripts/install-system-prereqs.sh
 _combined_scripts/install-package-drizzle.sh
 docker/dockerfile-multistage.sh
 docker/docker-compose-pg.sh
