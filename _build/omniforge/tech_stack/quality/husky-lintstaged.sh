@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: quality/husky-lintstaged.sh
+# name: lintstaged.sh - Husky + Lint-Staged Git Hooks
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - quality
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/quality/husky-lintstaged.sh - Husky + Lint-Staged Git Hooks
 # =============================================================================

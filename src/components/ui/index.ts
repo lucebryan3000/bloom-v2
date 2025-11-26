@@ -11,3 +11,6 @@
 // Export shadcn components as they are added
 // Example: export { Button } from './button';
 // Example: export { Card, CardHeader, CardContent } from './card';
+
+// Placeholder export to keep this file a valid module until components are added.
+export {};

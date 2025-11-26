@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+#!meta
+# id: monitoring/settings-ui.sh
+# name: ui.sh - User Settings & Preferences UI
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - monitoring
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - S
+#   - SETTINGS_COMPONENTS
+#   - SETTINGS_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/monitoring/settings-ui.sh - User Settings & Preferences UI
 # =============================================================================

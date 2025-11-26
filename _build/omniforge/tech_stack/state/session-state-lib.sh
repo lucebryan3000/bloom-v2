@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: state/session-state-lib.sh
+# name: session-state-lib
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - state
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - PROJECT_ROOT
+#   - STATE_LIB_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # state/session-state-lib.sh - Session State Utilities
 # =============================================================================

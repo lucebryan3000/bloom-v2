@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: state/zustand-setup.sh
+# name: zustand-setup
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - state
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - TECH_STACK_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # state/zustand-setup.sh - Zustand State Management Wrapper
 # =============================================================================

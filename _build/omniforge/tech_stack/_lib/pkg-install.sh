@@ -1,4 +1,35 @@
 #!/usr/bin/env bash
+#!meta
+# id: _lib/pkg-install.sh
+# name: install.sh - Package Installation Utilities
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _lib
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSIDE_OMNI_DOCKER
+#   - INSTALL_DIR
+#   - NODE_OPTIONS
+#   - PNPM_FLAGS
+#   - PNPM_FLAGS_OVERRIDE
+#   - PROJECT_ROOT
+#   - SCRIPTS_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/_lib/pkg-install.sh - Package Installation Utilities
 # =============================================================================

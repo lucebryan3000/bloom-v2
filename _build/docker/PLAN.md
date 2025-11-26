@@ -73,7 +73,7 @@ Target: Refactor OmniForge so all workflows run inside the `app` container by de
 ### Phase 6 — Documentation & migration
 **Objective:** Document the new model and provide a migration note.
 
-- Update `_build/omniforge/OMNIFORGE.md` and `docs/DEPENDENCY-ARCHITECTURE.md` to describe: Docker-first re-exec, `.omni.secrets.env`, containerized installs, and stack commands.
+- Update `_build/omniforge/OMNIFORGE.md` and `docs/OMNIFORGE-ARCHITECTURE.md` to describe: Docker-first re-exec, `.omni.secrets.env`, containerized installs, and stack commands.
 - Add an “Upgrading from host installs” note (remove old `.tools`, keep `.env.local` but secrets now in `.omni.secrets.env`).
 - Verify `ignored-files` includes the secrets file (and any legacy `.tools` guidance).
 

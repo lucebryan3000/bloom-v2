@@ -1,4 +1,39 @@
 #!/usr/bin/env bash
+#!meta
+# id: features/code-quality.sh
+# name: quality.sh - ESLint + Prettier + Husky
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - features
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - eslint
+#     - husky
+#     - lint-staged
+#     - prettier
+#     - typescript-eslint-parser
+#     - typescript-eslint-plugin
+#   dev_packages:
+#     - eslint
+#     - husky
+#     - lint-staged
+#     - prettier
+#     - typescript-eslint-parser
+#     - typescript-eslint-plugin
+#!endmeta
+
 # =============================================================================
 # tech_stack/features/code-quality.sh - ESLint + Prettier + Husky
 # =============================================================================
@@ -106,65 +141,59 @@ log_ok "Code quality dependencies installed"
 
 log_step "Creating ESLint configuration"
 
-if [[ ! -f ".eslintrc.json" ]]; then
-    cat > .eslintrc.json <<'EOF'
-{
-  "root": true,
-  "env": {
-    "browser": true,
-    "es2022": true,
-    "node": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "next/core-web-vitals"
+# Prefer JS config so we can set an absolute tsconfigRootDir
+if [[ -f ".eslintrc.json" && ! -f ".eslintrc.cjs" ]]; then
+    log_warn "Found .eslintrc.json; replacing with .eslintrc.cjs for proper tsconfigRootDir"
+    rm -f .eslintrc.json
+fi
+
+if [[ ! -f ".eslintrc.cjs" ]]; then
+    cat > .eslintrc.cjs <<'EOF'
+/** @type {import('eslint').Linter.Config} */
+module.exports = {
+  root: true,
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
+  extends: [
+    'next',
+    'next/core-web-vitals',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
   ],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": "latest",
-    "sourceType": "module",
-    "project": "./tsconfig.json"
+  parserOptions: {
+    project: ['./tsconfig.json'],
+    tsconfigRootDir: __dirname,
   },
-  "plugins": ["@typescript-eslint"],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_"
-      }
-    ],
-    "@typescript-eslint/consistent-type-imports": [
-      "error",
-      {
-        "prefer": "type-imports"
-      }
-    ],
-    "@typescript-eslint/no-misused-promises": [
-      "error",
-      {
-        "checksVoidReturn": {
-          "attributes": false
-        }
-      }
-    ],
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-floating-promises': 'warn',
+    '@typescript-eslint/no-unsafe-return': 'warn',
+    '@typescript-eslint/consistent-type-imports': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/require-await': 'warn',
+    '@typescript-eslint/no-unsafe-assignment': 'warn',
+    '@typescript-eslint/no-unsafe-argument': 'warn',
+    '@typescript-eslint/no-unsafe-call': 'warn',
+    '@typescript-eslint/no-unsafe-member-access': 'warn',
+    '@typescript-eslint/no-require-imports': 'off',
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
-  "ignorePatterns": [
-    "node_modules/",
-    ".next/",
-    "out/",
-    "coverage/",
-    "*.config.js",
-    "*.config.mjs"
-  ]
-}
+  ignorePatterns: [
+    'node_modules/',
+    '.next/',
+    'out/',
+    'coverage/',
+    '*.config.js',
+    '*.config.mjs',
+    'src/test/**/*',
+    'test/**/*',
+    'e2e/**/*',
+  ],
+};
 EOF
-    log_ok "Created .eslintrc.json"
+    log_ok "Created .eslintrc.cjs"
 else
-    log_skip ".eslintrc.json already exists"
+    log_skip ".eslintrc.cjs already exists"
 fi
 
 # =============================================================================

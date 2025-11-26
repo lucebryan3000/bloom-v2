@@ -1,4 +1,41 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-tailwind.sh
+# name: package-tailwind.sh - Install Tailwind deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - autoprefixer
+#     - class-variance-authority
+#     - clsx
+#     - lucide-react
+#     - postcss
+#     - tailwindcss
+#     - tailwind-merge
+#   dev_packages:
+#     - autoprefixer
+#     - class-variance-authority
+#     - clsx
+#     - lucide-react
+#     - postcss
+#     - tailwindcss
+#     - tailwind-merge
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-tailwind.sh - Install Tailwind deps
 # =============================================================================
@@ -34,6 +71,7 @@ DEV_DEPS=(
   "${PKG_CLSX}"
   "${PKG_TAILWIND_MERGE}"
   "${PKG_LUCIDE_REACT}"
+  "@tailwindcss/postcss"
 )
 
 log_info "Installing Tailwind/shadcn dev deps: ${DEV_DEPS[*]}"
@@ -42,7 +80,7 @@ if ! pkg_install_dev_retry "${DEV_DEPS[@]}"; then
     exit 1
 fi
 
-pkg_verify_all "tailwindcss" "postcss" "autoprefixer" "clsx" "tailwind-merge" "lucide-react" || {
+pkg_verify_all "tailwindcss" "postcss" "autoprefixer" "clsx" "tailwind-merge" "lucide-react" "@tailwindcss/postcss" || {
     log_error "Package verification failed"
     exit 1
 }

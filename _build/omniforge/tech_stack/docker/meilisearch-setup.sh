@@ -1,4 +1,40 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/meilisearch-setup.sh
+# name: meilisearch-setup
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - APP_ENV_FILE
+#   - COMPOSE_PROJECT_NAME
+#   - DOCKER_COMPOSE_FILE
+#   - DOCKER_SERVICES_DIR
+#   - INSTALL_DIR
+#   - MEILI_MASTER_KEY
+#   - MEILI_PORT
+#   - MEILI_YML
+#   - MEILI_YML_DISPLAY
+#   - OMNI_ROOT
+#   - PROJECT_ROOT
+#   - SERVICES_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 set -euo pipefail
 #
 # Dependencies:

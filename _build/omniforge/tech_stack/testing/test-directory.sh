@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: testing/test-directory.sh
+# name: directory.sh - Test Directory Structure
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - testing
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - SRC_TEST_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/testing/test-directory.sh - Test Directory Structure
 # =============================================================================

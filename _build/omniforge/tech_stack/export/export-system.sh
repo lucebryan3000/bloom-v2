@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: export/export-system.sh
+# name: system.sh - Export System Infrastructure
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - export
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - EXPORT_DIR
+#   - INSTALL_DIR
+#   - M
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/export/export-system.sh - Export System Infrastructure
 # =============================================================================

@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: testing/playwright-setup.sh
+# name: setup.sh - Playwright E2E Setup
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - testing
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - E2E_DIR
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/testing/playwright-setup.sh - Playwright E2E Setup
 # =============================================================================

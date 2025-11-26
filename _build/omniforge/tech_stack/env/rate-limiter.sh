@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: env/rate-limiter.sh
+# name: rate-limiter
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - env
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - SRC_LIB_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # env/rate-limiter.sh - Rate Limiting Utilities
 # =============================================================================

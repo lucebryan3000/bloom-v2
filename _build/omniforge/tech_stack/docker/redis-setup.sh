@@ -1,4 +1,39 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/redis-setup.sh
+# name: redis-setup
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - APP_ENV_FILE
+#   - COMPOSE_PROJECT_NAME
+#   - DOCKER_COMPOSE_FILE
+#   - DOCKER_SERVICES_DIR
+#   - INSTALL_DIR
+#   - OMNI_ROOT
+#   - PROJECT_ROOT
+#   - REDIS_PORT
+#   - REDIS_YML
+#   - REDIS_YML_DISPLAY
+#   - SERVICES_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 set -euo pipefail
 #
 # Dependencies:

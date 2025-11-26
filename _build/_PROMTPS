@@ -1,0 +1,11 @@
+List the outstanding work in this format
+    - Issue: one sentence stating Pis incomplete (export deps stalled; export/monitoring/testing/quality scripts not applied).
+    - What to change and why: one or two sentences on completing so exports, monitoring, tests, and lint/format hooks work end-to-
+  end.
+    - Dependencies: one line noting Node 20+, pnpm, docker context, export libs (markdown-it/exceljs/jspdf/html2canvas), test libs (vitest/
+    playwright), lint/format (eslint/prettier/husky/lint-staged).
+    - Recommended changes: 3 numbered bullets: (1) rerun export scripts (export-system, pdf/excel/markdown/json) to success; (2) run
+  monitoring
+    + testing scripts (monitoring/*, testing/*) then verify pnpm test/playwright and health endpoints compile; (3) run quality scripts
+    (quality/*), then ensure pnpm lint, pnpm typecheck, and build/verify succeed.
+    Keep it concise.

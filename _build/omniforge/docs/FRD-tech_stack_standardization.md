@@ -1,204 +1,69 @@
-# FRD – OmniForge Tech Stack Standardization (tech_stack + indexer + flags)
+# FRD – OmniForge Tech Stack Standardization (lean update)
 
-## 1. Overview
+## Purpose
+Finish standardizing tech_stack scripts so metadata, flags, and the indexer provide reliable, machine-readable insight without changing runtime behavior.
 
-OmniForge bootstrap now relies on `omni.config`, `omni.settings.sh`, `omni.profiles.sh`, and `omni.phases.sh`; `bootstrap.conf` is retired at runtime. The next major step is to bring `_build/omniforge/tech_stack` scripts up to the same level of clarity and consistency by adding structured metadata, shared flags, and an enriched indexer.
+## What’s Already Done
+- Runtime now uses `omni.config`, `omni.settings.sh`, `omni.profiles.sh`, `omni.phases.sh` (no `bootstrap.conf` dependency).
+- `parse_stack_flags` is implemented in `lib/common.sh` (supports dry-run/skip-install/dev-only/no-dev/force/no-verify) and `omni.profiles.sh` exposes `mode` defaults.
+- Indexer writes 7-field `.omniforge_index` (`script|id|phase|profile_tags|required_vars|dependencies|top_flags`) and parses `#!meta` blocks with phase normalization; consumers read the 7-field format.
+- Indexer warns when required vars are missing and falls back to legacy scraping when metadata is absent.
 
-This FRD defines how every tech_stack script should expose metadata, standard flags, and explicit config dependencies, and how the indexer and `.omniforge_index` become the authoritative registry. Codex/LLMs should be able to reason over the scripts safely without changing their behavior.
+## Decisions (locked)
+- Required_vars: Meta-only with lint enforcement; required_vars must be accurate and non-empty per script.
+- Schema: Keep the 7-field index (`script|id|phase|profile_tags|required_vars|dependencies|top_flags`); `uses_cache`/`alias_of` dropped from scope.
+- Metadata completeness rules: uses_from_* must list actual vars; dependencies must list actual packages; profile_tags must be meaningful; top_flags only when supported; id/phase present and numeric; required_vars non-empty/accurate.
+- Lint/CI: Implement checks for meta completeness, required_vars (meta-only), numeric phases, `parse_stack_flags` usage, and `bash -n`; run in CI (fail or warn-to-fail per policy).
+- Cache hygiene: Choose canonical tarball versions, prune duplicates in `.download-cache/`, document chosen versions; no index schema field for cache.
 
-## 2. Problem Statement
+## Remaining Gaps
+- Incomplete metadata coverage: many scripts still lack `#!meta` blocks with real ids, profile_tags, uses_from_omni_*, dependencies, and top_flags.
+- Required vars need to be accurate and derived from actual usage; some scripts still emit empty required_vars.
+- No lint/check enforcing metadata presence/quality across all scripts.
+- Cache hygiene not guaranteed (tarball versions and declarations may be inconsistent).
 
-* Script headers are ad-hoc; some have Phase/Profile, a few list `Requires`, most omit details.
-* There is no consistent flag model (no `--dry-run`, `--skip-install`, etc.).
-* `lib/indexer.sh` scrapes fragile header comments and writes limited cache lines:
-  `script_path|phase|required_vars|dependencies`. Phases can be non-numeric; required vars often empty; no profiles/flags/ids.
-* Cache usage (`.download-cache`) is implicit via `pkg-install.sh`; scripts don’t describe cache expectations.
+## Target State
+- Every tech_stack script has a `#!meta … #!endmeta` block with: `id`, `phase` (numeric), `profile_tags`, `description`, `uses_from_omni_config`, `uses_from_omni_settings`, `dependencies.packages/dev_packages`, and `top_flags` where relevant.
+- Scripts honor `parse_stack_flags` outputs (no success marking on dry-run; install/verify respect skip/dev flags) while preserving existing behavior otherwise.
+- `.omniforge_index` remains the single 7-field format populated from metadata (legacy scrape only as a warning fallback).
+- Lint/check exists to validate metadata presence, required-var derivation, phase numeric, and `bash -n` hygiene.
+- Cache hygiene is addressed (prune duplicate tarballs to a single chosen version per package and document choices).
 
-This makes it hard to know per-profile/phase coverage, required config, UX around flags, and to let tools propose safe changes.
+## Issues & Recommendations (current gaps)
+- Meta quality not enforced  
+  - Issue: Meta exists but fields are often empty/placeholders; required_vars stay empty.  
+  - Recommendation: Validate meta at index time; warn/fail on empty key fields (required_vars, uses_from_*, dependencies, profile_tags). Treat empty meta as non-compliant.
+- Required-vars validation disabled  
+  - Issue: `indexer_validate_requirements` is hardcoded to return early; missing required vars never surface.  
+  - Recommendation: Re-enable validation to at least warn; tie behavior to the chosen required_vars strategy (meta-only).
+- Undefined completeness rules  
+  - Issue: No definition of what complete uses_from_*, dependencies, profile_tags, top_flags look like.  
+  - Recommendation: Define minimum content per field and enforce via validation/lint.
+- Consumers assume happy path  
+  - Issue: Empty/unknown fields don’t surface strongly; “fresh” index may skip rebuild even if low-quality.  
+  - Recommendation: Surface warnings for empty/unknown fields and rebuild index when validation fails, regardless of age.
+- Injection/requirements hooks neutered  
+  - Issue: Missing-var injection relies on required_vars but validation is disabled and vars are empty.  
+  - Recommendation: After re-enabling validation, make injection useful by ensuring required_vars are populated per chosen strategy.
+- Flags unused in scripts  
+  - Issue: Scripts don’t call `parse_stack_flags`; flags ignored; success marked on dry-run.  
+  - Recommendation: Make `parse_stack_flags` mandatory; honor flags; no success mark on dry-run.
+- Metadata is boilerplate/empty  
+  - Issue: uses_from_*, dependencies, profile_tags, top_flags are empty/generic; occasional junk values.  
+  - Recommendation: Require real values per script (uses_from_*, dependencies, profile_tags, meaningful top_flags); empty meta is non-compliant.
+- Required vars misaligned  
+  - Issue: Scripts use vars but required_vars remain empty (meta-only derivation).  
+  - Recommendation: Enforce accurate required_vars via meta + lint (meta-only strategy); pick and document the approach.
+- Cache hygiene not enforced  
+  - Issue: Duplicate tarball versions may exist; cache expectations are not documented.  
+  - Recommendation: Choose canonical tarball versions, prune duplicates, and document choices.
+- No lint/enforcement  
+  - Issue: No guardrail for meta completeness, required_vars, numeric phases, flag usage, `bash -n`.  
+  - Recommendation: Add lint/CI checks; update `_build/omniforge/tech_stack/_templates/script.sh` as canonical and lint against it.
 
-## 3. Goals and Non-Goals
-
-### Goals
-
-1. Standardize metadata on all tech_stack scripts via embedded YAML-style headers (ids follow path names without leading ordinals/prefixes).
-2. Introduce a shared base flag set: `--dry-run`, `--skip-install`, `--dev-only`, `--no-dev`, `--force`, `--no-verify`.
-3. Clarify config dependencies: declare what is used from `omni.config` and `omni.settings.sh`.
-4. Extend `.omniforge_index` to carry `id`, `phase`, `profile_tags`, `required_vars`, `dependencies`, `top_flags`.
-5. Align profiles (from `omni.profiles.sh`) with script defaults via a simple `mode` (`dev|prod|ci|minimal`), while keeping CLI/env precedence.
-6. Keep metadata machine-friendly so Codex/LLMs can backfill, audit, and evolve scripts; document variable derivation rules; ensure cache expectations are explicit.
-
-### Non-Goals
-
-* No change to core behavior (e.g., package manager choice) beyond wiring flags/metadata.
-* No full schema-driven UI; this is groundwork only.
-* No broad per-script exotic flags beyond the base set and a few domain-specific extensions.
-
-## 4. Current State (recon snapshot)
-
-### 4.1 Download Cache
-
-* `_build/omniforge/.download-cache/npm` contains tarballs (`next-16.0.3.tgz`, `drizzle-orm-0.44.7.tgz`, `lucide-react-0.554.0.tgz`) and unpacked packages (`@types/node`, `react`, `react-dom`, `@typescript-eslint/eslint-plugin`, etc.).
-* `pkg-install.sh` is cache-aware (`pkg_preflight_check`, `pkg_install`, `pkg_install_dev`); the goal is that every tech_stack dependency is available via `.download-cache`, and metadata should note cache expectations (e.g., `uses_cache: [npm/next]` or description/top_flags callouts).
-
-### 4.2 Tech Stack Tree (high level)
-
-* Core/foundation: `foundation/`, `core/`, `env/`, `quality/`, `testing/`.
-* Infra/support: `db/`, `docker/` (including redis/meilisearch/minio/traefik/observability service fragments).
-* Feature/optional: `ai/`, `features/`, `jobs/`, `observability/`, `monitoring/`, `state/`, `ui/`, `export/`, `intelligence/`.
-* Helper: `tech_stack/_lib/pkg-install.sh`.
-* Several wrappers delegate via `exec` (e.g., `db/drizzle-setup.sh`, `auth/authjs-setup.sh`, `ai/vercel-ai-setup.sh`, `testing/vitest-setup.sh`) and do not mark their own success.
-
-### 4.3 Representative Scripts (7)
-
-* `core/nextjs.sh`: Installs Next/React/TS + types; creates package/tsconfig/next/app scaffolding; uses `PROJECT_ROOT`, `INSTALL_DIR`, `APP_NAME`, `APP_VERSION`, `APP_DESCRIPTION`, `NODE_VERSION`; cache-aware via pkg-install; no flags; skip via `has_script_succeeded`.
-* `core/database.sh`: Installs drizzle-orm + postgres client + drizzle-kit; writes drizzle config, db scaffolding, docker-compose, `.env.example`; uses DB vars, `POSTGRES_VERSION`, `APP_NAME`; pkg-install; no flags; warns if `package.json` missing.
-* `core/auth.sh`: Installs `next-auth@beta`, `@auth/drizzle-adapter`; writes auth config, API route, schema, `.env.example`, middleware template; depends on `core/database`; pkg-install; no flags; wrapper never marks success.
-* `features/ai-sdk.sh`: Installs Vercel AI SDK packages; writes `src/lib/ai.ts`; appends API keys to `.env.example`; uses `PROJECT_ROOT`, `INSTALL_DIR`, `SRC_LIB_DIR`; pkg-install; no flags; phase labeled “Features” (non-numeric).
-* `jobs/pgboss-setup.sh`: Installs `pg-boss`; scaffolds `src/jobs`; assumes `@/lib/env` with `DATABASE_URL`; pkg-install; no flags.
-* `observability/pino-logger.sh`: Installs `pino`; writes `src/lib/logger.ts`; references `pino-pretty` but does not install it; uses `PROJECT_ROOT`, `INSTALL_DIR`; pkg-install; no flags.
-* `features/testing.sh`: Installs Vitest/Playwright/Testing Library; writes configs and sample tests; uses `PROJECT_ROOT`, `INSTALL_DIR`, `SRC_TEST_DIR`, `E2E_DIR`, `DEV_SERVER_URL`; pkg-install; no flags; phase “Features”.
-
-### 4.4 Indexer (today)
-
-* Scans tech_stack scripts and scrapes first 30–50 lines for `# Phase:`, `# Required/Requires:`, `# Dependencies:`.
-* Emits `.omniforge_index` lines: `script_path|phase|required_vars|dependencies`.
-* Does not parse `#!meta`/`#!endmeta` or any YAML, nor `uses_from_omni_*`, `top_flags`, `profile_tags`, or `id`. Phases may be strings; required vars often empty.
-
-## 5. Functional Requirements
-
-1. **FR1 – Script metadata (YAML in comments)**  
-   Each tech_stack script MUST include a `#!meta` … `#!endmeta` block with:
-   * `id`, `name`, `phase` (numeric), `phase_name`, `profile_tags`, `description`
-   * `uses_from_omni_config`, `uses_from_omni_settings`
-   * `top_flags` (≤5, with comments), `all_flags`
-   * `env_vars` (global `OMNI_STACK_*` + script-specific `OMNI_<PREFIX>_*`)
-   * `dependencies.packages`, `dependencies.dev_packages`
-
-2. **FR2 – Standard base flags**  
-   All scripts MUST recognize `--dry-run`, `--skip-install`, `--dev-only`, `--no-dev`, `--force`, `--no-verify` (and env defaults `OMNI_STACK_*`, plus `OMNI_<PREFIX>_*` overrides).
-
-3. **FR3 – Profiles can set a simple mode**  
-   `omni.profiles.sh` may set `[mode]="dev|prod|ci|minimal"` to seed defaults; CLI/env always win.
-
-4. **FR4 – Indexer parses YAML and emits enriched index**  
-   `lib/indexer.sh` MUST parse `#!meta`, extract `id`, `phase`, `profile_tags`, `uses_from_*`, `dependencies`, `top_flags`, derive `required_vars`, and emit lines:  
-   `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags`.
-
-5. **FR5 – Required vars validation from metadata**  
-   Indexer uses `required_vars` to validate omni/env before running; `indexer_inject_missing_vars` can backfill placeholders into `omni.settings.sh`.
-
-6. **FR6 – No runtime dependency on bootstrap.conf**  
-   Remains stub-only; no script may source it.
-
-## 6. Non-Functional Requirements
-
-* Backwards-compatible default behavior; flags only add control paths.
-* Metadata and indexer remain extensible (e.g., future `creates:`).
-* Indexer remains fast; YAML blocks are small.
-* Testability: `bash -n` + `./tools/omniforge_refactor.sh phase2` + `--dry-run` flows should validate changes.
-
-## 7. Target Design
-
-### 7.1 Metadata Schema
-
-`#!meta` YAML block per script with fields in FR1. Supports optional future fields (e.g., `alias_of`, `creates`, `uses_cache`). Ids follow path names without leading ordinals; wrappers can set `alias_of`. Required-var derivation: any `${VAR:?` or `${VAR:-` usage and any sourced omni settings/config variables are considered required; enforce via lint/CI.
-
-### 7.2 Flag Parsing
-
-* `lib/common.sh` exposes `parse_stack_flags` that:
-  * Detects script prefix (`NEXT`, `DB`, `AUTH`, `AI`, `TEST`, etc.).
-  * Reads `OMNI_STACK_*` and `OMNI_<PREFIX>_*` env vars.
-  * Parses CLI flags to set `DRY_RUN`, `SKIP_INSTALL`, `DEV_ONLY`, `NO_DEV`, `FORCE`, `NO_VERIFY`.
-* Each script sets `SCRIPT_PREFIX` and calls `parse_stack_flags "$@"`, then respects the flags in preflight, install, verify, file writes, and success marking (e.g., no success mark during dry-run).
-
-### 7.3 Indexer and `.omniforge_index`
-
-* Parse `#!meta` YAML; if missing, warn and fall back to legacy scraping.
-* Extract `id`, `phase`, `profile_tags`, `uses_from_omni_config`, `uses_from_omni_settings`, `dependencies.packages/dev_packages`, `top_flags`.
-* Compute `required_vars` from `uses_from_*` (plus any legacy `Requires:` if present).
-* Emit enriched lines: `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags`.
-* Keep background indexing, lock files, and warning behavior when metadata is absent.
-
-## 8. Execution Plan (ordered)
-
-### Phase 0 – Inventory and Mapping (done)
-* Recon tech_stack scripts and indexer; list installed tools, required vars, header formats, inconsistencies.
-
-### Phase 1 – Enablers + Metadata Seeds (7 scripts)
-* Order: (1) implement enablers; (2) add initial metadata/uses_cache; (3) capture required vars; (4) run `bash -n`.
-* Enablers: implement `parse_stack_flags` in `lib/common.sh`; add `mode` to `omni.profiles.sh`; update indexer consumers (`omni.sh`, `lib/menu.sh`, others) to read the 7-field index; add a parsing stub in indexer for `#!meta` (alias collapse/phase normalization if feasible early); prune duplicate cache tarballs to chosen versions.
-* Scripts: `core/nextjs.sh`, `core/database.sh`, `core/auth.sh`, `features/ai-sdk.sh`, `jobs/pgboss-setup.sh`, `observability/pino-logger.sh`, `features/testing.sh`.
-* Add `#!meta` with FR1 fields, ids without ordinals, `uses_cache` entries (all deps expected in `.download-cache`), `alias_of` for wrappers as needed.
-* Document required vars per `${VAR:?`/`${VAR:-` and sourced omni settings/config.
-
-### Phase 2 – Base Flags Wiring (same 7 scripts)
-* Order: (1) wire scripts with `SCRIPT_PREFIX` and `parse_stack_flags` outputs; (2) honor flags in preflight/install/file writes/verify; (3) skip success mark on dry-run; (4) verify via `bash -n`/`refactor.sh`/`--dry-run`.
-* Support `OMNI_<PREFIX>_SKIP` as needed; ensure default behavior unchanged when flags absent.
-
-### Phase 3 – Indexer Upgrade (overwrite existing index)
-* Order: (1) complete `#!meta` parsing, alias collapse, phase normalization; (2) overwrite `.omniforge_index` with `script_path|id|phase|profile_tags|required_vars|dependencies|top_flags`; (3) update all consumers (`omni.sh`, `lib/menu.sh`, others) to parse the 7-field format; (4) regenerate index and validate outputs.
-* Derive required vars from `uses_from_*` plus legacy Requires; coerce non-numeric phases with warnings; warn/fallback when metadata is missing.
-
-### Phase 4 – Full Rollout + Lint/CI
-* Order: (1) apply metadata/flags/cache declarations to all `_build/omniforge/tech_stack/**/*.sh`; (2) ensure numeric phases, accurate `profile_tags`, `uses_from_*`, `uses_cache`; (3) enforce required-var derivation via lint/CI; (4) run `bash -n` across scripts, `./tools/omniforge_refactor.sh phase2`, regenerate index, resolve warnings.
-* Wrappers use `alias_of` and avoid redundant success marking; standardize flag behavior.
-* Prune duplicate cache tarballs to chosen versions (e.g., next, types packages, typescript-eslint) to keep `uses_cache` unambiguous; document chosen versions.
-
-### Phase 5 – Validation and Templates
-* Order: (1) maintain `_build/omniforge/tech_stack/_templates/script.sh` to reflect the canonical pattern; (2) add a check script (lint) to enforce presence/quality of `#!meta`, required-var rules, cache declarations; (3) optionally hook lint into CI.
-
-### Immediate Fix Set (to unblock phases)
-* Implement `parse_stack_flags` in `lib/common.sh` and add `mode` to `omni.profiles.sh`; wire one or two pilot scripts to validate flag flow and defaults.
-* Update indexer consumers (`omni.sh`, `lib/menu.sh`, any others) to parse the 7-field index before regenerating it again.
-* Prune duplicate cache tarballs to chosen versions so `uses_cache` remains unambiguous.
-
-### Cross-Cutting Rules (approved)
-
-* Ids follow path names with no leading ordinals/prefixes; wrappers should use `alias_of`.
-* All tech_stack dependencies should be cached in `.download-cache` and declared via `uses_cache` metadata; track any missing cache artifacts for backfill.
-* Required-var derivation must follow `${VAR:?`/`${VAR:-` usage and sourced omni settings/config; enforce via lint/CI.
-* Phase 2/3/4 changes are approved; base flags, in-place indexer update (overwrite existing index), and full rollout proceed.
-* Respect base flag behaviors across install/file/verify paths; do not mark success on dry-run.
-* Keep metadata machine-friendly; prefer simple ids, consistent phases/profiles.
-* Coordinate shared-file edits (omni.sh/bin/settings) carefully to avoid clobbering existing user changes.
-* Wrapper handling: use `alias_of`, avoid redundant success markers, and have indexer collapse alias entries.
-* Indexer overwrite: audit/update any consumers expecting old index fields before rollout.
-* Indexer must parse `#!meta`, normalize phases to numeric, and collapse aliases; update all consumers (omni.sh, menu.sh, etc.) to read the 7-field format before regenerating the index.
-* Flag plumbing prerequisites: add `mode` to `omni.profiles.sh` and implement `parse_stack_flags` in `lib/common.sh` before wiring scripts.
-* Version hygiene: prune duplicate cache tarballs to chosen versions to keep `uses_cache` unambiguous.
-* Phase normalization: enforce numeric phases; warn/coerce non-numeric values.
-* pkg-install integration: scripts must short-circuit on dry-run/skip/no-dev; consider no-op dry-run logging in helpers.
-* Env defaults: backfill required vars (INSTALL_DIR, SRC_LIB_DIR, DEV_SERVER_URL, etc.) via settings or injection when metadata rollout tightens validation.
-
-### Optional – Script Template
-
-* Maintain `_build/omniforge/tech_stack/_templates/script.sh` showing the canonical structure (metadata, flag parsing, preflight/install/verify, success marking, cache-aware pkg-install).
-
-## 9. Clarification: Current vs Target Indexer Behavior
-
-* **Today:** indexer scrapes simple header comments, emits `script_path|phase|required_vars|dependencies`, no YAML parsing, no profiles/flags/id.
-* **Target (per FRD):** indexer parses `#!meta` to pull `id`, `phase`, `profile_tags`, `uses_from_omni_*`, `dependencies`, `top_flags`, derives `required_vars`, and emits enriched lines. Legacy parsing remains as fallback with warnings.
-
-## 10. Outstanding Gaps and Resolution Plan
-
-### Confirmed gaps
-
-* Indexer does not yet parse YAML, normalize phases, or collapse aliases; `.omniforge_index` is already 7 fields but uses stubbed metadata.
-* `parse_stack_flags` helper is not implemented; scripts do not yet read `mode` from `omni.profiles.sh`.
-* Scripts lack `#!meta` blocks with `uses_cache` and accurate `uses_from_omni_*`; wrappers lack `alias_of`.
-* Consumers (`omni.sh`, `lib/menu.sh`, any others) still expect the legacy 4-field index.
-* `.download-cache` contains duplicate tarball versions; some packages may be missing an explicit tarball even if unpacked folders exist.
-
-### Fix now (execution order)
-
-1) Implement `parse_stack_flags` in `lib/common.sh` and add `mode` to `omni.profiles.sh`; wire one or two pilot scripts to validate dry-run/skip/no-dev/no-verify/force flows and profile seeding.
-2) Update indexer consumers (`omni.sh`, `lib/menu.sh`, other readers) to parse 7-field `.omniforge_index`, then regenerate the index (overwriting in place) after YAML parsing lands.
-3) Prune duplicate cache tarballs to the chosen versions (e.g., next, @types/react, @types/node, @typescript-eslint/eslint-plugin) so `uses_cache` stays unambiguous; note any required tarballs to backfill.
-
-### Remaining to close before Phase 2+
-
-* Finish YAML parsing in `lib/indexer.sh`, including alias collapse and phase normalization; warn/fall back when metadata is missing.
-* Add `#!meta` with `uses_cache`, `alias_of`, `uses_from_omni_*`, and flags to the seven pilot scripts, then the rest.
-* Regenerate `.omniforge_index` after consumers are updated; keep only the 7-field format (no v2 file).
-* Add a lint/check to enforce metadata presence, required-var derivation (`${VAR:?`/`${VAR:-` and sourced omni vars), `uses_cache`, and `bash -n` hygiene.
-* Track and backfill any missing cache artifacts (tarballs) for all tech_stack dependencies; document “network fallback” only when unavoidable.
+## Action Plan
+1) Add/verify `#!meta` blocks across all tech_stack scripts (ids, phases, profile_tags, uses_from_*, dependencies, top_flags). Fix empty required_vars by reflecting actual usage (meta-only strategy).
+2) Ensure scripts use `parse_stack_flags` patterns from the template (skip success on dry-run; respect skip/no-dev/no-verify paths).
+3) Prune duplicate tarballs in `.download-cache/` and document chosen versions.
+4) Add a lint/check script to enforce metadata completeness (per rules above), required-vars, numeric phases, and `bash -n`; run it in CI.
+5) Maintain `_build/omniforge/tech_stack/_templates/script.sh` as the canonical example reflecting the standardized pattern.

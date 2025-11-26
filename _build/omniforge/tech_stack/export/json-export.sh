@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: export/json-export.sh
+# name: export.sh - JSON Export Formatter
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - export
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - EXPORT_DIR
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/export/json-export.sh - JSON Export Formatter
 # =============================================================================

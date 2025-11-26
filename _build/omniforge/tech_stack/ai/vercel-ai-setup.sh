@@ -1,4 +1,28 @@
 #!/usr/bin/env bash
+#!meta
+# id: ai/vercel-ai-setup.sh
+# name: ai-setup.sh - Vercel AI SDK Setup Wrapper
+# phase: 3
+# phase_name: User Interface
+# profile_tags:
+#   - tech_stack
+#   - ai
+# uses_from_omni_config:
+# uses_from_omni_settings:
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/ai/vercel-ai-setup.sh - Vercel AI SDK Setup Wrapper
 # =============================================================================

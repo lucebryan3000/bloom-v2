@@ -4,8 +4,8 @@
  * Provides a PostgreSQL-backed job queue for reliable background processing.
  */
 
-import PgBoss from 'pg-boss';
-import { env } from '@/lib/env';
+import { PgBoss } from 'pg-boss';
+import { env } from '@/env';
 import type { JobName, JobPayloadMap, JobOptions } from './types';
 
 // =============================================================================
@@ -24,14 +24,8 @@ export async function getJobQueue(): Promise<PgBoss> {
 
   boss = new PgBoss({
     connectionString: env.DATABASE_URL,
-    // Recommended production settings
-    retryLimit: 3,
-    retryDelay: 60, // 1 minute between retries
-    expireInHours: 24,
-    archiveCompletedAfterSeconds: 60 * 60 * 24 * 7, // 7 days
-    deleteAfterDays: 30,
-    // Monitoring
-    monitorStateIntervalSeconds: 30,
+    // Lightweight monitoring; per-queue retry/expiry is set when jobs are scheduled.
+    monitorIntervalSeconds: 30,
   });
 
   // Handle errors
@@ -116,18 +110,12 @@ export type JobHandler<T> = (job: { id: string; data: T }) => Promise<void>;
  */
 export async function registerWorker<T extends JobName>(
   name: T,
-  handler: JobHandler<JobPayloadMap[T]>,
-  options?: { teamSize?: number; teamConcurrency?: number }
+  handler: JobHandler<JobPayloadMap[T]>
 ): Promise<void> {
   const queue = await getJobQueue();
 
-  await queue.work(
-    name,
-    {
-      teamSize: options?.teamSize ?? 1,
-      teamConcurrency: options?.teamConcurrency ?? 1,
-    },
-    async (job) => {
+  await queue.work(name, async (jobs) => {
+    for (const job of jobs) {
       console.log(`[Worker:${name}] Processing job: ${job.id}`);
       try {
         await handler({ id: job.id, data: job.data as JobPayloadMap[T] });
@@ -137,7 +125,7 @@ export async function registerWorker<T extends JobName>(
         throw error; // Re-throw to trigger retry
       }
     }
-  );
+  });
 
   console.log(`[JobQueue] Registered worker: ${name}`);
 }

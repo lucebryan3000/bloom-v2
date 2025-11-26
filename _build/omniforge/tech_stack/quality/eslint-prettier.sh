@@ -1,4 +1,28 @@
 #!/usr/bin/env bash
+#!meta
+# id: quality/eslint-prettier.sh
+# name: prettier.sh - ESLint + Prettier Wrapper
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - quality
+# uses_from_omni_config:
+# uses_from_omni_settings:
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/quality/eslint-prettier.sh - ESLint + Prettier Wrapper
 # =============================================================================

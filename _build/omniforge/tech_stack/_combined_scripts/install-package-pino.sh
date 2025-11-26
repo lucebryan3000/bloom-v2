@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-pino.sh
+# name: package-pino.sh - Install Pino deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - pino
+#     - pino-pretty
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-pino.sh - Install Pino deps
 # =============================================================================

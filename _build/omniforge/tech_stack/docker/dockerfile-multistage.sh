@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/dockerfile-multistage.sh
+# name: multistage.sh - Production Dockerfile Generator
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+#   - APP_NAME
+# uses_from_omni_settings:
+#   - NODE_VERSION
+#   - PNPM_VERSION
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/docker/dockerfile-multistage.sh - Production Dockerfile Generator
 # =============================================================================

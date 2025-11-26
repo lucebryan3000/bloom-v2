@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: ui/components-structure.sh
+# name: structure.sh - Component Directory Structure
+# phase: 3
+# phase_name: User Interface
+# profile_tags:
+#   - tech_stack
+#   - ui
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/ui/components-structure.sh - Component Directory Structure
 # =============================================================================
@@ -68,6 +93,9 @@ if [[ ! -f "src/components/ui/index.ts" ]]; then
 // Export shadcn components as they are added
 // Example: export { Button } from './button';
 // Example: export { Card, CardHeader, CardContent } from './card';
+
+// Placeholder export to keep this a valid module until components are added.
+export {};
 EOF
     log_ok "Created src/components/ui/index.ts"
 else
@@ -91,6 +119,9 @@ if [[ ! -f "src/components/common/index.ts" ]]; then
 // Example: export { Logo } from './Logo';
 // Example: export { Spinner } from './Spinner';
 // Example: export { EmptyState } from './EmptyState';
+
+// Placeholder export to keep this a valid module until components are added.
+export {};
 EOF
     log_ok "Created src/components/common/index.ts"
 else
@@ -114,6 +145,9 @@ if [[ ! -f "src/components/forms/index.ts" ]]; then
 // Example: export { FormField } from './FormField';
 // Example: export { FormError } from './FormError';
 // Example: export { SubmitButton } from './SubmitButton';
+
+// Placeholder export to keep this a valid module until components are added.
+export {};
 EOF
     log_ok "Created src/components/forms/index.ts"
 else

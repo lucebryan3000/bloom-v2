@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: quality/verify-build.sh
+# name: verify-build
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - quality
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - PROJECT_NAME
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # quality/verify-build.sh - Build Verification & Baseline Testing
 # =============================================================================
@@ -33,8 +60,63 @@ fi
 
 log_step "${SCRIPT_NAME}"
 
+# Ensure logs directory exists
+mkdir -p "${INSTALL_DIR}/logs"
+
 # =============================================================================
 # Step 1: TypeScript Type Check
+# =============================================================================
+
+# =============================================================================
+# Step 1: Clean stale build artifacts/ownership
+# =============================================================================
+
+log_info "Cleaning stale .next artifacts..."
+
+# If a previous build created root-owned files (e.g., via container), clear them
+if [[ -d "${INSTALL_DIR}/.next" ]]; then
+    if rm -rf "${INSTALL_DIR}/.next"; then
+        log_ok "Removed existing .next directory"
+    else
+        log_warn "Could not remove .next; attempting to reset permissions"
+        if chmod -R u+rwX "${INSTALL_DIR}/.next" 2>/dev/null && rm -rf "${INSTALL_DIR}/.next"; then
+            log_ok "Reset permissions and removed .next"
+        else
+            # Fallback: if docker compose is available, try removing inside the app container
+            if command -v docker &>/dev/null && docker compose ps app &>/dev/null; then
+                log_warn "Attempting to remove .next via docker compose exec app"
+                if docker compose exec app sh -c "rm -rf /workspace/.next" >/dev/null 2>&1; then
+                    log_ok "Removed .next via docker compose exec"
+                else
+                    log_error "Failed to clean .next; please remove it manually"
+                    exit 1
+                fi
+            else
+                log_error "Failed to clean .next; please remove it manually"
+                exit 1
+            fi
+        fi
+    fi
+else
+    log_skip ".next not present"
+fi
+
+# =============================================================================
+# Step 2: Production Build (generates .next/types for typed routing)
+# =============================================================================
+
+log_info "Building production bundle..."
+
+if NODE_ENV=production pnpm build 2>&1 | tee "${INSTALL_DIR}/logs/build.log"; then
+    log_ok "Production build succeeded"
+else
+    log_error "Production build failed"
+    log_error "See logs/build.log for details"
+    exit 1
+fi
+
+# =============================================================================
+# Step 3: TypeScript Type Check (after build so .next/types exist)
 # =============================================================================
 
 log_info "Running TypeScript type check..."
@@ -48,21 +130,7 @@ else
 fi
 
 # =============================================================================
-# Step 2: Production Build
-# =============================================================================
-
-log_info "Building production bundle..."
-
-if pnpm build 2>&1 | tee "${INSTALL_DIR}/logs/build.log"; then
-    log_ok "Production build succeeded"
-else
-    log_error "Production build failed"
-    log_error "See logs/build.log for details"
-    exit 1
-fi
-
-# =============================================================================
-# Step 3: Baseline Tests (if test suite exists)
+# Step 4: Baseline Tests (if test suite exists)
 # =============================================================================
 
 log_info "Checking for test suite..."
@@ -81,7 +149,7 @@ else
 fi
 
 # =============================================================================
-# Step 4: E2E Smoke Test (if Playwright installed)
+# Step 5: E2E Smoke Test (if Playwright installed)
 # =============================================================================
 
 if [[ -d "${INSTALL_DIR}/e2e" ]] && command -v playwright &>/dev/null; then
@@ -105,7 +173,7 @@ else
 fi
 
 # =============================================================================
-# Step 5: Generate Verification Report
+# Step 6: Generate Verification Report
 # =============================================================================
 
 log_info "Generating verification report..."

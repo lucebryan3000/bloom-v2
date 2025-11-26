@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+#!meta
+# id: ai/chat-feature-scaffold.sh
+# name: feature-scaffold.sh - Chat Feature Scaffold
+# phase: 3
+# phase_name: User Interface
+# profile_tags:
+#   - tech_stack
+#   - ai
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - CHAT_API_DIR
+#   - CHAT_COMPONENTS_DIR
+#   - CHAT_PAGE_DIR
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/ai/chat-feature-scaffold.sh - Chat Feature Scaffold
 # =============================================================================
@@ -231,7 +259,7 @@ export async function POST(req: Request) {
       messages,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error("Chat API error:", error);
     return new Response(
@@ -251,22 +279,34 @@ mkdir -p "${CHAT_PAGE_DIR}"
 cat > "${CHAT_PAGE_DIR}/page.tsx" << 'EOF'
 "use client";
 
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { ChatContainer } from "@/components/chat";
 
 export default function ChatPage() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, sendMessage, status } = useChat();
+  const isLoading = status === "streaming";
 
   const handleSend = (message: string) => {
-    handleInputChange({ target: { value: message } } as React.ChangeEvent<HTMLInputElement>);
-    handleSubmit(new Event("submit") as unknown as React.FormEvent<HTMLFormElement>);
+    void sendMessage({ text: message });
   };
 
-  const formattedMessages = messages.map((m) => ({
-    id: m.id,
-    role: m.role as "user" | "assistant",
-    content: m.content,
-  }));
+  const formattedMessages = messages.map((m) => {
+    const parts: any[] | undefined = (m as any).parts;
+    const textFromParts =
+      Array.isArray(parts) && parts.length
+        ? parts
+            .map((p: any) => ("text" in p ? p.text : ""))
+            .filter(Boolean)
+            .join(" ")
+        : undefined;
+    const content = (m as any).content ?? (m as any).text ?? textFromParts ?? "";
+
+    return {
+      id: m.id,
+      role: m.role as "user" | "assistant",
+      content,
+    };
+  });
 
   return (
     <div className="container mx-auto h-[calc(100vh-4rem)] max-w-4xl py-4">

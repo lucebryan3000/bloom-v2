@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: intelligence/melissa-prompts.sh
+# name: prompts.sh - Melissa.ai Prompt System
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - intelligence
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - PROMPTS_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/intelligence/melissa-prompts.sh - Melissa.ai Prompt System
 # =============================================================================

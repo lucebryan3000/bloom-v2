@@ -1,4 +1,43 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/docker-compose-pg.sh
+# name: compose-pg.sh - Full Development Stack
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+#   - APP_NAME
+#   - DB_HOST
+#   - DB_NAME
+#   - DB_PASSWORD
+#   - DB_PORT
+#   - DB_USER
+# uses_from_omni_settings:
+#   - APP_ENV_FILE
+#   - CONTAINER_PREFIX
+#   - ENABLE_REDIS
+#   - ENV_FILE_PATH
+#   - NODE_VERSION
+#   - PGVECTOR_IMAGE
+#   - PNPM_VERSION
+#   - POSTGRES_VERSION
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/docker/docker-compose-pg.sh - Full Development Stack
 # =============================================================================

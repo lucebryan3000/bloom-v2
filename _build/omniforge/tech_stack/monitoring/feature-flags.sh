@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: monitoring/feature-flags.sh
+# name: flags.sh - Feature Flag System
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - monitoring
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - FLAGS_DIR
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/monitoring/feature-flags.sh - Feature Flag System
 # =============================================================================

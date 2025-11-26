@@ -1,4 +1,39 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-testing.sh
+# name: package-testing.sh - Install testing deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - jsdom
+#     - playwright
+#     - testing-library-jest-dom
+#     - testing-library-react
+#     - vitejs-plugin-react
+#     - vitest
+#   dev_packages:
+#     - jsdom
+#     - playwright
+#     - testing-library-jest-dom
+#     - testing-library-react
+#     - vitejs-plugin-react
+#     - vitest
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-testing.sh - Install testing deps
 # =============================================================================

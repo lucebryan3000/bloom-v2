@@ -1,4 +1,35 @@
 #!/usr/bin/env bash
+#!meta
+# id: core/auth.sh
+# name: Auth.js Authentication
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - core
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - SCHEMA_INDEX
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - @auth/drizzle-adapter
+#     - next-auth@beta
+#   dev_packages:
+#     -
+#!endmeta
+# Docs:
+#   - https://authjs.dev/reference/adapter/drizzle
+
+
+
 # =============================================================================
 # tech_stack/core/auth.sh - Auth.js Authentication
 # =============================================================================

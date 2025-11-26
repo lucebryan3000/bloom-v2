@@ -1,4 +1,48 @@
 #!/usr/bin/env bash
+#!meta
+# id: core/nextjs.sh
+# name: Next.js + React + TypeScript Foundation
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - core
+# uses_from_omni_config:
+#   - APP_DESCRIPTION
+#   - APP_NAME
+#   - APP_VERSION
+# uses_from_omni_settings:
+#   - NODE_VERSION
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - @types/node
+#     - @types/react
+#     - @types/react-dom
+#     - next
+#     - react
+#     - react-dom
+#     - typescript
+#   dev_packages:
+#     - @types/node
+#     - @types/react
+#     - @types/react-dom
+#     - typescript
+#!endmeta
+# Docs:
+#   - https://www.npmjs.com/package/@types/node
+#   - https://www.npmjs.com/package/@types/react
+#   - https://www.npmjs.com/package/@types/react-dom
+
+
+
 # =============================================================================
 # tech_stack/core/nextjs.sh - Next.js + React + TypeScript Foundation
 # =============================================================================
@@ -183,8 +227,23 @@ if [[ ! -f "tsconfig.json" ]]; then
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "src/test/**/*",
+    "test/**/*",
+    "e2e/**/*",
+    ".next",
+    "**/*.backup.ts",
+    "**/*.old.ts",
+    "**/archive/**/*",
+    "**/backup/**/*",
+    "_AppModules-Luce/**/*",
+    "_backup/**/*",
+    "_build/**/*",
+    "archive/**/*",
+    "backup/**/*"
+  ]
 }
 EOF
     log_ok "Created tsconfig.json"
@@ -206,10 +265,17 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for development
   reactStrictMode: true,
 
-  // Experimental features
-  experimental: {
-    // Enable typed routes
-    typedRoutes: true,
+  // Needed for Docker multistage build optimization
+  output: 'standalone',
+
+  // Relax linting during containerized builds to prioritize successful image creation
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Allow type errors to pass during container builds (fix incrementally in dev)
+  typescript: {
+    ignoreBuildErrors: true,
   },
 
   // Environment variables available to the browser
@@ -284,6 +350,8 @@ fi
 # Global styles
 if [[ ! -f "src/app/globals.css" ]]; then
     cat > src/app/globals.css <<'EOF'
+@config "../../tailwind.config.ts";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

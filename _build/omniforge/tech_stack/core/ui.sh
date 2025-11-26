@@ -1,4 +1,40 @@
 #!/usr/bin/env bash
+#!meta
+# id: core/ui.sh
+# name: UI Framework (shadcn/ui + Tailwind)
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - core
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - GLOBALS_CSS
+#   - INSTALL_DIR
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - autoprefixer
+#     - class-variance-authority
+#     - clsx
+#     - lucide-react
+#     - postcss
+#     - tailwindcss
+#     - tailwind-merge
+#   dev_packages:
+#     - autoprefixer
+#     - postcss
+#     - tailwindcss
+#!endmeta
+
+
 # =============================================================================
 # tech_stack/core/ui.sh - UI Framework (shadcn/ui + Tailwind)
 # =============================================================================
@@ -231,16 +267,108 @@ if [[ ! -f "postcss.config.mjs" ]]; then
 /** @type {import('postcss-load-config').Config} */
 const config = {
   plugins: {
-    tailwindcss: {},
+    "@tailwindcss/postcss": {},
     autoprefixer: {},
   },
 };
 
 export default config;
 EOF
-    log_ok "Created postcss.config.mjs"
+log_ok "Created postcss.config.mjs"
 else
     log_skip "postcss.config.mjs already exists"
+fi
+
+# =============================================================================
+# APP ROUTER SAFETY PAGES
+# =============================================================================
+
+log_step "Creating App Router safety pages (error/not-found) and 404 fallback"
+
+# Ensure app directory exists
+mkdir -p src/app
+mkdir -p pages
+
+if [[ ! -f "src/app/error.tsx" ]]; then
+    cat > src/app/error.tsx <<'EOF'
+"use client";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default function GlobalError({ error }: { error: Error }) {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+      <h1 className="text-3xl font-semibold">Something went wrong</h1>
+      <p className="text-muted-foreground">{error.message || "Unexpected error"}</p>
+    </main>
+  );
+}
+EOF
+    log_ok "Created src/app/error.tsx"
+else
+    log_skip "src/app/error.tsx already exists"
+fi
+
+if [[ ! -f "src/app/not-found.tsx" ]]; then
+    cat > src/app/not-found.tsx <<'EOF'
+"use client";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default function NotFound() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+      <h1 className="text-3xl font-semibold">Page not found</h1>
+      <p className="text-muted-foreground">The page you are looking for does not exist.</p>
+    </main>
+  );
+}
+EOF
+    log_ok "Created src/app/not-found.tsx"
+else
+    log_skip "src/app/not-found.tsx already exists"
+fi
+
+if [[ ! -f "pages/404.tsx" ]]; then
+    cat > pages/404.tsx <<'EOF'
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export default function Custom404() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+      <h1 className="text-3xl font-semibold">404 - Page Not Found</h1>
+      <p className="text-muted-foreground">This page does not exist.</p>
+    </main>
+  );
+}
+EOF
+    log_ok "Created pages/404.tsx"
+else
+    log_skip "pages/404.tsx already exists"
+fi
+
+if [[ ! -f "pages/_document.tsx" ]]; then
+    cat > pages/_document.tsx <<'EOF'
+import { Html, Head, Main, NextScript } from "next/document";
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
+}
+EOF
+    log_ok "Created pages/_document.tsx"
+else
+    log_skip "pages/_document.tsx already exists"
 fi
 
 # =============================================================================
@@ -332,6 +460,8 @@ fi
 # Create/overwrite globals.css with full shadcn/ui theme
 mkdir -p src/app
 cat > "$GLOBALS_CSS" <<'EOF'
+@config "../../tailwind.config.ts";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,4 +1,33 @@
 #!/usr/bin/env bash
+#!meta
+# id: features/ai-sdk.sh
+# name: sdk.sh - Vercel AI SDK Integration
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - features
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - SRC_LIB_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - ai-sdk-anthropic
+#     - ai-sdk-openai
+#     - vercel-ai
+#   dev_packages:
+#     -
+#!endmeta
+
+
 # =============================================================================
 # tech_stack/features/ai-sdk.sh - Vercel AI SDK Integration
 # =============================================================================

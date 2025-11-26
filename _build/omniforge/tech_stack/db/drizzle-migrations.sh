@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: db/drizzle-migrations.sh
+# name: drizzle-migrations
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - db
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # db/drizzle-migrations.sh - Database Migrations Setup
 # =============================================================================

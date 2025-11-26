@@ -1,4 +1,40 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/traefik-setup.sh
+# name: traefik-setup
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - COMPOSE_PROJECT_NAME
+#   - DOCKER_COMPOSE_FILE
+#   - DOCKER_SERVICES_DIR
+#   - DOCKER_TRAEFIK_DIR
+#   - OMNI_ROOT
+#   - PROJECT_ROOT
+#   - SERVICES_DIR
+#   - TRAEFIK_CONFIG_DISPLAY
+#   - TRAEFIK_CONFIG_PATH
+#   - TRAEFIK_DIR
+#   - TRAEFIK_YML
+#   - TRAEFIK_YML_DISPLAY
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 set -euo pipefail
 #
 # Dependencies:

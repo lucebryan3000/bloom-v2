@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: foundation/init-directory-structure.sh
+# name: init-directory-structure
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - foundation
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_DIRECTORIES
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # foundation/init-directory-structure.sh - Project Directory Structure
 # =============================================================================

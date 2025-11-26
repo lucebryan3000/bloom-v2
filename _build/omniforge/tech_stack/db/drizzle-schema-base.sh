@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: db/drizzle-schema-base.sh
+# name: drizzle-schema-base
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - db
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - SCHEMA_INDEX
+#   - SRC_DB_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # db/drizzle-schema-base.sh - Base Schema Definitions
 # =============================================================================

@@ -443,7 +443,7 @@ Each phase below calls out the delta from this baseline and the specific files t
 
 1. **Docs updates**
 
-   Update `_build/omniforge/OMNIFORGE.md` and relevant docs (e.g., `docs/DEPENDENCY-ARCHITECTURE.md`) to include:
+   Update `_build/omniforge/OMNIFORGE.md` and relevant docs (e.g., `docs/OMNIFORGE-ARCHITECTURE.md`) to include:
 
    - Explanation of the **Docker-first bootstrap model**:
      - `omni.sh` menu on host.

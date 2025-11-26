@@ -19,6 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     container_name: bloom_app
+    user: "1000:1000"
     restart: unless-stopped
     entrypoint: ["/usr/local/bin/app-entrypoint.sh"]
     ports:
@@ -37,6 +38,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
+      - APP_AUTO_START=false
       - STACK_PROFILE=tech_stack
       - INSTALL_DIR=/workspace
       - ALLOW_DIRTY=true

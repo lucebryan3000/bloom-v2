@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: jobs/job-worker-template.sh
+# name: job-worker-template
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - jobs
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - PROJECT_ROOT
+#   - WORKERS_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # jobs/job-worker-template.sh - Job Worker Templates
 # =============================================================================

@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: observability/pino-logger.sh
+# name: pino-logger
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - observability
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - pino
+#   dev_packages:
+#     -
+#!endmeta
+
+
 # =============================================================================
 # observability/pino-logger.sh - Pino Logger Setup
 # =============================================================================

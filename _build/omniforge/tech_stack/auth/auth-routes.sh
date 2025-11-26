@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+#!meta
+# id: auth/auth-routes.sh
+# name: routes.sh - Auth Routes Setup
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - auth
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - AUTH_API_DIR
+#   - PROJECT_ROOT
+#   - SIGNIN_DIR
+#   - SIGNOUT_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/auth/auth-routes.sh - Auth Routes Setup
 # =============================================================================

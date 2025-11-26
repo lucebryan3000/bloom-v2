@@ -12,3 +12,6 @@
 // Example: export { Logo } from './Logo';
 // Example: export { Spinner } from './Spinner';
 // Example: export { EmptyState } from './EmptyState';
+
+// Placeholder export to keep this file a valid module until components are added.
+export {};

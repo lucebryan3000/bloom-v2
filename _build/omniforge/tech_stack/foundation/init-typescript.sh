@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: foundation/init-typescript.sh
+# name: init-typescript
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - foundation
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # foundation/init-typescript.sh - TypeScript Configuration
 # =============================================================================

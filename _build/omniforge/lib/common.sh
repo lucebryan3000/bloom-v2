@@ -185,6 +185,47 @@ parse_common_args() {
     done
 }
 
+# Parse standardized stack flags for tech_stack scripts
+# Supports global env (OMNI_STACK_*) and script-specific (OMNI_<PREFIX>_*).
+parse_stack_flags() {
+    local prefix="${SCRIPT_PREFIX:-STACK}"
+    local script_prefix="OMNI_${prefix}_"
+    local global_prefix="OMNI_STACK_"
+
+    _bool_from_env() {
+        local var_name="$1"
+        local default_value="${2:-false}"
+        local val="${!var_name:-$default_value}"
+        case "${val,,}" in
+            1|true|yes|on) echo "true";;
+            *) echo "false";;
+        esac
+    }
+
+    DRY_RUN=$(_bool_from_env "${script_prefix}DRY_RUN" $(_bool_from_env "${global_prefix}DRY_RUN" "${DRY_RUN:-false}"))
+    SKIP_INSTALL=$(_bool_from_env "${script_prefix}SKIP_INSTALL" $(_bool_from_env "${global_prefix}SKIP_INSTALL" "${SKIP_INSTALL:-false}"))
+    DEV_ONLY=$(_bool_from_env "${script_prefix}DEV_ONLY" $(_bool_from_env "${global_prefix}DEV_ONLY" "${DEV_ONLY:-false}"))
+    NO_DEV=$(_bool_from_env "${script_prefix}NO_DEV" $(_bool_from_env "${global_prefix}NO_DEV" "${NO_DEV:-false}"))
+    FORCE=$(_bool_from_env "${script_prefix}FORCE" $(_bool_from_env "${global_prefix}FORCE" "${FORCE:-false}"))
+    NO_VERIFY=$(_bool_from_env "${script_prefix}NO_VERIFY" $(_bool_from_env "${global_prefix}NO_VERIFY" "${NO_VERIFY:-false}"))
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --dry-run|-n) DRY_RUN=true ; shift ;;
+            --skip-install) SKIP_INSTALL=true ; shift ;;
+            --dev-only) DEV_ONLY=true ; shift ;;
+            --no-dev) NO_DEV=true ; shift ;;
+            --force) FORCE=true ; shift ;;
+            --no-verify) NO_VERIFY=true ; shift ;;
+            --) shift; break;;
+            -*) shift;;
+            *) break;;
+        esac
+    done
+
+    export DRY_RUN SKIP_INSTALL DEV_ONLY NO_DEV FORCE NO_VERIFY SCRIPT_PREFIX
+}
+
 # =============================================================================
 # EXPORTS
 # =============================================================================

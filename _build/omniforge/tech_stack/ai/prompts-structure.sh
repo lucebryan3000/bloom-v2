@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: ai/prompts-structure.sh
+# name: structure.sh - Prompts Structure Setup
+# phase: 3
+# phase_name: User Interface
+# profile_tags:
+#   - tech_stack
+#   - ai
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - PROMPTS_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/ai/prompts-structure.sh - Prompts Structure Setup
 # =============================================================================

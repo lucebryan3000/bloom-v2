@@ -3,3 +3,13 @@
 
 # Package download cache
 /.download-cache/
+# OmniForge download cache
+_build/omniforge/.download-cache/
+.omniforge-backup/
+
+# Build outputs and caches
+node_modules/
+.next/
+.turbo/
+dist/
+coverage/

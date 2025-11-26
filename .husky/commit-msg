@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Optional: Add commitlint here
+# npx --no -- commitlint --edit "$1"

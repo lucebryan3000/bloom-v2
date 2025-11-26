@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: ui/react-to-print.sh
+# name: to-print.sh - Print Functionality Setup
+# phase: 3
+# phase_name: User Interface
+# profile_tags:
+#   - tech_stack
+#   - ui
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/ui/react-to-print.sh - Print Functionality Setup
 # =============================================================================

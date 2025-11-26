@@ -1,4 +1,39 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/docker-pnpm-cache.sh
+# name: pnpm-cache.sh - Docker Build Optimization
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+#   - APP_NAME
+#   - DB_NAME
+#   - DB_USER
+# uses_from_omni_settings:
+#   - BUILDKIT_CACHE_DIR
+#   - DOCKER_BUILD_ARGS
+#   - DOCKER_PLATFORM_ARGS
+#   - HOME
+#   - IMAGE_NAME
+#   - NODE_VERSION
+#   - PNPM_VERSION
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/docker/docker-pnpm-cache.sh - Docker Build Optimization
 # =============================================================================

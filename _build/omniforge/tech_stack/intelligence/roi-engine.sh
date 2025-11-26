@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: intelligence/roi-engine.sh
+# name: engine.sh - ROI Calculation Engine
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - intelligence
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - M
+#   - SCHEMAS_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/intelligence/roi-engine.sh - ROI Calculation Engine
 # =============================================================================

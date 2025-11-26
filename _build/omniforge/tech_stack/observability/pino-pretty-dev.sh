@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: observability/pino-pretty-dev.sh
+# name: pino-pretty-dev
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - observability
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # observability/pino-pretty-dev.sh - Pino Pretty Dev Dependency
 # =============================================================================

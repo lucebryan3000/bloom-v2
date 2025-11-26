@@ -1,4 +1,33 @@
 #!/usr/bin/env bash
+#!meta
+# id: jobs/pgboss-setup.sh
+# name: pgboss-setup
+# phase: 2
+# phase_name: Core Features
+# profile_tags:
+#   - tech_stack
+#   - jobs
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - JOBS_DIR
+#   - PGBOSS_PKG
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - pgboss
+#   dev_packages:
+#     -
+#!endmeta
+
+
 # =============================================================================
 # jobs/pgboss-setup.sh - PG-Boss Background Job Setup
 # =============================================================================

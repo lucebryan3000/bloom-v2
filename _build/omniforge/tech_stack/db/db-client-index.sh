@@ -1,4 +1,30 @@
 #!/usr/bin/env bash
+#!meta
+# id: db/db-client-index.sh
+# name: db-client-index
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - db
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - SRC_DB_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # db/db-client-index.sh - Database Client Index Exports
 # =============================================================================

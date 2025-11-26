@@ -1,4 +1,31 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-ai.sh
+# name: package-ai.sh - Install AI SDK deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - ai-sdk-anthropic
+#     - ai-sdk-openai
+#     - vercel-ai
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-ai.sh - Install AI SDK deps
 # =============================================================================
@@ -24,7 +51,7 @@ readonly SCRIPT_NAME="Install Vercel AI SDK"
 log_step "${SCRIPT_NAME}"
 cd "${INSTALL_DIR}"
 
-DEPS=("${PKG_VERCEL_AI}" "${PKG_AI_SDK_OPENAI}" "${PKG_AI_SDK_ANTHROPIC}")
+DEPS=("${PKG_VERCEL_AI}" "${PKG_AI_SDK_OPENAI}" "${PKG_AI_SDK_ANTHROPIC}" "@ai-sdk/react")
 
 log_info "Installing AI deps: ${DEPS[*]}"
 if ! pkg_install_retry "${DEPS[@]}"; then
@@ -33,7 +60,7 @@ if ! pkg_install_retry "${DEPS[@]}"; then
 fi
 
 log_info "Verifying installed packages..."
-pkg_verify_all "ai" "@ai-sdk/openai" "@ai-sdk/anthropic" || {
+pkg_verify_all "ai" "@ai-sdk/openai" "@ai-sdk/anthropic" "@ai-sdk/react" || {
     log_error "Package verification failed"
     exit 1
 }

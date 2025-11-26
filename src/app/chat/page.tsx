@@ -1,21 +1,33 @@
 "use client";
 
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { ChatContainer } from "@/components/chat";
 
 export default function ChatPage() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, sendMessage, status } = useChat();
+  const isLoading = status === "streaming";
 
   const handleSend = (message: string) => {
-    handleInputChange({ target: { value: message } } as React.ChangeEvent<HTMLInputElement>);
-    handleSubmit(new Event("submit") as unknown as React.FormEvent<HTMLFormElement>);
+    void sendMessage({ text: message });
   };
 
-  const formattedMessages = messages.map((m) => ({
-    id: m.id,
-    role: m.role as "user" | "assistant",
-    content: m.content,
-  }));
+  const formattedMessages = messages.map((m) => {
+    const parts: any[] | undefined = (m as any).parts;
+    const textFromParts =
+      Array.isArray(parts) && parts.length
+        ? parts
+            .map((p: any) => ("text" in p ? p.text : ""))
+            .filter(Boolean)
+            .join(" ")
+        : undefined;
+    const content = (m as any).content ?? (m as any).text ?? textFromParts ?? "";
+
+    return {
+      id: m.id,
+      role: m.role as "user" | "assistant",
+      content,
+    };
+  });
 
   return (
     <div className="container mx-auto h-[calc(100vh-4rem)] max-w-4xl py-4">

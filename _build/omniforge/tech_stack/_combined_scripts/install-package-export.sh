@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-export.sh
+# name: package-export.sh - Install export deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - exceljs
+#     - html2canvas
+#     - jspdf
+#     - types-exceljs
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-export.sh - Install export deps
 # =============================================================================

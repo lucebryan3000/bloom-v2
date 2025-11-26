@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+#!meta
+# id: foundation/init-nextjs.sh
+# name: init-nextjs
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - foundation
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - TECH_STACK_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 # =============================================================================
 # foundation/init-nextjs.sh - Initialize Next.js Project
 # =============================================================================

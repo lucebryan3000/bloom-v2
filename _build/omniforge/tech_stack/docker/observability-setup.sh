@@ -1,4 +1,44 @@
 #!/usr/bin/env bash
+#!meta
+# id: docker/observability-setup.sh
+# name: observability-setup
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - docker
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - APP_ENV_FILE
+#   - COMPOSE_PROJECT_NAME
+#   - DOCKER_COMPOSE_FILE
+#   - DOCKER_PROMETHEUS_DIR
+#   - DOCKER_SERVICES_DIR
+#   - GRAFANA_PASSWORD
+#   - GRAFANA_USER
+#   - INSTALL_DIR
+#   - OMNI_ROOT
+#   - PROJECT_ROOT
+#   - PROM_CONFIG
+#   - PROM_CONFIG_DISPLAY
+#   - PROM_DIR
+#   - PROM_STACK_YML
+#   - PROM_STACK_YML_DISPLAY
+#   - SERVICES_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     -
+#   dev_packages:
+#     -
+#!endmeta
+
 set -euo pipefail
 #
 # Dependencies:

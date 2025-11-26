@@ -12,3 +12,6 @@
 // Example: export { FormField } from './FormField';
 // Example: export { FormError } from './FormError';
 // Example: export { SubmitButton } from './SubmitButton';
+
+// Placeholder export to keep this file a valid module until components are added.
+export {};

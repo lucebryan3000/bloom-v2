@@ -1,4 +1,37 @@
 #!/usr/bin/env bash
+#!meta
+# id: features/testing.sh
+# name: Vitest + Playwright Testing
+# phase: 4
+# phase_name: Extensions & Quality
+# profile_tags:
+#   - tech_stack
+#   - features
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - DEV_SERVER_URL
+#   - E2E_DIR
+#   - PROJECT_ROOT
+#   - SRC_TEST_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - playwright
+#     - testing-library-react
+#     - vitest
+#   dev_packages:
+#     - playwright
+#     - testing-library-react
+#     - vitest
+#!endmeta
+
+
 # =============================================================================
 # tech_stack/features/testing.sh - Vitest + Playwright Testing
 # =============================================================================
@@ -60,6 +93,11 @@ fi
 
 cd "$INSTALL_DIR"
 
+# Defaults
+SRC_TEST_DIR="${SRC_TEST_DIR:-src/test}"
+E2E_DIR="${E2E_DIR:-e2e}"
+DEV_SERVER_URL="${DEV_SERVER_URL:-http://localhost:3000}"
+
 # =============================================================================
 # DEPENDENCY INSTALLATION
 # =============================================================================
@@ -94,7 +132,7 @@ log_ok "Testing dependencies installed"
 log_step "Creating Vitest configuration"
 
 if [[ ! -f "vitest.config.ts" ]]; then
-    cat > vitest.config.ts <<'EOF'
+    cat > vitest.config.ts <<EOF
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -112,7 +150,7 @@ export default defineConfig({
     setupFiles: ['./${SRC_TEST_DIR}/setup.ts'],
 
     // Include patterns
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['${SRC_TEST_DIR}/**/*.{test,spec}.{ts,tsx}'],
 
     // Exclude patterns
     exclude: ['node_modules', '${E2E_DIR}/**/*'],
@@ -182,7 +220,7 @@ fi
 log_step "Creating Playwright configuration"
 
 if [[ ! -f "playwright.config.ts" ]]; then
-    cat > playwright.config.ts <<'EOF'
+    cat > playwright.config.ts <<EOF
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({

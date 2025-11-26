@@ -1,4 +1,44 @@
 #!/usr/bin/env bash
+#!meta
+# id: core/database.sh
+# name: PostgreSQL + Drizzle ORM
+# phase: 1
+# phase_name: Infrastructure & Database
+# profile_tags:
+#   - tech_stack
+#   - core
+# uses_from_omni_config:
+#   - APP_NAME
+#   - DB_HOST
+#   - DB_NAME
+#   - DB_PASSWORD
+#   - DB_PORT
+#   - DB_USER
+# uses_from_omni_settings:
+#   - POSTGRES_VERSION
+#   - PROJECT_ROOT
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - drizzle-kit
+#     - drizzle-orm
+#     - postgres
+#   dev_packages:
+#     - drizzle-kit
+#!endmeta
+# Docs:
+#   - https://orm.drizzle.team/docs/kit-overview
+#   - https://orm.drizzle.team/docs/overview
+#   - https://www.npmjs.com/package/postgres
+
+
+
 # =============================================================================
 # tech_stack/core/database.sh - PostgreSQL + Drizzle ORM
 # =============================================================================

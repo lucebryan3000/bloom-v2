@@ -1,4 +1,39 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-typescript.sh
+# name: package-typescript.sh - Install TypeScript deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+#   - NODE_OPTIONS
+#   - PNPM_FLAGS
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - typescript
+#     - types-node
+#     - types-react
+#     - types-react-dom
+#     - zod
+#   dev_packages:
+#     - typescript
+#     - types-node
+#     - types-react
+#     - types-react-dom
+#     - zod
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-typescript.sh - Install TypeScript deps
 # =============================================================================
@@ -27,7 +62,14 @@ log_step "${SCRIPT_NAME}"
 
 cd "${INSTALL_DIR}"
 
+RUNTIME_PKGS=("zod")
 DEV_DEPS=("${PKG_TYPESCRIPT}" "${PKG_TYPES_NODE}" "${PKG_TYPES_REACT}" "${PKG_TYPES_REACT_DOM}")
+
+log_info "Installing runtime deps: ${RUNTIME_PKGS[*]}"
+pkg_install "${RUNTIME_PKGS[@]}" || {
+    log_error "Failed to install runtime TypeScript deps"
+    exit 1
+}
 
 log_info "Installing dev deps: ${DEV_DEPS[*]}"
 PNPM_FLAGS_OVERRIDE="${PNPM_FLAGS:-}" NODE_OPTIONS="${NODE_OPTIONS:-}" pkg_install_dev "${DEV_DEPS[@]}" || {

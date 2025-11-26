@@ -227,3 +227,18 @@ fi
 : "${OMNIFORGE_SETUP_MARKER:=${PROJECT_ROOT}/.omniforge_setup_complete}"
 : "${BOOTSTRAP_STATE_FILE:=${PROJECT_ROOT}/.bootstrap_state}"
 : "${GIT_REMOTE_URL:=${GIT_REMOTE_URL:-}}"
+
+# Required directories for tech_stack scripts (defaults can be overridden)
+: "${AUTH_API_DIR:=${SRC_APP_DIR}/api/auth}"
+: "${CHAT_API_DIR:=${SRC_APP_DIR}/api/chat}"
+: "${CHAT_PAGE_DIR:=${SRC_APP_DIR}/chat}"
+: "${EXPORT_DIR:=${SRC_DIR}/components/export}"
+: "${FLAGS_DIR:=${SRC_DIR}/lib/flags}"
+: "${JOBS_DIR:=${SRC_DIR}/jobs}"
+: "${MONITORING_DIR:=${SRC_DIR}/monitoring}"
+: "${PROMPTS_DIR:=${SRC_DIR}/prompts}"
+: "${SCHEMAS_DIR:=${SRC_DIR}/schemas}"
+: "${SERVICES_DIR:=${SRC_DIR}/services}"
+: "${SETTINGS_DIR:=${SRC_DIR}/settings}"
+: "${STATE_LIB_DIR:=${SRC_DIR}/state}"
+: "${WORKERS_DIR:=${SRC_DIR}/jobs/workers}"

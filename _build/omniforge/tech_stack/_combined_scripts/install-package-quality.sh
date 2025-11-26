@@ -1,4 +1,45 @@
 #!/usr/bin/env bash
+#!meta
+# id: _combined_scripts/install-package-quality.sh
+# name: package-quality.sh - Install lint/format deps
+# phase: 0
+# phase_name: Project Foundation
+# profile_tags:
+#   - tech_stack
+#   - _combined_scripts
+# uses_from_omni_config:
+# uses_from_omni_settings:
+#   - INSTALL_DIR
+# top_flags:
+#   - --dry-run
+#   - --skip-install
+#   - --dev-only
+#   - --no-dev
+#   - --force
+#   - --no-verify
+# dependencies:
+#   packages:
+#     - eslint
+#     - eslint-config-prettier
+#     - eslint-plugin-jsx-a11y
+#     - husky
+#     - lint-staged
+#     - prettier
+#     - prettier-plugin-tailwind
+#     - typescript-eslint-parser
+#     - typescript-eslint-plugin
+#   dev_packages:
+#     - eslint
+#     - eslint-config-prettier
+#     - eslint-plugin-jsx-a11y
+#     - husky
+#     - lint-staged
+#     - prettier
+#     - prettier-plugin-tailwind
+#     - typescript-eslint-parser
+#     - typescript-eslint-plugin
+#!endmeta
+
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-quality.sh - Install lint/format deps
 # =============================================================================

@@ -57,10 +57,7 @@ export async function handleSendEmail(job: {
 // =============================================================================
 
 export async function registerEmailWorker(): Promise<void> {
-  await registerWorker(JobNames.SEND_EMAIL, handleSendEmail, {
-    teamSize: 2, // Number of concurrent workers
-    teamConcurrency: 1, // Jobs per worker at a time
-  });
+  await registerWorker(JobNames.SEND_EMAIL, handleSendEmail);
 
   console.log('[EmailWorker] Registered and ready');
 }

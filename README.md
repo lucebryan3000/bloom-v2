@@ -9,31 +9,34 @@ OmniForge is the project initialization and build system for bloom-v2. It orches
 ### Quick Start
 
 ```bash
-cd _build/omniforge
-
 # Preview what will be executed
-omni --help
+./_build/omniforge/omni.sh --help
 
-# Initialize the project
-omni --init
+# Initialize the project (interactive bootstrap)
+./_build/omniforge/omni.sh --init
 
 # Check progress
-omni status
+./_build/omniforge/omni.sh --status
 
 # Build and verify
-omni forge
+./_build/omniforge/omni.sh build
 ```
 
 ### CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `omni --init` | Initialize project with all phases |
-| `omni --help` | Show help and available commands |
-| `omni run` | Run all initialization phases |
-| `omni status` | Show completion status |
-| `omni forge` | Build and verify the project |
+| `./_build/omniforge/omni.sh --init` | Initialize project with all phases |
+| `./_build/omniforge/omni.sh --help` | Show help and available commands |
+| `./_build/omniforge/omni.sh --run` | Run all initialization phases |
+| `./_build/omniforge/omni.sh --status` | Show completion status |
+| `./_build/omniforge/omni.sh build` | Build and verify the project |
 
 ### Documentation
 
-See [`_build/omniforge/OMNIFORGE.md`](_build/omniforge/OMNIFORGE.md) for complete documentation.
+See [`_build/omniforge/OMNIFORGE.md`](_build/omniforge/OMNIFORGE.md) for the complete, up-to-date documentation set. Handy entry points:
+
+- Quick reference: `_build/omniforge/docs/OMNIFORGE-QUICK-REFERENCE.md`
+- Workflow runbook: `_build/omniforge/docs/OMNIFORGE-WORKFLOW.md`
+- CLI reference: `_build/omniforge/docs/OMNIFORGE-CLI.md`
+- OmniForge Optional Services & Flags: `_build/omniforge/docs/OMNIFORGE-FLAGS.md`
