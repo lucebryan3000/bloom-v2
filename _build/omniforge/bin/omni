@@ -450,17 +450,20 @@ main() {
     # Start script indexer in background (for requirements validation)
     indexer_start_background "$tech_stack_dir"
 
-    # Banner (shows while background processes run)
-    ascii_show_logo
-    ascii_show_tagline
-    echo ""
-    log_info "  App: ${APP_NAME:-bloom2}"
-    log_info "  Mode: $([ "${DRY_RUN:-false}" == "true" ] && echo "dry-run" || echo "live")"
-    log_info "  Profile: ${STACK_PROFILE:-full}"
-    log_info "  Resume: ${BOOTSTRAP_RESUME_MODE:-skip}"
-    echo ""
-    _log_install_plan
-    echo ""
+    # Banner (shows while background processes run) — guard to avoid double print
+    if [[ "${_OMNI_BANNER_SHOWN:-false}" != "true" ]]; then
+        ascii_show_logo
+        ascii_show_tagline
+        echo ""
+        log_info "  App: ${APP_NAME:-bloom2}"
+        log_info "  Mode: $([ "${DRY_RUN:-false}" == "true" ] && echo "dry-run" || echo "live")"
+        log_info "  Profile: ${STACK_PROFILE:-full}"
+        log_info "  Resume: ${BOOTSTRAP_RESUME_MODE:-skip}"
+        echo ""
+        _log_install_plan
+        echo ""
+        _OMNI_BANNER_SHOWN="true"
+    fi
 
     # Initialize execution statistics
     phase_stats_init
@@ -557,7 +560,7 @@ main() {
     if [[ "${DRY_RUN:-false}" == "true" && -n "${LOG_FILE:-}" && -f "${LOG_FILE}" ]]; then
         echo ""
         echo "===== LOG OUTPUT (tail, dry-run) ====="
-        tail -n 80 "${LOG_FILE}"
+        tail -n 60 "${LOG_FILE}"
     fi
 
     exit $exit_code

@@ -347,24 +347,37 @@ install_psql() {
 preflight_download_packages() {
     local omniforge_root="${1:-}"
 
+    # Skip inside container (host should warm cache first)
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        log_debug "[preflight] Skipping package cache warmup inside container"
+        return 0
+    fi
+
     if [[ -z "$omniforge_root" ]]; then
         return 0
     fi
 
     local cache_dir="${omniforge_root}/.download-cache"
     if [[ ! -d "$cache_dir" ]]; then
+        mkdir -p "$cache_dir" || true
+    fi
+
+    # If cache is empty, kick off a background warmup
+    local has_cache=""
+    has_cache=$(find "${cache_dir}/npm" -maxdepth 1 -name '*.tgz' -print -quit 2>/dev/null || true)
+
+    if ! command -v downloads_start_for_config &>/dev/null; then
+        log_debug "[preflight] downloads.sh not loaded, skipping package cache"
         return 0
     fi
 
-    log_step "Pre-downloading packages to cache..."
-    if command -v downloads_init &>/dev/null; then
-        downloads_init
-        log_ok "Package cache initialized"
-        return 0
+    if [[ -z "$has_cache" ]]; then
+        log_info "[preflight] Package cache empty; warming downloads in background..."
     else
-        log_debug "downloads.sh not loaded, skipping package cache"
-        return 0
+        log_debug "[preflight] Package cache detected; refreshing in background"
     fi
+
+    downloads_start_for_config || log_warn "[preflight] Cache warmup failed to start"
 }
 
 # Check and remediate all critical missing dependencies

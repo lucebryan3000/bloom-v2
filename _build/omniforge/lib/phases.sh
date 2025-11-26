@@ -69,6 +69,19 @@ _execution_record_skip() {
     log_file "SKIP: $script - $reason" "SKIP"
 }
 
+# Check if a value exists in a named array (used for recaps)
+_phase_array_contains() {
+    local needle="$1"
+    local array_name="$2"
+    local -n arr="$array_name"
+    for item in "${arr[@]}"; do
+        if [[ "$item" == "$needle" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 # Check if we should continue after an error
 _execution_should_continue() {
     [[ "${EXECUTION_MODE}" == "continue" ]]
@@ -740,6 +753,40 @@ phase_show_recap() {
     echo "  Phases: completed=$_PHASE_STATS_COMPLETED skipped=$_PHASE_STATS_SKIPPED failed=$_PHASE_STATS_FAILED"
     echo "  Scripts: completed=${#_COMPLETED_SCRIPTS[@]} skipped=${#_SKIPPED_SCRIPTS[@]} failed=${#_FAILED_SCRIPTS[@]}"
     echo ""
+
+    # Per-phase summary (concise)
+    local phases
+    local OLD_IFS="$IFS"
+    IFS=' '
+    read -ra phases <<< "$(phase_discover)"
+    IFS="$OLD_IFS"
+
+    if [[ ${#phases[@]} -gt 0 ]]; then
+        log_info "Per-phase summary (ok/fail/skip):"
+        for p in "${phases[@]}"; do
+            phase_is_enabled "$p" || continue
+            local scripts
+            scripts=$(phase_get_scripts "$p" | sed '/^$/d') || true
+            [[ -z "$scripts" ]] && continue
+
+            local ok=0 fail=0 skip=0
+            while IFS= read -r script_rel; do
+                [[ -z "$script_rel" ]] && continue
+                if _phase_array_contains "$script_rel" "_FAILED_SCRIPTS"; then
+                    ((fail++))
+                elif _phase_array_contains "$script_rel" "_COMPLETED_SCRIPTS"; then
+                    ((ok++))
+                elif _phase_array_contains "$script_rel" "_SKIPPED_SCRIPTS"; then
+                    ((skip++))
+                fi
+            done <<< "$scripts"
+
+            local phase_name
+            phase_name=$(phase_get_name "$p")
+            log_info "  Phase ${p} (${phase_name}): ok=${ok} fail=${fail} skip=${skip}"
+        done
+        echo ""
+    fi
 
     # Check for failures (either phase-level or script-level)
     local has_failures=false
