@@ -122,9 +122,13 @@ else
   log "Skipping app artifact removal (--keep-app)"
 fi
 
-# 4) Remove install dirs we use for runs
+# 4) Remove install dirs we use for runs (respect settings if present)
+INSTALL_DIR_TEST="${INSTALL_DIR_TEST:-./docker-staging/test/install-1}"
+INSTALL_DIR_PROD="${INSTALL_DIR_PROD:-./docker-staging/app}"
 remove_path "${PROJECT_ROOT}/full-stack-live" "install directory"
 remove_path "${PROJECT_ROOT}/workspace" "install directory (if created)"
+remove_path "${PROJECT_ROOT}/${INSTALL_DIR_TEST#./}" "install directory (test)"
+remove_path "${PROJECT_ROOT}/${INSTALL_DIR_PROD#./}" "install directory (prod)"
 
 # 5) Prune old cleanup logs
 if [[ "$DRY" == "false" ]]; then
