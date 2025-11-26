@@ -12,6 +12,7 @@
 #
 # Dependencies:
 #   lib/logging.sh
+#   lib/pkgman.sh (optional helper)
 # =============================================================================
 
 # Guard against double-sourcing

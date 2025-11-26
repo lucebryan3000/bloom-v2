@@ -116,6 +116,9 @@ source "${_COMMON_LIB_DIR}/ascii.sh"
 # 16. Download cache system (depends on logging)
 source "${_COMMON_LIB_DIR}/downloads.sh"
 
+# 16b. System package manager helpers (depends on logging)
+source "${_COMMON_LIB_DIR}/pkgman.sh"
+
 # 17. Sequencer for test criteria and timeouts (depends on logging)
 source "${_COMMON_LIB_DIR}/sequencer.sh"
 
