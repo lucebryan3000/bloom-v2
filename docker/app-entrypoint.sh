@@ -28,8 +28,13 @@ done
 echo "[entrypoint] package.json detected."
 
 if [ "$APP_AUTO_START" = "true" ]; then
-  echo "[entrypoint] Starting pnpm dev..."
-  exec pnpm dev
+  if jq -e '.scripts.dev' package.json >/dev/null 2>&1; then
+    echo "[entrypoint] Starting pnpm dev..."
+    exec pnpm dev
+  else
+    echo "[entrypoint] No dev script found; staying idle (tail -f /dev/null)."
+    exec tail -f /dev/null
+  fi
 else
   echo "[entrypoint] APP_AUTO_START=false; staying idle (tail -f /dev/null)."
   exec tail -f /dev/null
