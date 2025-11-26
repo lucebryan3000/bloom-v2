@@ -210,11 +210,6 @@ check_phase_deps() {
     local deps_string="$1"
     local prereq_mode="${2:-warn}"  # strict|warn
 
-    # Inside container, relax to warn (docker daemon unavailable) and allow ensure_db_client
-    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
-        prereq_mode="warn"
-    fi
-
     [[ -z "$deps_string" ]] && return 0
 
     local IFS=','
@@ -227,15 +222,19 @@ check_phase_deps() {
         # Skip "builtin" dependencies
         [[ "$url" == "builtin" ]] && continue
 
-        # Skip docker requirement when daemon not expected (container runs)
-        if [[ "$cmd" == "docker" && ( "${DOCKER_REQUIRED:-true}" != "true" || -n "${INSIDE_OMNI_DOCKER:-}" ) ]]; then
-            log_debug "Skipping docker dependency check (container mode or DOCKER_REQUIRED=false)"
-            continue
-        fi
-
-        # Inside container, try to install lightweight clients (e.g., psql)
-        if [[ "$cmd" == "psql" && -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
-            ensure_db_client "postgres"
+        # Inside container, handle docker/psql specially
+        if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+            if [[ "$cmd" == "docker" ]]; then
+                log_debug "[docker] Skipping docker dependency check inside container"
+                continue
+            fi
+            if [[ "$cmd" == "psql" ]]; then
+                ensure_db_client "postgres"
+                if ! command -v psql &>/dev/null; then
+                    log_warn "[docker] psql not available inside container; skipping check"
+                    continue
+                fi
+            fi
         fi
 
         if ! command -v "$cmd" &> /dev/null; then
