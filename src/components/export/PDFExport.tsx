@@ -1,0 +1,13 @@
+export/excel-export.sh
+export/markdown-export.sh
+export/json-export.sh
+monitoring/health-endpoints.sh
+monitoring/settings-ui.sh
+monitoring/feature-flags.sh
+testing/vitest-setup.sh
+testing/playwright-setup.sh
+testing/test-directory.sh
+quality/eslint-prettier.sh
+quality/husky-lintstaged.sh
+quality/ts-strict-mode.sh
+quality/verify-build.sh
