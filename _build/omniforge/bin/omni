@@ -250,6 +250,21 @@ main() {
     config_validate
     config_apply_profile
 
+    # Apply profile resource hints (for container runs)
+    if [[ "${DOCKER_EXEC_MODE:-host}" == "container" ]]; then
+        if declare -p PROFILE_RESOURCES >/dev/null 2>&1; then
+            local hint="${PROFILE_RESOURCES[${STACK_PROFILE:-}]:-}"
+            if [[ -n "$hint" ]]; then
+                local mem_hint cpu_hint
+                mem_hint=$(echo "$hint" | sed -n 's/.*memory=\([^ ]*\).*/\1/p')
+                cpu_hint=$(echo "$hint" | sed -n 's/.*cpu=\([^ ]*\).*/\1/p')
+                [[ -n "$mem_hint" && -z "${APP_MEM_LIMIT:-}" ]] && export APP_MEM_LIMIT="$mem_hint"
+                [[ -n "$cpu_hint" && -z "${APP_CPU_LIMIT:-}" ]] && export APP_CPU_LIMIT="$cpu_hint"
+                log_debug "[docker] Profile resource hints: memory=${APP_MEM_LIMIT:-unset} cpu=${APP_CPU_LIMIT:-unset}"
+            fi
+        fi
+    fi
+
     # Apply profile default dry-run if user didn't specify
     if [[ "${DRY_RUN_SET_BY_USER}" != "true" ]]; then
         local profile_dry=""

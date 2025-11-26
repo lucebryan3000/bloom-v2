@@ -43,10 +43,8 @@ services:
       - GIT_SAFETY=false
       - PNPM_FLAGS=--network-concurrency=1 --child-concurrency=1
       - NODE_OPTIONS=--max-old-space-size=2048
-    deploy:
-      resources:
-        limits:
-          memory: 6g
+    mem_limit: ${APP_MEM_LIMIT:-6g}
+    cpus: ${APP_CPU_LIMIT:-2}
     depends_on:
       postgres:
         condition: service_healthy

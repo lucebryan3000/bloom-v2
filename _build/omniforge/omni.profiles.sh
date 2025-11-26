@@ -131,3 +131,14 @@ declare -A PROFILE_DRY_RUN=(
     [asset_manager]="false"
     [tech_stack]="true"
 )
+
+# Resource hints per profile (used for container runs; host just logs)
+# Units: memory in Docker format (e.g., 2g), cpu in cores (e.g., 1.5)
+declare -A PROFILE_RESOURCES=(
+    [ai_automation]="memory=4g cpu=2"
+    [fpa_dashboard]="memory=4g cpu=2"
+    [collab_editor]="memory=4g cpu=2"
+    [erp_gateway]="memory=3g cpu=1.5"
+    [asset_manager]="memory=4g cpu=2"
+    [tech_stack]="memory=6g cpu=2"
+)
