@@ -105,6 +105,8 @@ if [[ "$KEEP_APP" != "true" ]]; then
     "package.json"
     "pnpm-lock.yaml"
     "node_modules"
+    "next.config.ts"
+    "tsconfig.json"
     "src"
     "public"
     ".next"
