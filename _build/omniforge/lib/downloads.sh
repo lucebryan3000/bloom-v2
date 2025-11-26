@@ -111,6 +111,7 @@ _downloads_detect_packages() {
             "npm:drizzle-kit"
             "npm:postgres"
             "npm:@vercel/postgres"
+            "npm:pg-boss"
         )
     fi
 
@@ -131,13 +132,6 @@ _downloads_detect_packages() {
         )
     fi
 
-    # pg-boss
-    if [[ "${ENABLE_PG_BOSS:-false}" == "true" ]]; then
-        _DOWNLOADS_PACKAGES+=(
-            "npm:pg-boss"
-        )
-    fi
-
     # shadcn/ui (these are the key dependencies)
     if [[ "${ENABLE_SHADCN:-false}" == "true" ]]; then
         _DOWNLOADS_PACKAGES+=(
@@ -149,6 +143,7 @@ _downloads_detect_packages() {
             "npm:tailwind-merge"
             "npm:lucide-react"
             "npm:@radix-ui/react-slot"
+            "npm:react-to-print"
         )
     fi
 
@@ -156,7 +151,9 @@ _downloads_detect_packages() {
     if [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]]; then
         _DOWNLOADS_PACKAGES+=(
             "npm:jspdf"
-            "npm:xlsx"
+            "npm:html2canvas"
+            "npm:exceljs"
+            "npm:@types/exceljs"
         )
     fi
 
@@ -166,6 +163,8 @@ _downloads_detect_packages() {
             "npm:vitest"
             "npm:@playwright/test"
             "npm:@testing-library/react"
+            "npm:@testing-library/jest-dom"
+            "npm:jsdom"
         )
     fi
 
@@ -176,6 +175,11 @@ _downloads_detect_packages() {
             "npm:prettier"
             "npm:@typescript-eslint/parser"
             "npm:@typescript-eslint/eslint-plugin"
+            "npm:eslint-config-prettier"
+            "npm:eslint-plugin-jsx-a11y"
+            "npm:husky"
+            "npm:lint-staged"
+            "npm:prettier-plugin-tailwindcss"
         )
     fi
 
