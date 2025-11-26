@@ -328,6 +328,9 @@ phase_execute() {
     deps=$(phase_get_config_field "$phase_num" "deps") || true
     prereq=$(phase_get_config_field "$phase_num" "prereq") || true
     prereq="${prereq:-warn}"
+    if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        prereq="warn"  # relax inside container (daemon unavailable)
+    fi
     if [[ -n "$deps" ]]; then
         if ! check_phase_deps "$deps" "$prereq"; then
             # In dry-run mode, treat dependency failures as warnings and continue
