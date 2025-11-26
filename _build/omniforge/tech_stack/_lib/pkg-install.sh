@@ -239,9 +239,11 @@ pkg_install_dev() {
 pkg_install_retry() {
     local attempts="${PKG_INSTALL_RETRIES:-3}"
     local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
+    local gap="${PKG_INSTALL_GAP:-2}"
     local i
     for ((i=1; i<=attempts; i++)); do
         if pkg_install "$@"; then
+            sleep "$gap" || true
             return 0
         fi
         log_warn "pkg_install retry $i/$attempts failed for: $*"
@@ -253,9 +255,11 @@ pkg_install_retry() {
 pkg_install_dev_retry() {
     local attempts="${PKG_INSTALL_RETRIES:-3}"
     local delay="${PKG_INSTALL_RETRY_DELAY:-2}"
+    local gap="${PKG_INSTALL_GAP:-2}"
     local i
     for ((i=1; i<=attempts; i++)); do
         if pkg_install_dev "$@"; then
+            sleep "$gap" || true
             return 0
         fi
         log_warn "pkg_install_dev retry $i/$attempts failed for: $*"
