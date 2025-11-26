@@ -72,7 +72,8 @@ remove_path() {
 
 # Ensure log directory (fallback to /tmp if not writable)
 if [[ "$DRY" == "false" ]]; then
-  if mkdir -p "${LOG_DIR}" 2>/dev/null; then
+  if mkdir -p "${LOG_DIR}" 2>/dev/null && touch "${LOG_DIR}/.wtest" 2>/dev/null; then
+    rm -f "${LOG_DIR}/.wtest" 2>/dev/null || true
     LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
     exec > >(tee -a "$LOG_FILE") 2>&1
   else
