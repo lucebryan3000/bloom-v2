@@ -2,6 +2,10 @@
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-zustand.sh - Install Zustand deps
 # =============================================================================
+#
+# Dependencies:
+#   - zustand
+#
 
 set -euo pipefail
 IFS=$'\n\t'

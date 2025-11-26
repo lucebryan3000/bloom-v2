@@ -9,6 +9,10 @@
 #
 # Creates:
 #   - src/lib/logger.ts (Pino logger configuration)
+#
+# Dependencies:
+#   - pino
+#   - pino-pretty (dev, optional)
 # =============================================================================
 
 set -euo pipefail
@@ -63,10 +67,14 @@ pkg_preflight_check "${DEPS[@]}"
 
 # Install dependencies
 log_info "Installing ${PINO_PKG}..."
-pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install ${PINO_PKG}"
-    exit 1
-}
+if ! pkg_verify_all "${DEPS[@]}"; then
+    if ! pkg_install_retry "${DEPS[@]}"; then
+        log_error "Failed to install ${PINO_PKG}"
+        exit 1
+    fi
+else
+    log_skip "${PINO_PKG} already installed"
+fi
 
 # Verify installation
 log_info "Verifying installation..."

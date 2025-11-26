@@ -9,6 +9,10 @@
 #
 # Creates foundational schema tables (users, sessions, etc.)
 # =============================================================================
+#
+# Dependencies:
+#   - drizzle-orm
+#
 
 set -euo pipefail
 IFS=$'\n\t'

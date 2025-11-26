@@ -9,6 +9,10 @@
 #
 # This script delegates to the consolidated core/database.sh implementation.
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to core/database (drizzle-orm, postgres)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

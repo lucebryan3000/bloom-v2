@@ -13,6 +13,12 @@
 #   - playwright (e2e testing)
 #   - @playwright/test (test runner)
 #
+# Dependencies:
+#   - vitest
+#   - @testing-library/react
+#   - playwright
+#   - @playwright/test
+#
 # Creates:
 #   - vitest.config.ts
 #   - playwright.config.ts

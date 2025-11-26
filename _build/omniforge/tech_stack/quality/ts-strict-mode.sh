@@ -8,6 +8,10 @@
 # Purpose: Enables strict TypeScript mode for enhanced type safety
 # Note: Actual tsconfig.json update is handled by TypeScript foundation setup
 # =============================================================================
+#
+# Dependencies:
+#   - tsconfig.json from init-typescript/init-nextjs
+#
 
 set -euo pipefail
 IFS=$'\n\t'

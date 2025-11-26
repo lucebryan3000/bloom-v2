@@ -7,6 +7,10 @@
 # Phase: 3 (User Interface)
 # Purpose: Creates organized component directory structure with barrel exports
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

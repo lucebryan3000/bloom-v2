@@ -13,6 +13,10 @@
 # Creates:
 #   - src/stores/index.ts (example store with typed state)
 # =============================================================================
+#
+# Dependencies:
+#   - zustand
+#
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -63,10 +67,14 @@ pkg_preflight_check "${DEPS[@]}"
 
 # Install dependencies
 log_info "Installing ${PKG_ZUSTAND}..."
-pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install ${PKG_ZUSTAND}"
-    exit 1
-}
+if ! pkg_verify_all "${DEPS[@]}"; then
+    if ! pkg_install_retry "${DEPS[@]}"; then
+        log_error "Failed to install ${PKG_ZUSTAND}"
+        exit 1
+    fi
+else
+    log_skip "Zustand already installed"
+fi
 
 # Verify installation
 log_info "Verifying installation..."

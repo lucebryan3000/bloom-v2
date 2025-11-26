@@ -15,6 +15,10 @@
 #   Outputs: src/env.ts validation schema
 #   Runtime: Validates required env keys; referenced at app runtime
 # =============================================================================
+#
+# Dependencies:
+#   - zod
+#
 
 set -euo pipefail
 IFS=$'\n\t'

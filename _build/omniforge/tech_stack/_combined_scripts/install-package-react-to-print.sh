@@ -2,6 +2,10 @@
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-react-to-print.sh - Install react-to-print
 # =============================================================================
+#
+# Dependencies:
+#   - react-to-print
+#
 
 set -euo pipefail
 IFS=$'\n\t'

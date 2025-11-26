@@ -7,6 +7,10 @@
 # Phase: 2
 # Purpose: Wrapper script that delegates Auth.js setup to core/auth.sh
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to core/auth (next-auth, @auth/drizzle-adapter)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

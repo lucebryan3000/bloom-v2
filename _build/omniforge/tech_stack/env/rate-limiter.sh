@@ -10,6 +10,10 @@
 # Creates:
 #   - src/lib/rate-limit.ts (rate limiter implementation)
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

@@ -11,6 +11,10 @@
 #   - src/jobs/workers/email.worker.ts (email sending worker)
 #   - src/jobs/workers/index.ts (worker registration)
 # =============================================================================
+#
+# Dependencies:
+#   - pg-boss (queue client)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

@@ -7,6 +7,10 @@
 # Phase: 4 (Extensions & Quality)
 # Purpose: Wrapper that delegates to features/code-quality.sh for ESLint + Prettier setup
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to features/code-quality (eslint, prettier, lint-staged, husky, typescript-eslint)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

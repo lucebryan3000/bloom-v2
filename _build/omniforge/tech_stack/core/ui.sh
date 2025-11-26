@@ -23,6 +23,16 @@
 # Cache Check:
 #   - .download-cache/npm/lucide-react-0.554.0.tgz
 # =============================================================================
+#
+# Dependencies:
+#   - tailwindcss (dev)
+#   - postcss (dev)
+#   - autoprefixer (dev)
+#   - lucide-react
+#   - class-variance-authority
+#   - clsx
+#   - tailwind-merge
+#
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -89,17 +99,25 @@ fi
 
 # Install dev dependencies
 log_info "Installing Tailwind CSS dev dependencies..."
-pkg_install_dev "${DEV_DEPS[@]}" || {
-    log_error "Failed to install Tailwind dev dependencies"
-    exit 1
-}
+if ! pkg_verify_all "${DEV_DEPS[@]}"; then
+    if ! pkg_install_dev_retry "${DEV_DEPS[@]}"; then
+        log_error "Failed to install Tailwind dev dependencies"
+        exit 1
+    fi
+else
+    log_skip "Tailwind dev deps already installed"
+fi
 
 # Install production dependencies
 log_info "Installing shadcn utility dependencies..."
-pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install shadcn dependencies"
-    exit 1
-}
+if ! pkg_verify_all "${DEPS[@]}"; then
+    if ! pkg_install_retry "${DEPS[@]}"; then
+        log_error "Failed to install shadcn dependencies"
+        exit 1
+    fi
+else
+    log_skip "shadcn dependencies already installed"
+fi
 
 # Verify installation
 log_info "Verifying installation..."

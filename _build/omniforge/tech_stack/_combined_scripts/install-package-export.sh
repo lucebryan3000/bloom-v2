@@ -2,6 +2,13 @@
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-export.sh - Install export deps
 # =============================================================================
+#
+# Dependencies:
+#   - jspdf
+#   - html2canvas
+#   - exceljs
+#   - @types/exceljs
+#
 
 set -euo pipefail
 IFS=$'\n\t'

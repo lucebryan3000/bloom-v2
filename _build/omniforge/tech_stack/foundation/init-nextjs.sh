@@ -9,6 +9,10 @@
 #
 # This script delegates to the consolidated core/nextjs.sh implementation.
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to core/nextjs (next, react, types)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

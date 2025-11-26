@@ -10,6 +10,10 @@
 # Note: This script only installs the dev dependency. The actual integration
 # is handled by pino-logger.sh which configures the transport.
 # =============================================================================
+#
+# Dependencies:
+#   - pino-pretty (dev)
+#
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -61,10 +65,14 @@ pkg_preflight_check "${PINO_PRETTY_PKG}"
 
 # Install as dev dependency
 log_info "Installing ${PINO_PRETTY_PKG} as dev dependency..."
-pkg_install_dev "${PINO_PRETTY_PKG}" || {
-    log_error "Failed to install ${PINO_PRETTY_PKG}"
-    exit 1
-}
+if ! pkg_verify_all "${PINO_PRETTY_PKG}"; then
+    if ! pkg_install_dev_retry "${PINO_PRETTY_PKG}"; then
+        log_error "Failed to install ${PINO_PRETTY_PKG}"
+        exit 1
+    fi
+else
+    log_skip "${PINO_PRETTY_PKG} already installed"
+fi
 
 # Verify installation
 log_info "Verifying installation..."

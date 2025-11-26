@@ -12,6 +12,10 @@
 #   Outputs: Delegates to features/ai-sdk.sh (env example updates, AI scaffolding)
 #   Runtime: Runs during bootstrap when AI stack enabled
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to features/ai-sdk (ai, @ai-sdk/openai, @ai-sdk/anthropic)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

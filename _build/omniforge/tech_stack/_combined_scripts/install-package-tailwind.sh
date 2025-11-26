@@ -2,6 +2,16 @@
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-tailwind.sh - Install Tailwind deps
 # =============================================================================
+#
+# Dependencies:
+#   - tailwindcss
+#   - postcss
+#   - autoprefixer
+#   - class-variance-authority
+#   - clsx
+#   - tailwind-merge
+#   - lucide-react
+#
 
 set -euo pipefail
 IFS=$'\n\t'

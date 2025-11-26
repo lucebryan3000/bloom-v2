@@ -7,6 +7,11 @@
 # Phase: 4 (Extensions & Quality)
 # Purpose: Verify project builds successfully and run baseline tests
 # =============================================================================
+#
+# Dependencies:
+#   - pnpm
+#   - project dependencies installed
+#
 
 set -euo pipefail
 IFS=$'\n\t'

@@ -2,6 +2,10 @@
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-pgboss.sh - Install pg-boss
 # =============================================================================
+#
+# Dependencies:
+#   - pg-boss
+#
 
 set -euo pipefail
 IFS=$'\n\t'

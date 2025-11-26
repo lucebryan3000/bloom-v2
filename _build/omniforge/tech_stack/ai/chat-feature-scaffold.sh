@@ -7,6 +7,10 @@
 # Phase: 3
 # Purpose: Creates basic chat UI scaffold with components and API route
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

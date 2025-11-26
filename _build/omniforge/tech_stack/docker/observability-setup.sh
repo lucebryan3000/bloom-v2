@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
+#
+# Dependencies:
+#   - prom-client (dev dependency)
+#   - docker compose
+#   - prom/prometheus image
+#   - grafana/grafana image
+#
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"

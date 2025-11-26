@@ -4,6 +4,12 @@
 # =============================================================================
 # Installs ai SDK packages with retry and pnpm throttling.
 # =============================================================================
+#
+# Dependencies:
+#   - ai
+#   - @ai-sdk/openai
+#   - @ai-sdk/anthropic
+#
 
 set -euo pipefail
 IFS=$'\n\t'

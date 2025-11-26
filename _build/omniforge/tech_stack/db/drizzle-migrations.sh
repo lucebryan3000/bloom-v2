@@ -11,6 +11,11 @@
 #   - drizzle/ directory for migration files
 #   - Migration npm scripts in package.json
 # =============================================================================
+#
+# Dependencies:
+#   - drizzle-orm
+#   - postgres
+#
 
 set -euo pipefail
 IFS=$'\n\t'

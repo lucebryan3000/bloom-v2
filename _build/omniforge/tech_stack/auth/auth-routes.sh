@@ -7,6 +7,10 @@
 # Phase: 2
 # Purpose: Creates auth API routes and signin/signout pages for Auth.js
 # =============================================================================
+#
+# Dependencies:
+#   - depends on core/auth (next-auth handlers)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

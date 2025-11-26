@@ -11,6 +11,10 @@
 #   - next-auth (Auth.js for Next.js)
 #   - @auth/drizzle-adapter (Drizzle ORM adapter)
 #
+# Dependencies:
+#   - next-auth@beta
+#   - @auth/drizzle-adapter
+#
 # Creates:
 #   - src/lib/auth.ts (auth configuration)
 #   - src/app/api/auth/[...nextauth]/route.ts (API route handler)

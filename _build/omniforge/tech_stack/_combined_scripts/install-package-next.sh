@@ -5,6 +5,12 @@
 # Installs next/react/react-dom using cache-aware installer. Expects package.json
 # to exist (created by install-package-package-json.sh).
 # =============================================================================
+#
+# Dependencies:
+#   - next
+#   - react
+#   - react-dom
+#
 
 set -euo pipefail
 IFS=$'\n\t'

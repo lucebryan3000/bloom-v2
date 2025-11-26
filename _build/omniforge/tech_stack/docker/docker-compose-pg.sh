@@ -26,6 +26,12 @@
 #   Outputs: docker-compose.yml, docker-compose.prod.yml, scripts/docker-dev.sh, Makefile, db init SQL
 #   Runtime: Compose definitions for app + database; bootstrap-only (used by docker compose)
 # =============================================================================
+#
+# Dependencies:
+#   - docker
+#   - docker compose
+#   - postgres image
+#
 
 set -euo pipefail
 IFS=$'\n\t'

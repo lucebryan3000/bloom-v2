@@ -7,6 +7,10 @@
 # Phase: 4 (Extensions & Quality)
 # Purpose: Wrapper that delegates to features/testing.sh for Vitest setup
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to features/testing (vitest, @testing-library/react, playwright, @playwright/test)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

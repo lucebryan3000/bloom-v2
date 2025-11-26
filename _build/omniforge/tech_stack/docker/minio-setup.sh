@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
+#
+# Dependencies:
+#   - docker
+#   - docker compose
+#   - minio/minio image
+#
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"

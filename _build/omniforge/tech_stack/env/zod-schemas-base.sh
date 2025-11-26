@@ -10,6 +10,10 @@
 # Creates:
 #   - src/lib/validations/index.ts (common schemas)
 # =============================================================================
+#
+# Dependencies:
+#   - zod
+#
 
 set -euo pipefail
 IFS=$'\n\t'

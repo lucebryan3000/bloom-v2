@@ -7,6 +7,10 @@
 # Phase: 4 (Extensions & Quality)
 # Purpose: Creates standardized test directory structure for unit and integration tests
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

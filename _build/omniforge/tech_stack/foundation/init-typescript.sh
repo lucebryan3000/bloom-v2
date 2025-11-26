@@ -9,6 +9,10 @@
 #
 # This script is a no-op since TypeScript config is part of the Next.js setup.
 # =============================================================================
+#
+# Dependencies:
+#   - none (uses jq if available)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

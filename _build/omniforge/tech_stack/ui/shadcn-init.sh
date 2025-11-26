@@ -7,6 +7,10 @@
 # Phase: 3 (User Interface)
 # Purpose: Delegates shadcn/ui setup to core/ui.sh for centralized management
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to core/ui (tailwindcss + shadcn stack)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

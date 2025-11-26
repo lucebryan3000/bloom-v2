@@ -9,6 +9,10 @@
 #
 # Creates all directories defined in PROJECT_DIRECTORIES from omni.settings.sh.
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

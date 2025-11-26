@@ -18,6 +18,10 @@
 #   pkg_install_dev "typescript" "@types/node"
 #   pkg_install_from_cache "next-16.0.3.tgz"
 # =============================================================================
+#
+# Dependencies:
+#   - pnpm
+#
 
 # Guard against double-sourcing
 [[ -n "${_LIB_PKG_INSTALL_LOADED:-}" ]] && return 0

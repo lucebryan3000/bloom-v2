@@ -13,6 +13,15 @@
 #   - typescript (type safety)
 #   - @types/node, @types/react, @types/react-dom (type definitions)
 #
+# Dependencies:
+#   - next
+#   - react
+#   - react-dom
+#   - typescript
+#   - @types/node
+#   - @types/react
+#   - @types/react-dom
+#
 # Creates:
 #   - package.json (if not exists)
 #   - tsconfig.json

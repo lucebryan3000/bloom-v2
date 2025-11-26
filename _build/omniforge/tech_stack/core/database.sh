@@ -13,6 +13,12 @@
 #   - postgres (PostgreSQL client)
 #   - @neondatabase/serverless (optional serverless driver)
 #
+# Dependencies:
+#   - drizzle-orm
+#   - drizzle-kit
+#   - postgres
+#   - @neondatabase/serverless (optional)
+#
 # Creates:
 #   - drizzle.config.ts
 #   - src/db/index.ts (connection)
@@ -70,15 +76,23 @@ DEV_DEPS=("drizzle-kit")
 
 pkg_preflight_check "${DEPS[@]}" "${DEV_DEPS[@]}"
 
-pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install database dependencies"
-    exit 1
-}
+if ! pkg_verify_all "${DEPS[@]}"; then
+    if ! pkg_install_retry "${DEPS[@]}"; then
+        log_error "Failed to install database dependencies"
+        exit 1
+    fi
+else
+    log_skip "Database dependencies already installed"
+fi
 
-pkg_install_dev "${DEV_DEPS[@]}" || {
-    log_error "Failed to install drizzle-kit"
-    exit 1
-}
+if ! pkg_verify_all "${DEV_DEPS[@]}"; then
+    if ! pkg_install_dev_retry "${DEV_DEPS[@]}"; then
+        log_error "Failed to install drizzle-kit"
+        exit 1
+    fi
+else
+    log_skip "Drizzle dev dependencies already installed"
+fi
 
 log_ok "Database dependencies installed"
 

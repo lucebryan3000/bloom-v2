@@ -10,6 +10,9 @@
 # Creates:
 #   - src/jobs/index.ts (pg-boss initialization and queue management)
 #   - src/jobs/types.ts (job type definitions)
+#
+# Dependencies:
+#   - pg-boss
 # =============================================================================
 
 set -euo pipefail
@@ -64,10 +67,14 @@ pkg_preflight_check "${DEPS[@]}"
 
 # Install dependencies
 log_info "Installing ${PGBOSS_PKG}..."
-pkg_install "${DEPS[@]}" || {
-    log_error "Failed to install ${PGBOSS_PKG}"
-    exit 1
-}
+if ! pkg_verify_all "${DEPS[@]}"; then
+    if ! pkg_install_retry "${DEPS[@]}"; then
+        log_error "Failed to install ${PGBOSS_PKG}"
+        exit 1
+    fi
+else
+    log_skip "${PGBOSS_PKG} already installed"
+fi
 
 # Verify installation
 log_info "Verifying installation..."

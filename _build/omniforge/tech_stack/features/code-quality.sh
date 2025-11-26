@@ -20,6 +20,15 @@
 #   - .prettierrc
 #   - .lintstagedrc
 # =============================================================================
+#
+# Dependencies:
+#   - eslint
+#   - prettier
+#   - lint-staged
+#   - husky
+#   - @typescript-eslint/eslint-plugin
+#   - @typescript-eslint/parser
+#
 
 set -euo pipefail
 IFS=$'\n\t'

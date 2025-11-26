@@ -4,6 +4,12 @@
 # =============================================================================
 # Installs drizzle orm/kit/postgres with retry and pnpm throttling.
 # =============================================================================
+#
+# Dependencies:
+#   - drizzle-orm
+#   - drizzle-kit
+#   - postgres
+#
 
 set -euo pipefail
 IFS=$'\n\t'

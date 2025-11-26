@@ -2,6 +2,11 @@
 # =============================================================================
 # tech_stack/_combined_scripts/install-package-pino.sh - Install Pino deps
 # =============================================================================
+#
+# Dependencies:
+#   - pino
+#   - pino-pretty
+#
 
 set -euo pipefail
 IFS=$'\n\t'

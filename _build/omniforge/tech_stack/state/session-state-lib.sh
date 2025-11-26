@@ -11,6 +11,10 @@
 #   - src/lib/state/session.ts (session state management)
 #   - src/lib/state/index.ts (exports)
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

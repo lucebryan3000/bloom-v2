@@ -10,6 +10,10 @@
 # Verifies and updates the "engines" field in package.json to match
 # the versions specified in omni.settings.sh.
 # =============================================================================
+#
+# Dependencies:
+#   - none (jq optional)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

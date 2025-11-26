@@ -20,6 +20,11 @@
 # Requires:
 #   - PROJECT_ROOT, APP_NAME
 # =============================================================================
+#
+# Dependencies:
+#   - docker BuildKit/buildx
+#   - pnpm
+#
 
 set -euo pipefail
 IFS=$'\n\t'

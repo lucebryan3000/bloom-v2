@@ -7,6 +7,11 @@
 # Phase: 4 (Extensions & Quality)
 # Purpose: Creates Playwright e2e test configuration and directory structure
 # =============================================================================
+#
+# Dependencies:
+#   - playwright
+#   - @playwright/test
+#
 
 set -euo pipefail
 IFS=$'\n\t'

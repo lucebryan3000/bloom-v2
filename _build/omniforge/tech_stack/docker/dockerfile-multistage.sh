@@ -19,6 +19,10 @@
 #   Outputs: Dockerfile (prod), Dockerfile.dev (dev), .dockerignore
 #   Runtime: Template generation for Docker builds; bootstrap-only
 # =============================================================================
+#
+# Dependencies:
+#   - docker build (multi-stage)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

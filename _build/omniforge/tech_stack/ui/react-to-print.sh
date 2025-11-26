@@ -7,6 +7,10 @@
 # Phase: 3 (User Interface)
 # Purpose: Adds react-to-print library and print utilities for document printing
 # =============================================================================
+#
+# Dependencies:
+#   - react-to-print
+#
 
 set -euo pipefail
 IFS=$'\n\t'

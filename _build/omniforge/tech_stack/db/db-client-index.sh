@@ -10,6 +10,10 @@
 # Creates/Updates:
 #   - src/db/index.ts with all exports
 # =============================================================================
+#
+# Dependencies:
+#   - depends on core/database outputs (drizzle client/schema)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

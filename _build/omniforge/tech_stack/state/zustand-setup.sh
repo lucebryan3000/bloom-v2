@@ -9,6 +9,10 @@
 #
 # This script delegates to the consolidated features/state.sh implementation.
 # =============================================================================
+#
+# Dependencies:
+#   - delegates to features/state (zustand)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

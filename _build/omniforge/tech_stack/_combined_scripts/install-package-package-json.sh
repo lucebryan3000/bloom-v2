@@ -5,6 +5,10 @@
 # Creates a minimal package.json if missing and ensures workspace is ready
 # for subsequent package installs. Uses cache-aware installers indirectly.
 # =============================================================================
+#
+# Dependencies:
+#   - none (bootstrap package.json)
+#
 
 set -euo pipefail
 IFS=$'\n\t'

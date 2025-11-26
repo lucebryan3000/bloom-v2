@@ -10,6 +10,10 @@
 # Creates:
 #   - src/lib/actions.ts (server action utilities)
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'

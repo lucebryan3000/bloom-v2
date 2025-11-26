@@ -5,6 +5,13 @@
 # Installs typescript and type definitions using cache-aware installer.
 # Expects package.json to exist (created by install-package-package-json.sh).
 # =============================================================================
+#
+# Dependencies:
+#   - typescript
+#   - @types/node
+#   - @types/react
+#   - @types/react-dom
+#
 
 set -euo pipefail
 IFS=$'\n\t'

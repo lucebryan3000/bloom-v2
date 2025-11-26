@@ -7,6 +7,11 @@
 # Phase: 4 (Extensions & Quality)
 # Purpose: Creates husky + lint-staged git hooks setup for pre-commit quality checks
 # =============================================================================
+#
+# Dependencies:
+#   - husky
+#   - lint-staged
+#
 
 set -euo pipefail
 IFS=$'\n\t'

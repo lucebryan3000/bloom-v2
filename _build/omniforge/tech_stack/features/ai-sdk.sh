@@ -12,6 +12,11 @@
 #   - @ai-sdk/openai (OpenAI provider)
 #   - @ai-sdk/anthropic (Anthropic provider)
 #
+# Dependencies:
+#   - ai
+#   - @ai-sdk/openai
+#   - @ai-sdk/anthropic
+#
 # Creates:
 #   - src/lib/ai.ts (provider configuration)
 #   - Adds API keys to .env.example

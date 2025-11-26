@@ -7,6 +7,10 @@
 # Phase: 3
 # Purpose: Creates src/lib/prompts/ directory with prompt templates
 # =============================================================================
+#
+# Dependencies:
+#   - none
+#
 
 set -euo pipefail
 IFS=$'\n\t'
