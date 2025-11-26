@@ -7,7 +7,7 @@ set -eu
 
 WAIT_TIMEOUT="${APP_WAIT_TIMEOUT:-300}"   # seconds
 WAIT_INTERVAL="${APP_WAIT_INTERVAL:-5}"   # seconds
-APP_AUTO_START="${APP_AUTO_START:-true}"
+APP_AUTO_START="${APP_AUTO_START:-false}"
 
 start_ts="$(date +%s)"
 
