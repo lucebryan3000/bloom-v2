@@ -28,8 +28,9 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 CONFIRM="false"
 DRY="false"
 KEEP_APP="false"
-LOG_DIR="${PROJECT_ROOT}/_build/omniforge/logs/cleanup"
-LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
+# Allow overriding log dir; fallback to /tmp if project log dir not writable
+LOG_DIR_DEFAULT="${PROJECT_ROOT}/_build/omniforge/logs/cleanup"
+LOG_DIR="${LOG_DIR:-${LOG_DIR_DEFAULT}}"
 LOG_RETENTION="${LOG_RETENTION:-7}"
 
 for arg in "$@"; do
@@ -69,12 +70,18 @@ remove_path() {
   log "Removed ${reason}: ${target#$PROJECT_ROOT/}"
 }
 
-# Ensure log directory
-mkdir -p "${LOG_DIR}"
-
-# Always log (unless dry-run); dry-run still shows actions but does not write log
+# Ensure log directory (fallback to /tmp if not writable)
 if [[ "$DRY" == "false" ]]; then
-  exec > >(tee -a "$LOG_FILE") 2>&1
+  if mkdir -p "${LOG_DIR}" 2>/dev/null; then
+    LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
+    exec > >(tee -a "$LOG_FILE") 2>&1
+  else
+    LOG_DIR="/tmp/omniforge-cleanup"
+    mkdir -p "${LOG_DIR}" || true
+    LOG_FILE="${LOG_DIR}/cleanup_$(date +%Y%m%d_%H%M%S).log"
+    log "[WARN] Default log dir not writable, using ${LOG_DIR}"
+    exec > >(tee -a "$LOG_FILE") 2>&1
+  fi
 else
   log "[dry-run] Logging disabled in dry-run mode"
 fi
