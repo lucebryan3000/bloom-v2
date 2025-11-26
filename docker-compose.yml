@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: bloom_app
     restart: unless-stopped
-    entrypoint: ["app-entrypoint.sh"]
+    entrypoint: ["/usr/local/bin/app-entrypoint.sh"]
     ports:
       - "3000:3000"
     volumes:
@@ -37,6 +37,10 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
+      - STACK_PROFILE=tech_stack
+      - INSTALL_DIR=/workspace
+      - ALLOW_DIRTY=true
+      - GIT_SAFETY=false
     depends_on:
       postgres:
         condition: service_healthy
