@@ -59,6 +59,7 @@ PKG_ZOD
 "
 
 BOOTSTRAP_PHASE_01_INFRASTRUCTURE="
+_combined_scripts/install-package-drizzle.sh
 docker/dockerfile-multistage.sh
 docker/docker-compose-pg.sh
 docker/docker-pnpm-cache.sh
@@ -98,6 +99,10 @@ PKG_PINO_PRETTY|enabled:false
 "
 
 BOOTSTRAP_PHASE_02_CORE="
+_combined_scripts/install-package-ai.sh
+_combined_scripts/install-package-zustand.sh
+_combined_scripts/install-package-pgboss.sh
+_combined_scripts/install-package-pino.sh
 auth/authjs-setup.sh
 auth/auth-routes.sh
 ai/vercel-ai-setup.sh
@@ -130,6 +135,8 @@ PKG_REACT_TO_PRINT|enabled:false
 "
 
 BOOTSTRAP_PHASE_03_UI="
+_combined_scripts/install-package-tailwind.sh
+_combined_scripts/install-package-react-to-print.sh
 ui/shadcn-init.sh
 ui/react-to-print.sh
 ui/components-structure.sh
@@ -170,6 +177,7 @@ PKG_LINT_STAGED|enabled:false
 "
 
 BOOTSTRAP_PHASE_04_EXTENSIONS="
+_combined_scripts/install-package-export.sh
 intelligence/melissa-prompts.sh
 intelligence/roi-engine.sh
 intelligence/confidence-engine.sh
