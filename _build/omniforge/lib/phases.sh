@@ -330,6 +330,7 @@ phase_execute() {
     prereq="${prereq:-warn}"
     if [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
         prereq="warn"  # relax inside container (daemon unavailable)
+        deps=""        # host preflight should cover deps; skip in-container
     fi
     if [[ -n "$deps" ]]; then
         if ! check_phase_deps "$deps" "$prereq"; then
