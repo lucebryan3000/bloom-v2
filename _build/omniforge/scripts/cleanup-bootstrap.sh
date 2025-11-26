@@ -72,9 +72,11 @@ remove_path() {
 # Ensure log directory
 mkdir -p "${LOG_DIR}"
 
-# If not dry-run, tee output to log file
+# Always log (unless dry-run); dry-run still shows actions but does not write log
 if [[ "$DRY" == "false" ]]; then
   exec > >(tee -a "$LOG_FILE") 2>&1
+else
+  log "[dry-run] Logging disabled in dry-run mode"
 fi
 
 log "Project root: ${PROJECT_ROOT}"
