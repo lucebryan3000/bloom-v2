@@ -146,7 +146,11 @@ omni_write_manifest() {
     local log_path_json="\"\""
     if [[ -n "${LOG_FILE:-}" && -f "${LOG_FILE}" ]]; then
         local log_lines=()
-        mapfile -t log_lines < <(tail -n 200 "${LOG_FILE}")
+        mapfile -t log_lines < "${LOG_FILE}"
+        local max_lines=1000
+        if (( ${#log_lines[@]} > max_lines )); then
+            log_lines=("${log_lines[@]: -${max_lines}}")
+        fi
         if (( ${#log_lines[@]} > 0 )); then
             local quoted_lines=()
             for line in "${log_lines[@]}"; do
@@ -154,10 +158,17 @@ omni_write_manifest() {
             done
             log_lines_json="$(_json_array_raw "${quoted_lines[@]}")"
         fi
-        if [[ "${LOG_FILE}" == ${root%/}/* ]]; then
-            log_path_json=$(_json_quote "${LOG_FILE#${root%/}/}")
+
+        # Copy log into project root so Next can read it inside container/image
+        local log_copy_path="${root%/}/omni.bootstrap.log"
+        if cp "${LOG_FILE}" "${log_copy_path}" 2>/dev/null; then
+            log_path_json=$(_json_quote "$(basename "${log_copy_path}")")
         else
-            log_path_json=$(_json_quote "${LOG_FILE}")
+            if [[ "${LOG_FILE}" == ${root%/}/* ]]; then
+                log_path_json=$(_json_quote "${LOG_FILE#${root%/}/}")
+            else
+                log_path_json=$(_json_quote "${LOG_FILE}")
+            fi
         fi
     fi
 
