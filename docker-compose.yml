@@ -27,8 +27,8 @@ services:
     volumes:
       # Mount source for hot reload
       - .:/workspace
-      # Preserve node_modules from container
-      - /workspace/node_modules
+      # Named volume for node_modules to persist installs
+      - node_modules:/workspace/node_modules
       # Named volume for pnpm store
       - pnpm_store:/root/.local/share/pnpm/store
     working_dir: /workspace
