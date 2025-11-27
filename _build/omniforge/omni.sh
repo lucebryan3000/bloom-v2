@@ -29,6 +29,12 @@ IFS=$'\n\t'
 ORIGINAL_ARGS=("$@")
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Ensure OMNI_ROOT points to the omniforge directory even when called via symlink
+if [[ -L "${BASH_SOURCE[0]}" ]]; then
+    OMNI_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+else
+    OMNI_ROOT="${SCRIPT_DIR}"
+fi
 OMNI_ROOT="${OMNI_ROOT:-"${SCRIPT_DIR}"}"
 
 # Central bootstrap loader (delegates to common.sh)
