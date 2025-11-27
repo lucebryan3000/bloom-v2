@@ -350,6 +350,11 @@ main() {
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
 
     # =========================================================================
+    # CONTAINER INSTALL GUARD (optional)
+    # =========================================================================
+    omni_container_install_if_needed
+
+    # =========================================================================
     # AUTO-DETECTION (First Run Only)
     # =========================================================================
     # Detect project settings on first run
