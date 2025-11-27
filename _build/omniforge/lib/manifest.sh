@@ -133,9 +133,14 @@ omni_write_manifest() {
     stack_testing_json=$(_json_quote "${stack_testing}")
     stack_quality_json=$(_json_quote "${stack_quality}")
 
-    local dev_local_url_json dev_container_url_json
+    local dev_local_url_json dev_container_url_json next_steps_url_json
     dev_local_url_json=$(_json_quote "${DEV_SERVER_URL:-http://localhost:3000}")
     dev_container_url_json=$(_json_quote "${CONTAINER_URL:-http://<container-ip>:3000}")
+    if [[ -n "${NEXT_STEPS_URL:-}" ]]; then
+        next_steps_url_json=$(_json_quote "${NEXT_STEPS_URL}")
+    else
+        next_steps_url_json="\"\""
+    fi
 
     local log_lines_json="[]"
     local log_path_json="\"\""
@@ -222,7 +227,7 @@ omni_write_manifest() {
     "envFiles": $(_json_array_raw "${env_files_quoted[@]}"),
     "commands": $(_json_array_raw "${commands_quoted[@]}"),
     "endpoints": ${endpoints_json},
-    "nextStepsUrl": ""
+    "nextStepsUrl": ${next_steps_url_json}
   },
   "logPath": ${log_path_json},
   "logLines": ${log_lines_json},
