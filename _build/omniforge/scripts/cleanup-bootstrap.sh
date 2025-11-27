@@ -12,6 +12,8 @@
 #   --yes / -y     : skip confirmation
 #   --dry-run      : show what would be removed/stopped
 #   --keep-app     : do NOT delete app files (package.json/src/etc)
+#   --mode run     : light cleanup (run artifacts only)
+#   --mode full    : full cleanup (default; includes app artifacts unless --keep-app)
 #
 # Usage:
 #   ./_build/omniforge/scripts/cleanup-bootstrap.sh           # prompt
@@ -28,6 +30,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 CONFIRM="false"
 DRY="false"
 KEEP_APP="false"
+MODE="full"
 # Allow overriding log dir; fallback to /tmp if project log dir not writable
 LOG_DIR_DEFAULT="${PROJECT_ROOT}/_build/omniforge/logs/cleanup"
 LOG_DIR="${LOG_DIR:-${LOG_DIR_DEFAULT}}"
@@ -38,6 +41,13 @@ for arg in "$@"; do
     --yes|-y) CONFIRM="true" ;;
     --dry-run) DRY="true" ;;
     --keep-app) KEEP_APP="true" ;;
+    --mode)
+      MODE="${2:-}"
+      shift
+      ;;
+    --mode=*)
+      MODE="${arg#--mode=}"
+      ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -83,7 +93,16 @@ else
   log "[dry-run] Logging disabled in dry-run mode"
 fi
 
+if [[ -z "${MODE}" ]]; then
+  MODE="full"
+fi
+if [[ "${MODE}" != "full" && "${MODE}" != "run" ]]; then
+  echo "Invalid mode: ${MODE}. Use --mode full|run." >&2
+  exit 1
+fi
+
 log "Project root: ${PROJECT_ROOT}"
+log "Mode: ${MODE}"
 confirm_or_exit
 
 # 1) Stop/remove docker stack and volumes
@@ -103,8 +122,8 @@ fi
 # 2) Remove bootstrap state
 remove_path "${PROJECT_ROOT}/.bootstrap_state" "bootstrap state"
 
-# 3) Remove app artifacts (unless --keep-app)
-if [[ "$KEEP_APP" != "true" ]]; then
+# 3) Remove app artifacts (unless --keep-app or mode=run)
+if [[ "$MODE" == "full" && "$KEEP_APP" != "true" ]]; then
   APP_PATHS=(
     "package.json"
     "pnpm-lock.yaml"
@@ -123,7 +142,7 @@ if [[ "$KEEP_APP" != "true" ]]; then
     remove_path "${PROJECT_ROOT}/${p}" "app artifact"
   done
 else
-  log "Skipping app artifact removal (--keep-app)"
+  log "Skipping app artifact removal (--keep-app or mode=run)"
 fi
 
 # 4) Remove install dirs we use for runs (respect settings if present)
