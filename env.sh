@@ -10,5 +10,5 @@ case ":${PATH}:" in
 esac
 echo "PATH updated by env.sh"
 echo "  Project root added: ${PROJECT_ROOT} (${ADDED})"
-echo "  PATH entries (deduped):"
-echo "${PATH}" | tr ':' '\n' | awk '!seen[$0]++ {printf "    - %s\n", $0}'
+echo "  PATH entries:"
+echo "${PATH}" | tr ':' '\n' | sed 's/^/    - /'
