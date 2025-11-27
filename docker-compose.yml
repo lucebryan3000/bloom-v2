@@ -95,5 +95,7 @@ networks:
 volumes:
   postgres_data:
     driver: local
+  node_modules:
+    driver: local
   pnpm_store:
     driver: local
