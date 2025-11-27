@@ -10,6 +10,17 @@ Profiles tune default behaviors (e.g., dry-run, resource hints) and feature flag
   - `PROFILE_RESOURCES[profile]="memory=... cpu=..."` (resource hints used in container mode)
   - Feature toggles (e.g., `ENABLE_*`) scoped per profile.
 
+### Manifest consumer fields
+- Required for manifest/landing page metadata:
+  - `PROFILE_<KEY>[name]`, `[tagline]`, `[description]`, `[mode]`
+  - `PROFILE_DRY_RUN[profile]` (dryRunDefault)
+  - `PROFILE_RESOURCES[profile]` (resource hints)
+- Optional niceties:
+  - `time_estimate`, `recommended`
+- Not used by manifest:
+  - Any other custom keys unless explicitly read elsewhere.
+- These metadata values affect display only (manifest/menus), not runtime behavior.
+
 ## Common Flags (examples)
 - `ENABLE_AUTHJS`, `ENABLE_AI_SDK`, `ENABLE_PG_BOSS`, `ENABLE_SHADCN`, `ENABLE_PDF_EXPORTS`, `ENABLE_TEST_INFRA`, `ENABLE_CODE_QUALITY`, and service flags like `ENABLE_REDIS`, `ENABLE_MEILI`, `ENABLE_MINIO`, `ENABLE_OBSERVABILITY` if defined.
 - Flags control whether related tech_stack scripts are included or skipped within phases (or gated in compose configs).

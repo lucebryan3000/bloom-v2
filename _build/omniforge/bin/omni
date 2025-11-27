@@ -574,6 +574,14 @@ main() {
         fi
     fi
 
+    if [[ $exit_code -eq 0 ]]; then
+        if ! omni_write_manifest; then
+            log_warn "[manifest] Manifest generation failed (non-fatal)"
+        fi
+    else
+        log_debug "[manifest] Skipping manifest write due to failed run (exit_code=${exit_code})"
+    fi
+
     # Show execution recap and next steps
     phase_show_recap
 

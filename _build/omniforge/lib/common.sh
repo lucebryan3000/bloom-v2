@@ -110,6 +110,9 @@ source "${_COMMON_LIB_DIR}/bakes.sh"
 # 14. Script indexer (depends on logging) - for background script discovery
 source "${_COMMON_LIB_DIR}/indexer.sh"
 
+# 14b. Manifest writer (depends on logging, config, profile helpers)
+source "${_COMMON_LIB_DIR}/manifest.sh"
+
 # 15. ASCII art and branding (depends on logging)
 source "${_COMMON_LIB_DIR}/ascii.sh"
 
