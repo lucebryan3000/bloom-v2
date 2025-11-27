@@ -41,8 +41,11 @@ A practical, end-to-end runbook for bootstrapping bloom-v2 with OmniForge: prepa
 - Stack helpers (host only): `./_build/omniforge/omni.sh stack up|down|ps`.
 
 ## 8) Clean Up (Optional)
-- Remove download cache: `./_build/omniforge/omni.sh --purge`
+- Maintenance/Cleanup menu: `./_build/omniforge/omni.sh` → “Maintenance / Cleanup” for app clean, Docker wipe, cache purge.
+- Remove download cache (CLI): `./_build/omniforge/omni.sh --purge`
 - Cleanup artifacts: `./_build/omniforge/omni.sh clean --path <dir> [--level 1-4]`
+- Docker deploy wipe (full): `./_build/omniforge/omni.sh docker-wipe --container <name> --force`
+- Docker deploy wipe (menu): “Wipe/Erase Docker Bootstrap” under Maintenance/Cleanup
 
 ## Reference Docs
 - CLI: `_build/omniforge/docs/OMNIFORGE-CLI.md`

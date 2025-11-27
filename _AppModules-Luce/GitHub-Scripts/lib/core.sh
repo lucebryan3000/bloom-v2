@@ -147,8 +147,10 @@ show_branch_comparison() {
                 (( end >= total_files )) && break
 
                 local remaining=$((total_files - end))
+                local prompt
+                prompt=$(printf "%b" "${YELLOW}Press Enter for next ${page_size} file(s) (${remaining} remaining), or 'q' to stop: ${NC}")
                 echo ""
-                read -p "$(echo -e ${YELLOW}Press Enter for next ${page_size} file(s) (${remaining} remaining), or 'q' to stop: ${NC})" next_page
+                read -p "$prompt" next_page
                 if [[ "$next_page" =~ ^[Qq]$ ]]; then
                     break
                 fi

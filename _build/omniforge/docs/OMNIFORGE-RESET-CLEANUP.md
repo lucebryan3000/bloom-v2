@@ -9,6 +9,9 @@ How to clean artifacts, purge caches, and reset OmniForge state/system files.
 - Cleanup artifacts: `./_build/omniforge/omni.sh clean --path <dir> [--level 1-4]`
   - Deletes generated artifacts under a path with optional severity level.
   - No args to `clean` opens menu for interactive cleanup.
+- Docker deploy wipe (full): `./_build/omniforge/omni.sh docker-wipe --container <name> [--force]`
+  - Uses the latest deploy scan report to delete host files; add `--force` to actually delete and remove container/volumes/networks/report.
+  - Also available via the Maintenance/Cleanup menu (“Wipe/Erase Docker Bootstrap”).
 - Purge download cache: `./_build/omniforge/omni.sh --purge`
   - Removes `_build/omniforge/.download-cache/` (safe to rebuild on next run).
 - Manual log cleanup: delete files under `_build/omniforge/logs/` (logs are safe to remove).

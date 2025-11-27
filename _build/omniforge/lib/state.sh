@@ -136,8 +136,26 @@ state_list_completed() {
     grep "=success:" "${BOOTSTRAP_STATE_FILE}" 2>/dev/null | while read -r line; do
         local script_name="${line%%=*}"
         local timestamp="${line##*:}"
-        echo "  ✓ ${script_name} (${timestamp})"
+        local display_name
+        display_name="$(state_format_script_name "${script_name}")"
+        echo "  ✓ ${display_name} (${timestamp})"
     done
+}
+
+# Map script id to a friendlier name when possible
+state_format_script_name() {
+    local script_id="$1"
+    local friendly="$script_id"
+    local scripts_dir="${SCRIPTS_DIR:-${OMNI_ROOT:-$(cd -- "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)}}"
+    local candidate="${scripts_dir}/tech_stack/${script_id}.sh"
+    if [[ -f "$candidate" ]]; then
+        local script_name
+        script_name="$(grep -m1 'SCRIPT_NAME=' "$candidate" | sed -E 's/.*SCRIPT_NAME=\"([^\"]+)\".*/\1/' || true)"
+        if [[ -n "$script_name" ]]; then
+            friendly="${script_name} (${script_id})"
+        fi
+    fi
+    echo "$friendly"
 }
 
 # Show bootstrap status summary

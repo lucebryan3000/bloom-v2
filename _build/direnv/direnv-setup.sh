@@ -18,11 +18,11 @@ set -Eeuo pipefail
 
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="${PROJECT_ROOT:-${SCRIPT_DIR}/../..}"
-LAST_MODIFIED="2025-11-27"
+LAST_MODIFIED="2025-11-26"
 
-ENVRC_PATH="${PROJECT_ROOT}/.envrc"
-ENV_HELPER_PATH="${PROJECT_ROOT}/env.sh"
+PROJECT_ROOT=""
+ENVRC_PATH=""
+ENV_HELPER_PATH=""
 
 on_error() {
   local exit_code=$?
@@ -50,6 +50,28 @@ else
   _FG_GREEN=""
   _FG_YELLOW=""
 fi
+
+detect_project_root() {
+  local candidate=""
+
+  if [[ -n "${PROJECT_ROOT:-}" && -d "${PROJECT_ROOT}" ]]; then
+    candidate="${PROJECT_ROOT}"
+  elif command -v git >/dev/null 2>&1; then
+    candidate="$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel 2>/dev/null || true)"
+  fi
+
+  if [[ -z "${candidate}" ]]; then
+    candidate="${SCRIPT_DIR}/../.."
+  fi
+
+  if [[ ! -d "${candidate}" ]]; then
+    candidate="${SCRIPT_DIR}"
+  fi
+
+  PROJECT_ROOT="$(cd "${candidate}" && pwd)"
+  ENVRC_PATH="${PROJECT_ROOT}/.envrc"
+  ENV_HELPER_PATH="${PROJECT_ROOT}/env.sh"
+}
 
 ui_clear() {
   command -v clear >/dev/null 2>&1 && clear || printf '\n'
@@ -112,9 +134,9 @@ render_main_menu() {
   printf '\n'
 
   ui_header "Quick Actions"
-  printf '%s  1)%s Install direnv               %sInstall via apt/brew/pacman if missing%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
-  printf '%s  2)%s Create/overwrite .envrc     %sAdd validated PATH entry%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
-  printf '%s  3)%s Create/overwrite env.sh     %sPer-session PATH helper%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
+  printf '%s  1)%s Install & enable direnv     %sAuto-detect root; prompt install only if missing%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
+  printf '%s  2)%s Add PATH entry to .envrc    %sGuided walk-through (keeps existing file)%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
+  printf '%s  3)%s Create/overwrite env.sh     %sPer-session PATH helper (alternate to direnv)%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
   printf '%s  4)%s Advanced options            %sShow PATH / direnv version%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
   printf '%s  5)%s Help                        %sShow usage%s\n' "${_FG_YELLOW}" "${_NORM}${_BOLD}" "${_NORM}" "${_NORM}"
   printf '%s\n' "${_NORM}"
@@ -134,14 +156,15 @@ Description:
   you don't have to remember direnv CLI details for this project.
 
 Features:
-  - Check/install direnv via common package managers (if missing).
-  - Generate a .envrc with a validated PATH entry.
-  - Generate env.sh helper to manage PATH and project root.
+  - Auto-detect project root (git-aware) and allow direnv from there.
+  - Install direnv only if missing, then enable it in the project root.
+  - Guided PATH additions to .envrc without overwriting existing content.
+  - Generate env.sh helper to manage PATH and project root (non-direnv option).
 
 Menu options:
-  1) Install direnv
-  2) Create/overwrite .envrc (add PATH)
-  3) Create/overwrite env.sh helper (per-session PATH)
+  1) Install & enable direnv
+  2) Add PATH entry to .envrc (guided)
+  3) Create/overwrite env.sh helper (per-session PATH, alternate to direnv)
   4) Advanced options
   5) Help
 
@@ -152,65 +175,133 @@ EOF
 # Actions
 ###############################################################################
 
-action_install_direnv() {
-  ui_info "Checking direnv installation…"
-
-  if command -v direnv >/dev/null 2>&1; then
-    ui_success "direnv already installed at: $(command -v direnv)"
+ensure_envrc_exists() {
+  if [[ -f "${ENVRC_PATH}" ]]; then
     return 0
   fi
 
-  ui_warn "direnv not found."
-  printf 'Install direnv now? [y/N] '
-  local ans
-  read -r ans || true
-  case "${ans,,}" in
-    y|yes) ;;
-    *) ui_info "Skipping install."; return 0 ;;
-  esac
+  ui_info "No .envrc found. Creating a minimal template at: ${ENVRC_PATH}"
+  cat > "${ENVRC_PATH}" <<EOF
+# direnv configuration for $(basename "${PROJECT_ROOT}")
+# Add project-specific PATH entries using PATH_add "dir"
+# Example: PATH_add "${PROJECT_ROOT}/bin"
+EOF
+}
 
-  if command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get update && sudo apt-get install -y direnv
-  elif command -v brew >/dev/null 2>&1; then
-    brew install direnv
-  elif command -v pacman >/dev/null 2>&1; then
-    sudo pacman -S --noconfirm direnv
-  else
-    ui_error "No supported package manager detected. Install manually from https://direnv.net/#install"
-    return 1
+resolve_path_input() {
+  local raw="${1:-}"
+  [[ -z "${raw}" ]] && return 1
+
+  local expanded="${raw/#\~/${HOME}}"
+  local candidate=""
+
+  if [[ "${expanded}" != /* ]]; then
+    candidate="${PROJECT_ROOT}/${expanded}"
+    if [[ -d "${candidate}" ]]; then
+      (cd "${candidate}" && pwd)
+      return 0
+    fi
   fi
 
-  ui_success "direnv install attempted. Ensure your shell is hooked:"
-  printf '  eval "$(direnv hook %s)"\n' "$(basename "${SHELL:-bash}")"
+  if [[ -d "${expanded}" ]]; then
+    (cd "${expanded}" && pwd)
+    return 0
+  fi
+
+  return 1
+}
+
+action_install_direnv() {
+  ui_info "Preparing direnv for project: ${PROJECT_ROOT}"
+  ui_info "Project root detected: ${PROJECT_ROOT}"
+
+  if command -v direnv >/dev/null 2>&1; then
+    ui_success "direnv already installed at: $(command -v direnv)"
+  else
+    printf 'direnv is not installed. Install now? [Y/n] '
+    local ans
+    read -r ans || true
+    case "${ans,,}" in
+      n|no) ui_warn "Install skipped; direnv not enabled."; return 0 ;;
+    esac
+
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update && sudo apt-get install -y direnv
+    elif command -v brew >/dev/null 2>&1; then
+      brew install direnv
+    elif command -v pacman >/dev/null 2>&1; then
+      sudo pacman -S --noconfirm direnv
+    else
+      ui_error "No supported package manager detected. Install manually from https://direnv.net/#install"
+      return 1
+    fi
+
+    if command -v direnv >/dev/null 2>&1; then
+      ui_success "direnv installed at: $(command -v direnv)"
+    else
+      ui_error "direnv still not available after install attempt."
+      return 1
+    fi
+  fi
+
+  ensure_envrc_exists
+
+  ui_info "Allowing direnv in project root..."
+  if (cd "${PROJECT_ROOT}" && direnv allow); then
+    ui_success "direnv allowed for ${PROJECT_ROOT}"
+  else
+    ui_warn "direnv allow failed. Check ${ENVRC_PATH} for syntax issues."
+  fi
+
+  local shell_name
+  shell_name="$(basename "${SHELL:-bash}")"
+  ui_info "Shell hook (if not already set):"
+  ui_info "  eval \"\$(direnv hook ${shell_name})\""
 }
 
 action_create_envrc() {
-  ui_info "Creating .envrc in: ${ENVRC_PATH}"
+  ui_info "Add a PATH entry to: ${ENVRC_PATH}"
+  ui_info "Relative paths resolve from project root: ${PROJECT_ROOT}"
+
+  ensure_envrc_exists
 
   local add_path=""
-  while [[ -z "${add_path}" ]]; do
-    read -r -p "Enter a PATH directory to add (must exist): " add_path || true
-    if [[ -z "${add_path}" || ! -d "${add_path}" ]]; then
+  local resolved_path=""
+
+  while [[ -z "${resolved_path}" ]]; do
+    read -r -p "Enter a PATH directory to add (absolute or relative): " add_path || true
+    resolved_path="$(resolve_path_input "${add_path}" || true)"
+    if [[ -z "${resolved_path}" ]]; then
       ui_warn "Path is empty or does not exist. Try again."
-      add_path=""
     fi
   done
 
-  cat > "${ENVRC_PATH}" <<EOF
-# direnv configuration for $(basename "${PROJECT_ROOT}")
-# To enable: run 'direnv allow' in the project root after editing.
+  local note=""
+  read -r -p "Optional short description for this PATH entry: " note || true
 
-# Add project-specific PATH entry (dir must exist)
-export PATH=${add_path}:\$PATH
+  if grep -qF "PATH_add \"${resolved_path}\"" "${ENVRC_PATH}" 2>/dev/null; then
+    ui_warn "PATH_add \"${resolved_path}\" already exists in ${ENVRC_PATH}."
+    return 0
+  fi
 
-# Notes:
-# - direnv will load this file when you 'cd' into the project root.
-# - Edit this file as needed, then run 'direnv allow' again.
-# - To hook your shell: eval "\$(direnv hook $(basename "\$SHELL"))"
-EOF
+  printf '\nAbout to add to %s:\n' "${ENVRC_PATH}"
+  printf '  PATH_add "%s"\n' "${resolved_path}"
+  [[ -n "${note}" ]] && printf '  # %s\n' "${note}"
+  printf 'Proceed? [Y/n] '
+  local confirm
+  read -r confirm || true
+  case "${confirm,,}" in
+    n|no) ui_info "No changes made to ${ENVRC_PATH}."; return 0 ;;
+  esac
 
-  ui_success ".envrc written to ${ENVRC_PATH}"
-  ui_info "Run 'direnv allow' in ${PROJECT_ROOT} to activate."
+  {
+    printf '\n# Added by %s on %s\n' "${SCRIPT_NAME}" "$(date +'%Y-%m-%d %H:%M:%S')"
+    [[ -n "${note}" ]] && printf '# %s\n' "${note}"
+    printf 'PATH_add "%s"\n' "${resolved_path}"
+  } >> "${ENVRC_PATH}"
+
+  ui_success "PATH entry added to ${ENVRC_PATH}"
+  ui_info "Re-run 'direnv allow' in ${PROJECT_ROOT} to activate changes."
 }
 
 action_create_env_helper() {
@@ -258,7 +349,7 @@ EOF
 
   chmod +x "${ENV_HELPER_PATH}" || true
   ui_success "env.sh helper written to ${ENV_HELPER_PATH}"
-  ui_info "Run 'source ./env.sh' in ${PROJECT_ROOT} to update PATH for the session."
+  ui_info "Run 'source ./env.sh' in ${PROJECT_ROOT} to update PATH for the session (no direnv required)."
 }
 
 action_show_help_menu() {
@@ -346,6 +437,8 @@ main_menu() {
 ###############################################################################
 
 main() {
+  detect_project_root
+
   if [[ $# -gt 0 ]]; then
     case "$1" in
       -h|--help)

@@ -257,6 +257,10 @@ COMMANDS:
 
     stack           Docker helpers for bootstrap (host): up/down/ps core services
 
+    docker-wipe     Full wipe using latest docker deploy scan (host files + container/volumes/networks/report)
+                    - Usage: omni docker-wipe --container <name> [--force]
+                    - Without --force runs dry-run using latest files-created-*.txt from docker-deploy-scan.sh
+
     build           Build and verify the project (post-initialization)
                     - Runs: pnpm install, lint, typecheck, build
                     - Use after 'run' completes to compile the project
@@ -275,6 +279,7 @@ OPTIONS:
     --path <dir>    Target installation path (for clean command)
     --level <1-4>   Clean level: 1=quick, 2=full, 3=deep, 4=nuclear
     --yes           Skip confirmation prompts (for reset command)
+    --container <name> Container name/id (for docker-wipe command)
 
 WORKFLOW:
     1. omni menu     Interactive setup + pick stack profile (recommended)
@@ -300,6 +305,7 @@ EXAMPLES:
     omni clean                     # Interactive clean menu
     omni stack up                  # Start Docker app + postgres on host
     omni clean --path ./test/install-1 --level 2  # Full clean specific path
+    omni docker-wipe --container bloom2_app --force  # Full deploy wipe (files + docker resources + report)
 
 EOF
 }
@@ -320,6 +326,7 @@ CLEAN_PATH=""
 CLEAN_LEVEL=""
 RESET_YES=false
 STACK_ARGS=()
+DOCKER_WIPE_CONTAINER=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -376,7 +383,14 @@ while [[ $# -gt 0 ]]; do
             RESET_YES=true
             shift
             ;;
-        menu|run|list|status|build|forge|compile|clean|reset|stack)
+        --container)
+            if [[ -z "${2:-}" ]]; then
+                _error_exit "--container requires a container name" 1
+            fi
+            DOCKER_WIPE_CONTAINER="$2"
+            shift 2
+            ;;
+        menu|run|list|status|build|forge|compile|clean|reset|stack|docker-wipe)
             # Map 'forge' and 'compile' to 'build' for backward compat
             if [[ "$1" == "forge" || "$1" == "compile" ]]; then
                 COMMAND="build"
@@ -496,6 +510,23 @@ case "${COMMAND:-}" in
     status)
         _validate_bin "status"
         exec "${SCRIPT_DIR}/bin/status" --state
+        ;;
+    docker-wipe)
+        clean_script="${SCRIPT_DIR}/../scripts/docker-deploy-clean.sh"
+        if [[ -z "$DOCKER_WIPE_CONTAINER" ]]; then
+            echo "docker-wipe requires --container <name>"
+            exit 1
+        fi
+        if [[ ! -x "$clean_script" ]]; then
+            echo "docker-wipe script not found: $clean_script"
+            exit 1
+        fi
+        docker_wipe_args=(--remove-docker --remove-networks --remove-report)
+        if [[ "$FORCE" == "true" ]]; then
+            docker_wipe_args+=(--force)
+        fi
+        docker_wipe_args+=("$DOCKER_WIPE_CONTAINER")
+        exec "$clean_script" "${docker_wipe_args[@]}"
         ;;
     build)
         _validate_bin "forge"
