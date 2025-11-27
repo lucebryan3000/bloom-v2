@@ -38,20 +38,21 @@ LOG_DIR_DEFAULT="${PROJECT_ROOT}/_build/omniforge/logs/cleanup"
 LOG_DIR="${LOG_DIR:-${LOG_DIR_DEFAULT}}"
 LOG_RETENTION="${LOG_RETENTION:-7}"
 
-for arg in "$@"; do
-  case "$arg" in
-    --yes|-y) CONFIRM="true" ;;
-    --dry-run) DRY="true" ;;
-    --keep-app) KEEP_APP="true" ;;
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --yes|-y) CONFIRM="true"; shift ;;
+    --dry-run) DRY="true"; shift ;;
+    --keep-app) KEEP_APP="true"; shift ;;
     --mode)
       MODE="${2:-}"
-      shift
+      shift 2
       ;;
     --mode=*)
-      MODE="${arg#--mode=}"
+      MODE="${1#--mode=}"
+      shift
       ;;
-    --prune-images) PRUNE_IMAGES="true" ;;
-    *) echo "Unknown option: $arg" >&2; exit 1 ;;
+    --prune-images) PRUNE_IMAGES="true"; shift ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
 
