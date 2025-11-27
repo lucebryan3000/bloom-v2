@@ -9,11 +9,12 @@
 #   - Leaves git-tracked files intact (only deletes common generated files)
 #
 # Options:
-#   --yes / -y     : skip confirmation
-#   --dry-run      : show what would be removed/stopped
-#   --keep-app     : do NOT delete app files (package.json/src/etc)
-#   --mode run     : light cleanup (run artifacts only)
-#   --mode full    : full cleanup (default; includes app artifacts unless --keep-app)
+#   --yes / -y         : skip confirmation
+#   --dry-run          : show what would be removed/stopped
+#   --keep-app         : do NOT delete app files (package.json/src/etc)
+#   --mode run         : light cleanup (run artifacts only)
+#   --mode full        : full cleanup (default; includes app artifacts unless --keep-app)
+#   --prune-images     : remove project-tagged docker images (matching project name)
 #
 # Usage:
 #   ./_build/omniforge/scripts/cleanup-bootstrap.sh           # prompt
@@ -31,6 +32,7 @@ CONFIRM="false"
 DRY="false"
 KEEP_APP="false"
 MODE="full"
+PRUNE_IMAGES="false"
 # Allow overriding log dir; fallback to /tmp if project log dir not writable
 LOG_DIR_DEFAULT="${PROJECT_ROOT}/_build/omniforge/logs/cleanup"
 LOG_DIR="${LOG_DIR:-${LOG_DIR_DEFAULT}}"
@@ -48,6 +50,7 @@ for arg in "$@"; do
     --mode=*)
       MODE="${arg#--mode=}"
       ;;
+    --prune-images) PRUNE_IMAGES="true" ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -162,6 +165,20 @@ if [[ "$DRY" == "false" ]]; then
     | while read -r oldlog; do
         rm -f "$oldlog" && log "Pruned old log: ${oldlog##*/}"
       done
+fi
+
+# 6) Optional: prune project-tagged images (best-effort)
+if [[ "$PRUNE_IMAGES" == "true" && "$DRY" == "false" ]]; then
+  if command -v docker >/dev/null 2>&1; then
+    project_tag="$(basename "${PROJECT_ROOT}")"
+    log "Pruning images matching project name: ${project_tag}"
+    docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' \
+      | grep -i "${project_tag}" \
+      | awk '{print $1}' \
+      | xargs -r docker rmi || warn "Image prune encountered errors; manual check recommended."
+  fi
+elif [[ "$PRUNE_IMAGES" == "true" && "$DRY" == "true" ]]; then
+  log "[dry-run] Would prune images matching project name: $(basename "${PROJECT_ROOT}")"
 fi
 
 log "Cleanup complete."
