@@ -38,6 +38,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
+      # Default to manual start; set to true only after pnpm install has run in the container
       - APP_AUTO_START=false
       - STACK_PROFILE=tech_stack
       - INSTALL_DIR=/workspace
