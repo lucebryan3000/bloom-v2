@@ -75,6 +75,11 @@ omni_profile_manifest_view() {
     else
         out_ref[resources]=""
     fi
+    out_ref[app_auto_install]="$(omni_profile_get_field "$profile" "APP_AUTO_INSTALL" "")"
+    out_ref[git_safety]="$(omni_profile_get_field "$profile" "GIT_SAFETY" "")"
+    out_ref[allow_dirty]="$(omni_profile_get_field "$profile" "ALLOW_DIRTY" "")"
+    out_ref[strict_tests]="$(omni_profile_get_field "$profile" "STRICT_TESTS" "")"
+    out_ref[warn_policy]="$(omni_profile_get_field "$profile" "WARN_POLICY" "")"
 }
 
 apply_stack_profile() {
