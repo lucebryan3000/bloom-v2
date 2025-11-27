@@ -82,6 +82,41 @@ omni_profile_manifest_view() {
     out_ref[warn_policy]="$(omni_profile_get_field "$profile" "WARN_POLICY" "")"
 }
 
+omni_profile_apply_defaults() {
+    local profile="$1"
+    # Apply optional metadata-driven defaults if not already set
+    local val
+
+    val="$(omni_profile_get_field "$profile" "APP_AUTO_INSTALL" "")"
+    if [[ -n "$val" && -z "${APP_AUTO_INSTALL+x}" ]]; then
+        export APP_AUTO_INSTALL="$val"
+    fi
+
+    val="$(omni_profile_get_field "$profile" "GIT_SAFETY" "")"
+    if [[ -n "$val" && -z "${GIT_SAFETY_SET_BY_PROFILE:-}" ]]; then
+        export GIT_SAFETY="$val"
+        export GIT_SAFETY_SET_BY_PROFILE=1
+    fi
+
+    val="$(omni_profile_get_field "$profile" "ALLOW_DIRTY" "")"
+    if [[ -n "$val" && -z "${ALLOW_DIRTY_SET_BY_PROFILE:-}" ]]; then
+        export ALLOW_DIRTY="$val"
+        export ALLOW_DIRTY_SET_BY_PROFILE=1
+    fi
+
+    val="$(omni_profile_get_field "$profile" "STRICT_TESTS" "")"
+    if [[ -n "$val" && -z "${STRICT_TESTS_SET_BY_PROFILE:-}" ]]; then
+        export STRICT_TESTS="$val"
+        export STRICT_TESTS_SET_BY_PROFILE=1
+    fi
+
+    val="$(omni_profile_get_field "$profile" "WARN_POLICY" "")"
+    if [[ -n "$val" && -z "${WARN_POLICY_SET_BY_PROFILE:-}" ]]; then
+        export WARN_POLICY="$val"
+        export WARN_POLICY_SET_BY_PROFILE=1
+    fi
+}
+
 apply_stack_profile() {
     local profile="${1:-${STACK_PROFILE}}"
     # Convert hyphens to underscores and uppercase (api-only -> API_ONLY)

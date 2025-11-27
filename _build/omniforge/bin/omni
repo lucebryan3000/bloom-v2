@@ -250,6 +250,9 @@ main() {
     config_load
     config_validate
     config_apply_profile
+    if declare -f omni_profile_apply_defaults >/dev/null 2>&1; then
+        omni_profile_apply_defaults "${STACK_PROFILE:-}"
+    fi
 
     # Apply profile resource hints (for container runs)
     if [[ "${DOCKER_EXEC_MODE:-host}" == "container" ]]; then
