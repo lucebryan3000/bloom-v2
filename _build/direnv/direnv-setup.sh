@@ -19,6 +19,7 @@ set -Eeuo pipefail
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-${SCRIPT_DIR}/../..}"
+LAST_MODIFIED="2025-11-27"
 
 ENVRC_PATH="${PROJECT_ROOT}/.envrc"
 ENV_HELPER_PATH="${PROJECT_ROOT}/env.sh"
@@ -283,6 +284,8 @@ main_menu() {
   while true; do
     ui_clear
     ui_header "direnv setup for $(basename "${PROJECT_ROOT}")"
+    ui_info "Last modified: ${LAST_MODIFIED}"
+    printf '\n'
     ui_info "Type a number to run an action; any other key exits."
 
     echo "1) Install direnv"
