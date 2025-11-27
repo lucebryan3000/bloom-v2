@@ -1,37 +1,27 @@
 #!/usr/bin/env bash
 #!meta
 # id: features/code-quality.sh
-# name: quality.sh - ESLint + Prettier + Husky
-# phase: 4
-# phase_name: Extensions & Quality
+# name: code quality
+# phase: 2
+# phase_name: Core Features
 # profile_tags:
 #   - tech_stack
 #   - features
 # uses_from_omni_config:
+#   - ENABLE_AI_SDK
+#   - ENABLE_ZUSTAND
+#   - ENABLE_TEST_INFRA
+#   - ENABLE_CODE_QUALITY
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - TECH_STACK_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
 #     - eslint
-#     - husky
-#     - lint-staged
 #     - prettier
-#     - typescript-eslint-parser
-#     - typescript-eslint-plugin
-#   dev_packages:
-#     - eslint
-#     - husky
-#     - lint-staged
-#     - prettier
-#     - typescript-eslint-parser
-#     - typescript-eslint-plugin
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -70,10 +60,18 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="features/code-quality"
 readonly SCRIPT_NAME="ESLint + Prettier Code Quality"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

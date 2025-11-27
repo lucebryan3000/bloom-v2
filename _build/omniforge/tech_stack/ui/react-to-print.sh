@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 #!meta
 # id: ui/react-to-print.sh
-# name: to-print.sh - Print Functionality Setup
+# name: react to print
 # phase: 3
 # phase_name: User Interface
 # profile_tags:
 #   - tech_stack
 #   - ui
 # uses_from_omni_config:
+#   - ENABLE_SHADCN
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
-#     -
+#     - lucide-react
+#     - clsx
+#     - tailwind-merge
+#     - class-variance-authority
+#     - react-to-print
 #   dev_packages:
-#     -
+#     - tailwindcss
+#     - postcss
+#     - autoprefixer
 #!endmeta
 
 # =============================================================================
@@ -42,10 +44,18 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="ui/react-to-print"
 readonly SCRIPT_NAME="Print Functionality (react-to-print)"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

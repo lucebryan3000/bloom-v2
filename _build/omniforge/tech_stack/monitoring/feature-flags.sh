@@ -1,28 +1,21 @@
 #!/usr/bin/env bash
 #!meta
 # id: monitoring/feature-flags.sh
-# name: flags.sh - Feature Flag System
+# name: feature flags
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
 #   - tech_stack
 #   - monitoring
 # uses_from_omni_config:
+#   - ENABLE_FEATURE_FLAGS
 # uses_from_omni_settings:
-#   - FLAGS_DIR
+#   - PROJECT_ROOT
 #   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -45,9 +38,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="monitoring/feature-flags"
 readonly SCRIPT_NAME="Feature Flags System Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 if has_script_succeeded "${SCRIPT_ID}"; then
     log_skip "${SCRIPT_NAME} (already completed)"

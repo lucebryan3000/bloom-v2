@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!meta
 # id: docker/dockerfile-multistage.sh
-# name: multistage.sh - Production Dockerfile Generator
+# name: dockerfile-multistage
 # phase: 1
 # phase_name: Infrastructure & Database
 # profile_tags:
@@ -10,21 +10,13 @@
 # uses_from_omni_config:
 #   - APP_NAME
 # uses_from_omni_settings:
-#   - NODE_VERSION
-#   - PNPM_VERSION
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - NODE_VERSION
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -57,9 +49,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="docker/dockerfile-multistage"
 readonly SCRIPT_NAME="Dockerfile Generator"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

@@ -2,37 +2,20 @@
 #!meta
 # id: docker/meilisearch-setup.sh
 # name: meilisearch-setup
-# phase: 0
-# phase_name: Project Foundation
+# phase: 1
+# phase_name: Infrastructure & Database
 # profile_tags:
 #   - tech_stack
 #   - docker
 # uses_from_omni_config:
+#   - ENABLE_MEILI
 # uses_from_omni_settings:
-#   - APP_ENV_FILE
-#   - COMPOSE_PROJECT_NAME
-#   - DOCKER_COMPOSE_FILE
-#   - DOCKER_SERVICES_DIR
-#   - INSTALL_DIR
-#   - MEILI_MASTER_KEY
-#   - MEILI_PORT
-#   - MEILI_YML
-#   - MEILI_YML_DISPLAY
-#   - OMNI_ROOT
 #   - PROJECT_ROOT
-#   - SERVICES_DIR
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 set -euo pipefail
@@ -50,10 +33,27 @@ if [ -f "${OMNI_ROOT}/lib/common.sh" ]; then
   # shellcheck source=/dev/null
   source "${OMNI_ROOT}/lib/common.sh"
   source "${OMNI_ROOT}/tech_stack/_lib/pkg-install.sh"
+  if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+  fi
 else
   log()   { echo "[meilisearch-setup] $*"; }
   warn()  { echo "[meilisearch-setup][WARN] $*" >&2; }
   error() { echo "[meilisearch-setup][ERROR] $*" >&2; exit 1; }
+  log_skip() { log "$@"; }
+  log_step() { log "[STEP] $*"; }
+fi
+
+if ! command -v log_skip >/dev/null 2>&1; then
+  log_skip() { log "$@"; }
+fi
+if ! command -v log_step >/dev/null 2>&1; then
+  log_step() { log "[STEP] $*"; }
+fi
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+  log_skip "DRY_RUN: skipping meilisearch-setup"
+  exit 0
 fi
 
 resolve_project_path() {

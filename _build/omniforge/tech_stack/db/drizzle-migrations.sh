@@ -8,20 +8,21 @@
 #   - tech_stack
 #   - db
 # uses_from_omni_config:
+#   - DB_NAME
+#   - DB_USER
+#   - DB_PASSWORD
+#   - DB_HOST
+#   - DB_PORT
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - POSTGRES_VERSION
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
-#     -
+#     - drizzle-orm
 #   dev_packages:
-#     -
+#     - drizzle-kit
 #!endmeta
 
 # =============================================================================
@@ -47,9 +48,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="db/drizzle-migrations"
 readonly SCRIPT_NAME="Drizzle Migrations"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

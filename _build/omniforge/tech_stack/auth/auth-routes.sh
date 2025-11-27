@@ -1,30 +1,24 @@
 #!/usr/bin/env bash
 #!meta
 # id: auth/auth-routes.sh
-# name: routes.sh - Auth Routes Setup
+# name: auth routes
 # phase: 2
 # phase_name: Core Features
 # profile_tags:
 #   - tech_stack
 #   - auth
 # uses_from_omni_config:
+#   - ENABLE_AUTHJS
 # uses_from_omni_settings:
-#   - AUTH_API_DIR
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - AUTH_API_DIR
 #   - SIGNIN_DIR
 #   - SIGNOUT_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -45,9 +39,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="auth/auth-routes"
 readonly SCRIPT_NAME="Auth Routes Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

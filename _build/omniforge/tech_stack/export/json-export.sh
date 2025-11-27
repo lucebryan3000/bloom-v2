@@ -1,28 +1,22 @@
 #!/usr/bin/env bash
 #!meta
 # id: export/json-export.sh
-# name: export.sh - JSON Export Formatter
+# name: json export
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
 #   - tech_stack
 #   - export
 # uses_from_omni_config:
+#   - ENABLE_PDF_EXPORTS
 # uses_from_omni_settings:
-#   - EXPORT_DIR
+#   - PROJECT_ROOT
 #   - INSTALL_DIR
+#   - EXPORT_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -45,9 +39,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="export/json-export"
 readonly SCRIPT_NAME="JSON Export Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 if has_script_succeeded "${SCRIPT_ID}"; then
     log_skip "${SCRIPT_NAME} (already completed)"

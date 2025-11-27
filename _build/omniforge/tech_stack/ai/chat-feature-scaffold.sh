@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!meta
 # id: ai/chat-feature-scaffold.sh
-# name: feature-scaffold.sh - Chat Feature Scaffold
+# name: chat feature scaffold
 # phase: 3
 # phase_name: User Interface
 # profile_tags:
@@ -9,22 +9,15 @@
 #   - ai
 # uses_from_omni_config:
 # uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 #   - CHAT_API_DIR
 #   - CHAT_COMPONENTS_DIR
 #   - CHAT_PAGE_DIR
-#   - PROJECT_ROOT
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -45,9 +38,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="ai/chat-feature-scaffold"
 readonly SCRIPT_NAME="Chat Feature Scaffold"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

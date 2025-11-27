@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!meta
 # id: ai/prompts-structure.sh
-# name: structure.sh - Prompts Structure Setup
+# name: prompts structure
 # phase: 3
 # phase_name: User Interface
 # profile_tags:
@@ -10,19 +10,12 @@
 # uses_from_omni_config:
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
 #   - PROMPTS_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -43,9 +36,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="ai/prompts-structure"
 readonly SCRIPT_NAME="Prompts Structure Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

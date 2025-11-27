@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!meta
 # id: intelligence/roi-engine.sh
-# name: engine.sh - ROI Calculation Engine
+# name: roi engine
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
@@ -9,21 +9,15 @@
 #   - intelligence
 # uses_from_omni_config:
 # uses_from_omni_settings:
+#   - PROJECT_ROOT
 #   - INSTALL_DIR
-#   - M
 #   - SCHEMAS_DIR
+#   - LIB_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
-#     -
-#   dev_packages:
-#     -
+#     - zod
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -46,9 +40,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="intelligence/roi-engine"
 readonly SCRIPT_NAME="ROI Engine Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 if has_script_succeeded "${SCRIPT_ID}"; then
     log_skip "${SCRIPT_NAME} (already completed)"
