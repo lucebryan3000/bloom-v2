@@ -1,0 +1,13 @@
+============================================================
+Docker Deployment Host File Scan
+Container: 3
+Project root: /home/luce/apps/bloom2
+Scan timestamp (UTC): 20251127T054947Z
+============================================================
+
+0) Container readiness
+----------------------
+Waiting for container '3' to be running and stable for at least 300s (max wait 1200s)...
+  Status: exited (restarting=false); waiting...
+  Status: exited (restarting=false); waiting...
+  Status: exited (restarting=false); waiting...

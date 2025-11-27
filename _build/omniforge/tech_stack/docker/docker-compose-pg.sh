@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!meta
 # id: docker/docker-compose-pg.sh
-# name: compose-pg.sh - Full Development Stack
+# name: docker-compose-pg
 # phase: 1
 # phase_name: Infrastructure & Database
 # profile_tags:
@@ -9,33 +9,37 @@
 #   - docker
 # uses_from_omni_config:
 #   - APP_NAME
-#   - DB_HOST
 #   - DB_NAME
+#   - DB_USER
 #   - DB_PASSWORD
 #   - DB_PORT
-#   - DB_USER
+#   - DB_HOST
 # uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 #   - APP_ENV_FILE
 #   - CONTAINER_PREFIX
-#   - ENABLE_REDIS
-#   - ENV_FILE_PATH
 #   - NODE_VERSION
-#   - PGVECTOR_IMAGE
 #   - PNPM_VERSION
 #   - POSTGRES_VERSION
+#   - ENV_FILE_PATH
+#   - ENABLE_REDIS
+#   - PGVECTOR_IMAGE
+# required_vars:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - APP_ENV_FILE
+#   - CONTAINER_PREFIX
+#   - NODE_VERSION
+#   - PNPM_VERSION
+#   - POSTGRES_VERSION
+#   - ENV_FILE_PATH
+#   - ENABLE_REDIS
+#   - PGVECTOR_IMAGE
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -77,9 +81,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="docker/docker-compose-pg"
 readonly SCRIPT_NAME="Docker Compose Stack"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

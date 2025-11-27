@@ -23,6 +23,11 @@ declare -A PROFILE_AI_AUTOMATION=(
     [ENABLE_PDF_EXPORTS]="false"
     [ENABLE_TEST_INFRA]="true"
     [ENABLE_CODE_QUALITY]="true"
+    [APP_AUTO_INSTALL]="true"
+    [GIT_SAFETY]="false"
+    [ALLOW_DIRTY]="true"
+    [STRICT_TESTS]="true"
+    [WARN_POLICY]="strict"
 )
 
 # Profile 2: FPA_DASHBOARD - Enterprise Financial Planning & Analysis
@@ -43,6 +48,11 @@ declare -A PROFILE_FPA_DASHBOARD=(
     [ENABLE_PDF_EXPORTS]="true"
     [ENABLE_TEST_INFRA]="true"
     [ENABLE_CODE_QUALITY]="true"
+    [APP_AUTO_INSTALL]="true"
+    [GIT_SAFETY]="false"
+    [ALLOW_DIRTY]="true"
+    [STRICT_TESTS]="true"
+    [WARN_POLICY]="strict"
 )
 
 # Profile 3: COLLAB_EDITOR - Real-Time Policy & Doc Editor
@@ -63,6 +73,11 @@ declare -A PROFILE_COLLAB_EDITOR=(
     [ENABLE_PDF_EXPORTS]="false"
     [ENABLE_TEST_INFRA]="true"
     [ENABLE_CODE_QUALITY]="true"
+    [APP_AUTO_INSTALL]="true"
+    [GIT_SAFETY]="false"
+    [ALLOW_DIRTY]="true"
+    [STRICT_TESTS]="false"
+    [WARN_POLICY]="warn"
 )
 
 # Profile 4: ERP_GATEWAY - BOS-ERP Data Synchronization API
@@ -83,6 +98,11 @@ declare -A PROFILE_ERP_GATEWAY=(
     [ENABLE_PDF_EXPORTS]="false"
     [ENABLE_TEST_INFRA]="true"
     [ENABLE_CODE_QUALITY]="true"
+    [APP_AUTO_INSTALL]="true"
+    [GIT_SAFETY]="false"
+    [ALLOW_DIRTY]="true"
+    [STRICT_TESTS]="true"
+    [WARN_POLICY]="strict"
 )
 
 # Profile 5: ASSET_MANAGER - Custom Internal Asset Management Tool
@@ -103,6 +123,11 @@ declare -A PROFILE_ASSET_MANAGER=(
     [ENABLE_PDF_EXPORTS]="true"
     [ENABLE_TEST_INFRA]="true"
     [ENABLE_CODE_QUALITY]="true"
+    [APP_AUTO_INSTALL]="true"
+    [GIT_SAFETY]="false"
+    [ALLOW_DIRTY]="true"
+    [STRICT_TESTS]="true"
+    [WARN_POLICY]="strict"
 )
 
 # Profile 6: TECH_STACK - Full Tech Stack Coverage
@@ -123,6 +148,11 @@ declare -A PROFILE_TECH_STACK=(
     [ENABLE_PDF_EXPORTS]="true"
     [ENABLE_TEST_INFRA]="true"
     [ENABLE_CODE_QUALITY]="true"
+    [APP_AUTO_INSTALL]="true"
+    [GIT_SAFETY]="false"
+    [ALLOW_DIRTY]="true"
+    [STRICT_TESTS]="true"
+    [WARN_POLICY]="strict"
 )
 
 # Available profiles (order matters - shown in this order in menu)

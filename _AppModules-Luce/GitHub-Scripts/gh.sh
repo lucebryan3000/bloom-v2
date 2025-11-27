@@ -14,6 +14,10 @@
 #
 # See README.md for full feature list and examples.
 
+if [ -z "${BASH_VERSION:-}" ]; then
+    exec bash "$0" "$@"
+fi
+
 set -e
 
 # ============================================================================

@@ -1,28 +1,29 @@
 #!/usr/bin/env bash
 #!meta
 # id: testing/playwright-setup.sh
-# name: setup.sh - Playwright E2E Setup
+# name: playwright setup
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
 #   - tech_stack
 #   - testing
 # uses_from_omni_config:
+#   - ENABLE_TEST_INFRA
 # uses_from_omni_settings:
-#   - E2E_DIR
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - SRC_TEST_DIR
+#   - E2E_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - SRC_TEST_DIR
+#   - E2E_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
-#     -
-#   dev_packages:
-#     -
+#     - @playwright/test
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -44,9 +45,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="testing/playwright-setup"
 readonly SCRIPT_NAME="Playwright E2E Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

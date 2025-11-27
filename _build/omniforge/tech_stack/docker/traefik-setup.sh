@@ -2,37 +2,23 @@
 #!meta
 # id: docker/traefik-setup.sh
 # name: traefik-setup
-# phase: 0
-# phase_name: Project Foundation
+# phase: 1
+# phase_name: Infrastructure & Database
 # profile_tags:
 #   - tech_stack
 #   - docker
 # uses_from_omni_config:
+#   - ENABLE_OBSERVABILITY
 # uses_from_omni_settings:
-#   - COMPOSE_PROJECT_NAME
-#   - DOCKER_COMPOSE_FILE
-#   - DOCKER_SERVICES_DIR
-#   - DOCKER_TRAEFIK_DIR
-#   - OMNI_ROOT
 #   - PROJECT_ROOT
-#   - SERVICES_DIR
-#   - TRAEFIK_CONFIG_DISPLAY
-#   - TRAEFIK_CONFIG_PATH
-#   - TRAEFIK_DIR
-#   - TRAEFIK_YML
-#   - TRAEFIK_YML_DISPLAY
+#   - INSTALL_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 set -euo pipefail
@@ -49,10 +35,23 @@ OMNI_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 if [ -f "${OMNI_ROOT}/lib/common.sh" ]; then
   # shellcheck source=/dev/null
   source "${OMNI_ROOT}/lib/common.sh"
+  if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+  fi
 else
   log()   { echo "[traefik-setup] $*"; }
   warn()  { echo "[traefik-setup][WARN] $*" >&2; }
   error() { echo "[traefik-setup][ERROR] $*" >&2; exit 1; }
+  log_skip() { log "$@"; }
+fi
+
+if ! command -v log_skip >/dev/null 2>&1; then
+  log_skip() { log "$@"; }
+fi
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+  log_skip "DRY_RUN: skipping traefik-setup"
+  exit 0
 fi
 
 resolve_project_path() {

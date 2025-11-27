@@ -1,29 +1,24 @@
 #!/usr/bin/env bash
 #!meta
 # id: quality/verify-build.sh
-# name: verify-build
+# name: verify build
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
 #   - tech_stack
 #   - quality
 # uses_from_omni_config:
+#   - ENABLE_CODE_QUALITY
 # uses_from_omni_settings:
-#   - INSTALL_DIR
-#   - PROJECT_NAME
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -45,9 +40,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="quality/verify-build"
 readonly SCRIPT_NAME="Build Verification & Testing"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Set PROJECT_ROOT if not already set (for standalone execution)
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_DIR}/../../../.." && pwd)}"

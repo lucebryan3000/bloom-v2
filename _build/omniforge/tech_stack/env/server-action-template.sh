@@ -10,19 +10,17 @@
 # uses_from_omni_config:
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - SRC_LIB_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 #   - SRC_LIB_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
-#     -
-#   dev_packages:
-#     -
+#     - zod
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -46,9 +44,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="env/server-action-template"
 readonly SCRIPT_NAME="Server Action Template"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

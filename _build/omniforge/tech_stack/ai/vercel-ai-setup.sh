@@ -1,26 +1,24 @@
 #!/usr/bin/env bash
 #!meta
 # id: ai/vercel-ai-setup.sh
-# name: ai-setup.sh - Vercel AI SDK Setup Wrapper
+# name: vercel ai setup
 # phase: 3
 # phase_name: User Interface
 # profile_tags:
 #   - tech_stack
 #   - ai
 # uses_from_omni_config:
+#   - ENABLE_AI_SDK
 # uses_from_omni_settings:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -46,9 +44,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="ai/vercel-ai-setup"
 readonly SCRIPT_NAME="Vercel AI SDK Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then

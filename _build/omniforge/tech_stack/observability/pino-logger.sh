@@ -1,28 +1,27 @@
 #!/usr/bin/env bash
 #!meta
 # id: observability/pino-logger.sh
-# name: pino-logger
+# name: pino logger
 # phase: 2
 # phase_name: Core Features
 # profile_tags:
 #   - tech_stack
 #   - observability
 # uses_from_omni_config:
+#   - ENABLE_OBSERVABILITY
 # uses_from_omni_settings:
-#   - INSTALL_DIR
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - PKG_PINO
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - PKG_PINO
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
 #     - pino
-#   dev_packages:
-#     -
+#   dev_packages: []
 #!endmeta
 
 
@@ -47,10 +46,18 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="observability/pino-logger"
 readonly SCRIPT_NAME="Pino Logger Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

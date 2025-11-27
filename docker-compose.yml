@@ -27,8 +27,8 @@ services:
     volumes:
       # Mount source for hot reload
       - .:/workspace
-      # Preserve node_modules from container
-      - /workspace/node_modules
+      # Named volume for node_modules to persist installs
+      - node_modules:/workspace/node_modules
       # Named volume for pnpm store
       - pnpm_store:/root/.local/share/pnpm/store
     working_dir: /workspace
@@ -38,6 +38,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
+      # Default to manual start; set to true only after pnpm install has run in the container
       - APP_AUTO_START=false
       - STACK_PROFILE=tech_stack
       - INSTALL_DIR=/workspace
@@ -93,6 +94,8 @@ networks:
 # =============================================================================
 volumes:
   postgres_data:
+    driver: local
+  node_modules:
     driver: local
   pnpm_store:
     driver: local

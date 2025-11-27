@@ -142,6 +142,7 @@ _combined_scripts/install-package-react-to-print.sh
 ui/shadcn-init.sh
 ui/react-to-print.sh
 ui/components-structure.sh
+ui/landing-page.sh
 "
 
 # ─────────────────────────────────────────────────────────────────────────────

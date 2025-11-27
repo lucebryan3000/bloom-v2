@@ -1,30 +1,32 @@
 #!/usr/bin/env bash
 #!meta
 # id: features/ai-sdk.sh
-# name: sdk.sh - Vercel AI SDK Integration
-# phase: 4
-# phase_name: Extensions & Quality
+# name: ai sdk
+# phase: 2
+# phase_name: Core Features
 # profile_tags:
 #   - tech_stack
 #   - features
 # uses_from_omni_config:
+#   - ENABLE_AI_SDK
+#   - ENABLE_ZUSTAND
+#   - ENABLE_TEST_INFRA
+#   - ENABLE_CODE_QUALITY
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
-#   - SRC_LIB_DIR
+#   - INSTALL_DIR
+#   - TECH_STACK_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - TECH_STACK_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
-#     - ai-sdk-anthropic
-#     - ai-sdk-openai
-#     - vercel-ai
-#   dev_packages:
-#     -
+#     - @vercel/ai
+#     - @ai-sdk/openai
+#     - @ai-sdk/anthropic
+#   dev_packages: []
 #!endmeta
 
 
@@ -56,10 +58,18 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="features/ai-sdk"
 readonly SCRIPT_NAME="Vercel AI SDK"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

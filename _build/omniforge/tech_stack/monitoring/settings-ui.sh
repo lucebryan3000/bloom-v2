@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #!meta
 # id: monitoring/settings-ui.sh
-# name: ui.sh - User Settings & Preferences UI
+# name: settings ui
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
@@ -9,22 +9,15 @@
 #   - monitoring
 # uses_from_omni_config:
 # uses_from_omni_settings:
+#   - PROJECT_ROOT
 #   - INSTALL_DIR
-#   - S
-#   - SETTINGS_COMPONENTS
-#   - SETTINGS_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -47,9 +40,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="monitoring/settings-ui"
 readonly SCRIPT_NAME="Settings UI Setup"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 if has_script_succeeded "${SCRIPT_ID}"; then
     log_skip "${SCRIPT_NAME} (already completed)"

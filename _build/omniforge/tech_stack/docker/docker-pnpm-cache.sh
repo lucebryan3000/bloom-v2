@@ -1,37 +1,23 @@
 #!/usr/bin/env bash
 #!meta
 # id: docker/docker-pnpm-cache.sh
-# name: pnpm-cache.sh - Docker Build Optimization
+# name: docker-pnpm-cache
 # phase: 1
 # phase_name: Infrastructure & Database
 # profile_tags:
 #   - tech_stack
 #   - docker
 # uses_from_omni_config:
-#   - APP_NAME
-#   - DB_NAME
-#   - DB_USER
 # uses_from_omni_settings:
-#   - BUILDKIT_CACHE_DIR
-#   - DOCKER_BUILD_ARGS
-#   - DOCKER_PLATFORM_ARGS
-#   - HOME
-#   - IMAGE_NAME
-#   - NODE_VERSION
-#   - PNPM_VERSION
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -66,9 +52,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="docker/docker-pnpm-cache"
 readonly SCRIPT_NAME="Docker Build Optimization"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

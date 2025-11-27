@@ -12,15 +12,14 @@
 #   - APP_NAME
 #   - APP_VERSION
 # uses_from_omni_settings:
-#   - NODE_VERSION
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - NODE_VERSION
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - NODE_VERSION
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
 #     - @types/node
@@ -83,10 +82,18 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="core/nextjs"
 readonly SCRIPT_NAME="Next.js + React + TypeScript"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

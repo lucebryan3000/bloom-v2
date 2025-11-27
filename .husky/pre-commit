@@ -1,4 +1,3 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-npx lint-staged
+# Husky hooks disabled per request; allow commits to proceed without lint
+exit 0

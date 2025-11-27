@@ -114,7 +114,10 @@ Environment Variables:
   VERBOSE=true       Same as --verbose
   ALLOW_DIRTY=true   Skip git clean check
   GIT_SAFETY=false   Disable git safety checks
-  STACK_PROFILE      Set stack profile (minimal, api-only, full)
+  STACK_PROFILE      Set stack profile (see omni.profiles.sh)
+  APP_AUTO_INSTALL   Install pnpm deps inside container if missing (default true)
+  STRICT_TESTS       Profile default for test strictness (from omni.profiles.sh)
+  WARN_POLICY        Profile warning policy (from omni.profiles.sh)
   NON_INTERACTIVE    Skip prompts (for CI/automation)
 
 Examples:
@@ -250,6 +253,9 @@ main() {
     config_load
     config_validate
     config_apply_profile
+    if declare -f omni_profile_apply_defaults >/dev/null 2>&1; then
+        omni_profile_apply_defaults "${STACK_PROFILE:-}"
+    fi
 
     # Apply profile resource hints (for container runs)
     if [[ "${DOCKER_EXEC_MODE:-host}" == "container" ]]; then
@@ -348,6 +354,11 @@ main() {
 
     # Set tech stack directory
     local tech_stack_dir="${SCRIPTS_DIR}/tech_stack"
+
+    # =========================================================================
+    # CONTAINER INSTALL GUARD (optional)
+    # =========================================================================
+    omni_container_install_if_needed
 
     # =========================================================================
     # AUTO-DETECTION (First Run Only)
@@ -572,6 +583,14 @@ main() {
             exit_code=1
             phase_stats_record "unknown" "failed"
         fi
+    fi
+
+    if [[ $exit_code -eq 0 ]]; then
+        if ! omni_write_manifest; then
+            log_warn "[manifest] Manifest generation failed (non-fatal)"
+        fi
+    else
+        log_debug "[manifest] Skipping manifest write due to failed run (exit_code=${exit_code})"
     fi
 
     # Show execution recap and next steps

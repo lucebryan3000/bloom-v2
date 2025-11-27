@@ -178,6 +178,35 @@ _display_features() {
     echo ""
 }
 
+# Build a short feature summary for a profile using its metadata flags
+_profile_feature_summary() {
+    local profile="$1"
+    local flags=(
+        "ENABLE_NEXTJS:Next.js+TypeScript"
+        "ENABLE_DATABASE:PostgreSQL+Drizzle"
+        "ENABLE_AUTHJS:Auth.js"
+        "ENABLE_AI_SDK:AI SDK"
+        "ENABLE_PG_BOSS:pg-boss"
+        "ENABLE_SHADCN:shadcn/ui"
+        "ENABLE_ZUSTAND:Zustand"
+        "ENABLE_PDF_EXPORTS:Exports"
+        "ENABLE_TEST_INFRA:Testing"
+        "ENABLE_CODE_QUALITY:Code Quality"
+    )
+    local enabled=()
+    for entry in "${flags[@]}"; do
+        local key="${entry%%:*}"
+        local label="${entry#*:}"
+        local val
+        val=$(get_profile_metadata "$profile" "$key")
+        if [[ "$val" == "true" ]]; then
+            enabled+=("$label")
+        fi
+    done
+    local IFS=", "
+    echo "${enabled[*]}"
+}
+
 # Display installation phases overview
 _display_installation_plan() {
     echo ""
@@ -220,6 +249,47 @@ _display_installation_plan() {
     echo ""
 }
 
+# Append deployment notes as we collect them
+_write_deployment_notes() {
+    local notes_file="${PROJECT_ROOT:-.}/README-AppDeployment.md"
+    local ts
+    ts="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+    if [[ ! -f "$notes_file" ]]; then
+        cat > "$notes_file" <<'EOF'
+# App Deployment Notes
+
+EOF
+    fi
+
+    local features=()
+    [[ "${ENABLE_NEXTJS:-true}" == "true" ]] && features+=("Next.js + TypeScript")
+    [[ "${ENABLE_DATABASE:-true}" == "true" ]] && features+=("PostgreSQL + Drizzle")
+    [[ "${ENABLE_AUTHJS:-true}" == "true" ]] && features+=("Authentication (Auth.js)")
+    [[ "${ENABLE_AI_SDK:-true}" == "true" ]] && features+=("AI Integration (Vercel AI SDK)")
+    [[ "${ENABLE_PG_BOSS:-false}" == "true" ]] && features+=("Background Jobs (pg-boss)")
+    [[ "${ENABLE_SHADCN:-true}" == "true" ]] && features+=("UI Components (shadcn/ui)")
+    [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && features+=("Exports (PDF/Excel)")
+    [[ "${ENABLE_TEST_INFRA:-true}" == "true" ]] && features+=("Testing (Vitest + Playwright)")
+    [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && features+=("Code Quality (ESLint + Prettier)")
+
+    {
+        echo "## Deployment Snapshot - ${ts}"
+        echo ""
+        echo "Database:"
+        echo "  - Name: ${DB_NAME}"
+        echo "  - User: ${DB_USER}"
+        echo "  - Password: ${DB_PASSWORD:-<unset>}"
+        echo "  - Host: ${DB_HOST}"
+        echo "  - Port: ${DB_PORT}"
+        echo ""
+        echo "Features Enabled:"
+        for f in "${features[@]}"; do
+            echo "  - ${f}"
+        done
+        echo ""
+    } >> "$notes_file"
+}
+
 # =============================================================================
 # MAIN MENU
 # =============================================================================
@@ -244,29 +314,25 @@ menu_main() {
 
         _menu_item "1" "OmniForge Setup Wizard" "Configure project settings (name, description)"
         _menu_item "2" "Bootstrap Project" "Deploy apps and install stack"
-        _menu_item "3" "Clean Installation" "Delete/reset a previous deployment"
+        _menu_item "3" "Docker Tools and Cleanup" "Inspect + deploy scan/wipe + app clean/cache"
         _menu_item "4" "IDE Settings Manager" "Copy IDE/tool configs to project"
-        _menu_item "5" "Purge Download Cache" "Clear cached packages" "[$cache_size]"
-        _menu_item "6" "OmniForge Options" "Preferences and defaults"
-        _menu_item "7" "Help" "Usage guide and documentation"
-        _menu_item "0" "Exit"
+        _menu_item "5" "OmniForge Options" "Preferences and defaults"
+        _menu_item "6" "Help" "Usage guide and documentation"
 
-        _menu_prompt "Select [0-7]"
+        _menu_prompt "Select [1-6] (any other key exits)"
 
         case "$_MENU_SELECTION" in
             1) wizard_configure_project ;;
             2) menu_bootstrap ;;
-            3) menu_clean ;;
+            3) menu_docker_tools ;;
             4) menu_settings ;;
-            5) menu_purge ;;
-            6) menu_options ;;
-            7) menu_help ;;
+            5) menu_options ;;
+            6) menu_help ;;
             *) _MENU_RUNNING=false ;;  # Any other key exits
         esac
     done
 
     echo ""
-    log_info "Goodbye!"
 }
 
 # =============================================================================
@@ -328,25 +394,24 @@ _bootstrap_step_select_profile() {
         local name=$(get_profile_metadata "$profile" "name")
         local tagline=$(get_profile_metadata "$profile" "tagline")
         local description=$(get_profile_metadata "$profile" "description")
-        local time=$(get_profile_metadata "$profile" "time_estimate")
         local recommended=$(get_profile_metadata "$profile" "recommended")
+        local features="$(_profile_feature_summary "$profile")"
 
         # Format with current selection and recommendation indicators
         local marker=""
         [[ "$recommended" == "true" ]] && marker=" ⭐"
         [[ "$profile" == "$default_profile" ]] && marker="${marker} ${LOG_GREEN}[current]${LOG_NC}"
 
-        echo "  ${LOG_CYAN}${profile_num}) ${name}${marker}${LOG_NC} - ${tagline}"
+        echo "  ${LOG_CYAN}${profile_num}) ${name}${marker}${LOG_NC} ${LOG_NC}- ${LOG_WHITE:-}${tagline}${LOG_NC}"
         echo "     ${description}"
-        echo "     Time: ${time}"
+        if [[ -n "$features" ]]; then
+            echo "     ${LOG_GRAY:-}Packages/Features:${LOG_NC} ${features}"
+        fi
         echo ""
 
         ((profile_num++))
     done
 
-    _display_installation_plan
-
-    echo "  You can customize individual features in the next step."
     echo ""
     _menu_line
     read -rp "  Select profile [1-${#AVAILABLE_PROFILES[@]}] (default: ${default_num}=${default_profile}): " choice
@@ -379,6 +444,13 @@ _bootstrap_step_select_profile() {
 
     export STACK_PROFILE="$selected_profile"
     apply_stack_profile "$selected_profile" || return 1
+
+    # Show installation plan after profile selection
+    _display_installation_plan
+
+    echo "  You can customize individual features in the next step."
+    echo ""
+    _menu_line
 
     return 0
 }
@@ -427,7 +499,7 @@ _bootstrap_step_customize_apps() {
         echo "  ${LOG_GRAY}Quick Presets:${LOG_NC}"
         echo "    [m]inimal  [a]pi-only  [f]ull  [e]nterprise"
         echo ""
-        echo "  Enter feature number to toggle, preset letter, or 'done' when ready:"
+        echo "  Enter feature number to toggle or preset letter; press Enter when ready."
         echo ""
         _menu_line
     }
@@ -435,7 +507,7 @@ _bootstrap_step_customize_apps() {
     _customize_show
 
     while true; do
-        read -rp "  Toggle [1-9], preset, or 'done': " choice
+        read -rp "  Toggle [1-9], preset (m/a/f/e), or Enter to finish: " choice
 
         case "$choice" in
             1) [[ "$f1" == "true" ]] && f1="false" || f1="true"; _customize_show ;;
@@ -466,7 +538,7 @@ _bootstrap_step_customize_apps() {
                 f1="true"; f2="true"; f3="true"; f4="true"; f5="true"; f6="true"; f7="true"; f8="true"; f9="true"
                 _customize_show
                 ;;
-            done|d|"")
+            ""|done|d)
                 # Save selections to environment for next steps
                 export ENABLE_NEXTJS="$f1"
                 export ENABLE_DATABASE="$f2"
@@ -634,41 +706,52 @@ _bootstrap_step_configure() {
         _menu_line "─" 66
         echo ""
 
-        echo "  Step 1/4: Application Identity"
+        echo "  ${LOG_CYAN}Step 1/4: Application Identity${LOG_NC}"
         echo ""
         echo "    Application Name [${APP_NAME}]"
         echo "    Project Root:              ${PROJECT_ROOT:-.}"
         echo ""
 
-        echo "  Step 2/4: PostgreSQL Database"
+        echo "  ${LOG_CYAN}Step 2/4: PostgreSQL Database${LOG_NC}"
         echo ""
+        if [[ -z "${DB_PASSWORD:-}" ]]; then
+            DB_PASSWORD="$(openssl rand -base64 16 | tr -d '=+/')"
+            echo "    ${LOG_YELLOW}Generated DB password (note this down):${LOG_NC} ${DB_PASSWORD}"
+        else
+            echo "    Database Password:        ••••••••"
+        fi
         echo "    Database Name [${DB_NAME}]"
         echo "    Database User [${DB_USER}]"
-        echo "    Database Password:        $([ -n "$DB_PASSWORD" ] && echo "••••••••" || echo "[not set]")"
         echo "    Database Port [${DB_PORT}]"
         echo "    PostgreSQL Host [${DB_HOST}]"
         echo ""
 
-        echo "  Step 3/4: Data & Backups"
+        echo "  ${LOG_CYAN}Step 3/4: Data & Backups${LOG_NC}"
         echo ""
         echo "    Backup Location [${BACKUP_LOCATION}]"
         echo "    Enable Auto-Backups? [${ENABLE_AUTO_BACKUP}]"
         echo ""
 
-        echo "  Step 4/4: Application Features"
+        echo "  ${LOG_CYAN}Step 4/4: Application Features${LOG_NC}"
         echo ""
-        echo "    Features enabled:"
-        [[ "${ENABLE_NEXTJS:-true}" == "true" ]] && echo "      ✓ ENABLE_NEXTJS" || echo "      ✗ ENABLE_NEXTJS"
-        [[ "${ENABLE_DATABASE:-true}" == "true" ]] && echo "      ✓ ENABLE_DATABASE" || echo "      ✗ ENABLE_DATABASE"
-        [[ "${ENABLE_AUTHJS:-true}" == "true" ]] && echo "      ✓ ENABLE_AUTHJS          (Authentication)" || echo "      ✗ ENABLE_AUTHJS"
-        [[ "${ENABLE_AI_SDK:-true}" == "true" ]] && echo "      ✓ ENABLE_AI_SDK          (AI Integration)" || echo "      ✗ ENABLE_AI_SDK"
-        [[ "${ENABLE_PG_BOSS:-false}" == "true" ]] && echo "      ✓ ENABLE_PG_BOSS         (Job Queue)" || echo "      ✗ ENABLE_PG_BOSS"
-        [[ "${ENABLE_SHADCN:-true}" == "true" ]] && echo "      ✓ ENABLE_SHADCN          (UI Components)" || echo "      ✗ ENABLE_SHADCN"
-        [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && echo "      ✓ ENABLE_PDF_EXPORTS" || echo "      ✗ ENABLE_PDF_EXPORTS"
-        [[ "${ENABLE_TEST_INFRA:-true}" == "true" ]] && echo "      ✓ ENABLE_TEST_INFRA      (Testing)" || echo "      ✗ ENABLE_TEST_INFRA"
-        [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && echo "      ✓ ENABLE_CODE_QUALITY    (Linting & Formatting)" || echo "      ✗ ENABLE_CODE_QUALITY"
+        echo "    ${LOG_GRAY:-}Features enabled:${LOG_NC}"
+        [[ "${ENABLE_NEXTJS:-true}" == "true" ]] && echo "      ✓ Next.js + TypeScript" || echo "      ✗ Next.js + TypeScript"
+        [[ "${ENABLE_DATABASE:-true}" == "true" ]] && echo "      ✓ PostgreSQL + Drizzle" || echo "      ✗ PostgreSQL + Drizzle"
+        [[ "${ENABLE_AUTHJS:-true}" == "true" ]] && echo "      ✓ Authentication (Auth.js)" || echo "      ✗ Authentication (Auth.js)"
+        [[ "${ENABLE_AI_SDK:-true}" == "true" ]] && echo "      ✓ AI Integration (Vercel AI SDK)" || echo "      ✗ AI Integration (Vercel AI SDK)"
+        [[ "${ENABLE_PG_BOSS:-false}" == "true" ]] && echo "      ✓ Background Jobs (pg-boss)" || echo "      ✗ Background Jobs (pg-boss)"
+        [[ "${ENABLE_SHADCN:-true}" == "true" ]] && echo "      ✓ UI Components (shadcn/ui)" || echo "      ✗ UI Components (shadcn/ui)"
+        [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && echo "      ✓ Exports (PDF/Excel)" || echo "      ✗ Exports (PDF/Excel)"
+        [[ "${ENABLE_TEST_INFRA:-true}" == "true" ]] && echo "      ✓ Testing (Vitest + Playwright)" || echo "      ✗ Testing (Vitest + Playwright)"
+        [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && echo "      ✓ Code Quality (ESLint + Prettier)" || echo "      ✗ Code Quality (ESLint + Prettier)"
         echo ""
         echo ""
+
+        # Write/update deployment notes with current DB creds + features
+        _write_deployment_notes
+
+        # Write/update deployment notes with current DB creds + features
+        _write_deployment_notes
 
         echo "  ${LOG_CYAN}Configuration Summary${LOG_NC}"
         _menu_line "─" 66
@@ -683,7 +766,9 @@ _bootstrap_step_configure() {
         echo "      Host:             ${DB_HOST}"
         echo "      Port:             ${DB_PORT}"
         echo "      Data Path:        ${pg_data_path:-/var/lib/postgresql/16/main}/${DB_NAME}"
-        echo "      Connection:       ${LOG_GREEN}postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}${LOG_NC}"
+        echo "      Connection (placeholder):"
+        echo "        Hostname: postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+        echo "        Host IP:  postgresql://${DB_USER}@<host-ip>:${DB_PORT}/${DB_NAME}"
         echo ""
         echo "  💾 Backups"
         echo "      Location:         ${BACKUP_LOCATION}"
@@ -695,14 +780,14 @@ _bootstrap_step_configure() {
         _menu_line "─" 66
         echo ""
 
-        echo "  ${LOG_CYAN}Phase 0: Project Foundation${LOG_NC} (5m)"
+        echo "  ${LOG_CYAN}Phase 0: Project Foundation${LOG_NC}"
         if [[ "${ENABLE_NEXTJS:-true}" == "true" ]]; then
             echo "    ✓ Initialize Next.js & TypeScript"
             echo "    ✓ Setup project structure"
         fi
         echo ""
 
-        echo "  ${LOG_CYAN}Phase 1: Infrastructure & Database${LOG_NC} (20m)"
+        echo "  ${LOG_CYAN}Phase 1: Infrastructure & Database${LOG_NC}"
         if [[ "${ENABLE_DATABASE:-true}" == "true" ]]; then
             echo "    ✓ Docker configuration"
             echo "    ✓ PostgreSQL 16 setup"
@@ -711,7 +796,7 @@ _bootstrap_step_configure() {
         fi
         echo ""
 
-        echo "  ${LOG_CYAN}Phase 2: Core Features${LOG_NC} (15m)"
+        echo "  ${LOG_CYAN}Phase 2: Core Features${LOG_NC}"
         [[ "${ENABLE_AUTHJS:-true}" == "true" ]] && echo "    ✓ Authentication (Auth.js)"
         [[ "${ENABLE_AI_SDK:-true}" == "true" ]] && echo "    ✓ AI/LLM Integration"
         [[ "${ENABLE_PG_BOSS:-false}" == "true" ]] && echo "    ✓ Background Jobs (pg-boss)"
@@ -719,21 +804,15 @@ _bootstrap_step_configure() {
         echo "    ✓ Logging (Pino)"
         echo ""
 
-        echo "  ${LOG_CYAN}Phase 3: User Interface${LOG_NC} (10m)"
+        echo "  ${LOG_CYAN}Phase 3: User Interface${LOG_NC}"
         [[ "${ENABLE_SHADCN:-true}" == "true" ]] && echo "    ✓ shadcn/ui Components" || echo "    ✗ UI Components (skipped)"
         echo ""
 
-        echo "  ${LOG_CYAN}Phase 4: Extensions & Quality${LOG_NC} (30m optional)"
+        echo "  ${LOG_CYAN}Phase 4: Extensions & Quality${LOG_NC}"
         [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && echo "    ✓ PDF/Excel Export System"
         [[ "${ENABLE_TEST_INFRA:-true}" == "true" ]] && echo "    ✓ Testing (Vitest + Playwright)"
         [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && echo "    ✓ Code Quality (ESLint + Prettier)"
         echo ""
-
-        local total_time="~80m"
-        [[ "${ENABLE_PDF_EXPORTS:-false}" == "true" ]] && [[ "${ENABLE_CODE_QUALITY:-false}" == "true" ]] && total_time="~110m"
-        echo "  ${LOG_GREEN}Total Installation Time: ${total_time}${LOG_NC}"
-        echo ""
-
         echo "  ${LOG_YELLOW}Install Path: ${INSTALL_DIR:-./test/install-1}${LOG_NC}"
         echo ""
         _menu_line "─" 66
@@ -1316,9 +1395,8 @@ menu_settings() {
     echo ""
     _menu_item "7" "All of the above"
     echo ""
-    _menu_item "0" "Back"
 
-    _menu_prompt "Select [0-7]"
+    _menu_prompt "Select [1-7] (any other key returns)"
 
     case "$_MENU_SELECTION" in
         [1-6])
@@ -1440,6 +1518,195 @@ menu_purge() {
     fi
 
     read -rp "  Press Enter to continue: " _
+}
+
+# =============================================================================
+# MAINTENANCE / CLEANUP MENU
+# =============================================================================
+
+menu_maintenance() {
+    _menu_header
+    _menu_title "MAINTENANCE / CLEANUP"
+    echo ""
+    echo "  Choose a cleanup task:"
+    echo ""
+    local docker_available="true"
+    local docker_note=""
+    if ! command -v docker >/dev/null 2>&1; then
+        docker_available="false"
+        docker_note="(Docker not available on host)"
+    elif [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        docker_available="false"
+        docker_note="(host Docker required; currently inside container)"
+    fi
+
+    _menu_item "1" "Clean Installation" "Delete/reset a previous deployment"
+    _menu_item "2" "Wipe/Erase Docker Bootstrap" "Uses deploy scan reports to fully clean ${docker_note}"
+    _menu_item "3" "Purge Download Cache" "Clear cached packages"
+    echo ""
+
+    _menu_prompt "Select [1-3] (any other key returns)"
+    case "$_MENU_SELECTION" in
+        1) menu_clean ;;
+        2)
+            if [[ "$docker_available" != "true" ]]; then
+                echo ""
+                echo "  ${LOG_YELLOW}Docker-dependent wipe requires host Docker. ${docker_note}${LOG_NC}"
+                echo "  Run from host with Docker running, or generate scan reports first."
+                echo ""
+                read -rp "  Press Enter to continue: " _
+                return
+            fi
+            menu_docker_wipe
+            ;;
+        3) menu_purge ;;
+        *) return ;;
+    esac
+}
+
+# =============================================================================
+# DOCKER TOOLS AND CLEANUP
+# =============================================================================
+
+menu_docker_tools() {
+    local docker_scan_script="${SCRIPT_DIR}/scripts/docker-scan.sh"
+    local deploy_scan_script="${SCRIPT_DIR}/scripts/docker-deploy-scan.sh"
+    local deploy_wipe_cmd="${SCRIPT_DIR}/omni.sh"
+    local docker_available="true"
+    local docker_note=""
+    if ! command -v docker >/dev/null 2>&1; then
+        docker_available="false"
+        docker_note="(Docker not available)"
+    elif [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        docker_available="false"
+        docker_note="(host Docker required; currently inside container)"
+    fi
+
+    while true; do
+        _menu_header
+        _menu_title "DOCKER TOOLS & CLEANUP"
+        echo ""
+        _menu_item "1" "Docker Inventory" "Inspect containers/images/volumes/networks ${docker_note}"
+        _menu_item "2" "Deploy Mount Scan" "Run docker-deploy-scan.sh (pick from detected containers)"
+        _menu_item "3" "Deploy Wipe" "Full clean via docker-wipe (dry-run by default)"
+        _menu_item "4" "App Clean / Cache Purge" "App clean levels + purge download cache"
+        _menu_item "5" "Back"
+        echo ""
+
+        _menu_prompt "Select [1-5] (any other key returns)"
+        case "$_MENU_SELECTION" in
+            1)
+                if [[ "$docker_available" != "true" ]]; then
+                    echo ""
+                    echo "  ${LOG_YELLOW}Docker scan requires host Docker. ${docker_note}${LOG_NC}"
+                    echo ""
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                if [[ ! -f "$docker_scan_script" ]]; then
+                    echo ""
+                    echo "  ${LOG_YELLOW}Docker scan script not found:${LOG_NC} $docker_scan_script"
+                    echo ""
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                echo ""
+                bash "$docker_scan_script" || true
+                echo ""
+                read -rp "  Press Enter to continue: " _
+                ;;
+            2)
+                if [[ "$docker_available" != "true" ]]; then
+                    echo ""
+                    echo "  ${LOG_YELLOW}Deploy scan requires host Docker. ${docker_note}${LOG_NC}"
+                    echo ""
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                if [[ ! -f "$deploy_scan_script" ]]; then
+                    echo ""
+                    echo "  ${LOG_YELLOW}Deploy scan script not found:${LOG_NC} $deploy_scan_script"
+                    echo ""
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                echo ""
+                echo "  Detecting containers..."
+                mapfile -t docker_containers < <(docker ps -a --format '{{.Names}}' || true)
+                if [[ ${#docker_containers[@]} -eq 0 ]]; then
+                    echo "  ${LOG_YELLOW}No containers found.${LOG_NC}"
+                    echo ""
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                local idx=1
+                for c in "${docker_containers[@]}"; do
+                    echo "    ${idx}) ${c}"
+                    ((idx++))
+                done
+                echo ""
+                read -rp "  Select container [1-${#docker_containers[@]}] (any other key to cancel): " choice
+                if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#docker_containers[@]} )); then
+                    echo "  ${LOG_YELLOW}Cancelled${LOG_NC}"
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                local target="${docker_containers[$((choice-1))]}"
+                echo ""
+                bash "$deploy_scan_script" "$target" || true
+                echo ""
+                read -rp "  Press Enter to continue: " _
+                ;;
+            3)
+                if [[ "$docker_available" != "true" ]]; then
+                    echo ""
+                    echo "  ${LOG_YELLOW}Deploy wipe requires host Docker. ${docker_note}${LOG_NC}"
+                    echo ""
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                echo ""
+                echo "  Detecting containers..."
+                mapfile -t docker_containers < <(docker ps -a --format '{{.Names}}' || true)
+                if [[ ${#docker_containers[@]} -eq 0 ]]; then
+                    echo "  ${LOG_YELLOW}No containers found.${LOG_NC}"
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                local idx=1
+                for c in "${docker_containers[@]}"; do
+                    echo "    ${idx}) ${c}"
+                    ((idx++))
+                done
+                echo ""
+                read -rp "  Select container [1-${#docker_containers[@]}] (any other key to cancel): " choice
+                if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#docker_containers[@]} )); then
+                    echo "  ${LOG_YELLOW}Cancelled${LOG_NC}"
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                local target="${docker_containers[$((choice-1))]}"
+                echo ""
+                echo "  ${LOG_RED}Are you sure you want to WIPE container '${target}' and its artifacts?${LOG_NC}"
+                echo "  This will delete host files from the latest deploy scan, remove the container,"
+                echo "  named volumes, non-default networks, and the report directory."
+                read -rp "  Type '${target}' to confirm full wipe (or anything else to cancel): " confirm
+                if [[ "$confirm" != "$target" ]]; then
+                    echo "  ${LOG_YELLOW}Cancelled${LOG_NC}"
+                    read -rp "  Press Enter to continue: " _
+                    continue
+                fi
+                echo ""
+                "${deploy_wipe_cmd}" docker-wipe --container "$target" --force || true
+                echo ""
+                read -rp "  Press Enter to continue: " _
+                ;;
+            4)
+                menu_clean
+                ;;
+            *) return ;;
+        esac
+    done
 }
 
 # =============================================================================
@@ -1599,7 +1866,7 @@ menu_clean() {
     echo "    3) Deep Clean   - Full + Docker containers/volumes"
     echo "    4) Nuclear      - Everything including download cache"
     echo ""
-    echo "    b) Back"
+    echo "  Press any other key to return."
     echo ""
 
     read -rp "  Select clean level [1-4]: " clean_level
@@ -1695,6 +1962,212 @@ menu_clean() {
             return
             ;;
     esac
+
+    echo ""
+    read -rp "  Press Enter to continue: " _
+}
+
+# =============================================================================
+# DOCKER BOOTSTRAP WIPE (uses docker-deploy scan reports)
+# =============================================================================
+
+menu_docker_wipe() {
+    local omni_root="${SCRIPTS_DIR:-$(cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+    local project_root="${PROJECT_ROOT:-$(cd "${omni_root}/../.." && pwd)}"
+    local scan_root="${project_root}/_build/docker-deploy"
+    local clean_script="${project_root}/_build/scripts/docker-deploy-clean.sh"
+    local scan_script="${project_root}/_build/omniforge/scripts/docker-deploy-scan.sh"
+    local max_report_age="${MAX_REPORT_AGE_SECONDS:-3600}"
+    local docker_available="true"
+
+    if ! command -v docker >/dev/null 2>&1; then
+        docker_available="false"
+    elif [[ -n "${INSIDE_OMNI_DOCKER:-}" ]]; then
+        docker_available="false"
+    fi
+
+    _menu_header
+    _menu_title "WIPE / ERASE DOCKER BOOTSTRAP"
+    echo ""
+    echo "  Uses docker-deploy-clean.sh + latest scan report to delete host files"
+    echo "  and remove the container, volumes, networks, and report directory."
+    echo ""
+    if [[ "$docker_available" != "true" ]]; then
+        echo "  ${LOG_YELLOW}Docker not available (or running inside container).${LOG_NC} Host Docker is required"
+        echo "  for container/volume/network removal. File deletion from reports will still work."
+        echo ""
+    fi
+
+    if [[ ! -x "$clean_script" ]]; then
+        echo "  ${LOG_RED}Clean script not found:${LOG_NC} $clean_script"
+        echo "  Run _build/omniforge/scripts/docker-deploy-scan.sh first to generate reports."
+        echo ""
+        read -rp "  Press Enter to return: " _
+        return
+    fi
+
+    if [[ ! -d "$scan_root" ]]; then
+        echo "  ${LOG_YELLOW}No scan reports found at:${LOG_NC} $scan_root"
+        if [[ "$docker_available" == "true" && -f "$scan_script" ]]; then
+            echo ""
+            read -rp "  Enter container name/id to run a new deploy scan (or leave blank to return): " target
+            if [[ -n "$target" ]]; then
+                echo ""
+                bash "$scan_script" "$target" || true
+            fi
+        fi
+        echo ""
+        read -rp "  Press Enter to return: " _
+        return
+    fi
+
+    local containers=()
+    while IFS= read -r dir; do
+        containers+=("$(basename "$dir")")
+    done < <(find "$scan_root" -maxdepth 1 -mindepth 1 -type d -print 2>/dev/null | sort)
+
+    if [[ ${#containers[@]} -eq 0 ]]; then
+        echo "  ${LOG_YELLOW}No container report folders found under${LOG_NC} $scan_root"
+        if [[ "$docker_available" == "true" && -f "$scan_script" ]]; then
+            echo ""
+            read -rp "  Enter container name/id to run a new deploy scan (or leave blank to return): " target
+            if [[ -n "$target" ]]; then
+                echo ""
+                bash "$scan_script" "$target" || true
+            fi
+        fi
+        echo ""
+        read -rp "  Press Enter to return: " _
+        return
+    fi
+
+    echo "  Containers with scan reports:"
+    local idx=1
+    declare -A CONTAINER_DISPLAY_MAP=()
+    for name in "${containers[@]}"; do
+        local latest_report
+        latest_report="$(ls -1 "$scan_root/$name"/files-created-*.txt 2>/dev/null | sort | tail -n 1 || true)"
+        local display="$name"
+        if command -v docker >/dev/null 2>&1; then
+            local docker_name
+            docker_name="$(docker ps -a --format '{{.Names}}' --filter "id=$name" --filter "name=$name" | head -n1 || true)"
+            [[ -n "$docker_name" ]] && display="$docker_name"
+        fi
+        CONTAINER_DISPLAY_MAP["$idx"]="$name|$display|$latest_report"
+        if [[ -n "$latest_report" ]]; then
+            echo "    ${idx}) ${LOG_CYAN}${display}${LOG_NC}  [latest: $(basename "$latest_report")]"
+        else
+            echo "    ${idx}) ${LOG_CYAN}${display}${LOG_NC}  [no report files detected]"
+        fi
+        ((idx++))
+    done
+    echo ""
+
+    read -rp "  Select container [1-${#containers[@]}] (any other key returns): " choice
+    if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#containers[@]} )); then
+        return
+    fi
+
+    local map_entry="${CONTAINER_DISPLAY_MAP[$choice]}"
+    IFS='|' read -r target target_display latest_report <<<"$map_entry"
+    local target_dir="${scan_root}/${target}"
+    if [[ -z "$latest_report" ]]; then
+        latest_report="$(ls -1 "$target_dir"/files-created-*.txt 2>/dev/null | sort | tail -n 1 || true)"
+    fi
+    local report_age=""
+    local report_age_seconds=""
+    local now_epoch
+    now_epoch="$(date +%s)"
+    if [[ -n "$latest_report" ]]; then
+        local mtime
+        mtime="$(stat -c '%Y' "$latest_report" 2>/dev/null || echo "")"
+        if [[ -n "$mtime" ]]; then
+            report_age_seconds=$(( now_epoch - mtime ))
+            local h=$(( report_age_seconds / 3600 ))
+            local m=$(( (report_age_seconds % 3600) / 60 ))
+            local s=$(( report_age_seconds % 60 ))
+            report_age=$(printf "%dh %02dm %02ds" "$h" "$m" "$s")
+        fi
+    fi
+
+    # Offer to run scan if missing or stale
+    if [[ -z "$latest_report" || ( -n "$report_age_seconds" && "$report_age_seconds" -gt "$max_report_age" ) ]]; then
+        echo ""
+        if [[ -z "$latest_report" ]]; then
+            echo "  ${LOG_YELLOW}No report found for ${target}.${LOG_NC}"
+        else
+            echo "  ${LOG_YELLOW}Latest report is stale (${report_age}); max age ${max_report_age}s.${LOG_NC}"
+        fi
+        if [[ -x "$scan_script" ]]; then
+            read -rp "  Run docker-deploy-scan.sh for ${target} now? (y/N): " rescan
+            if [[ "${rescan,,}" == "y" || "${rescan,,}" == "yes" ]]; then
+                echo ""
+                echo "  Running scan for ${target}..."
+                if ! "$scan_script" "$target"; then
+                    echo "  ${LOG_RED}Scan failed; aborting wipe.${LOG_NC}"
+                    read -rp "  Press Enter to return: " _
+                    return
+                fi
+                # Recompute latest report after scan
+                latest_report="$(ls -1 "$target_dir"/files-created-*.txt 2>/dev/null | sort | tail -n 1 || true)"
+                report_age_seconds=""
+                report_age=""
+                if [[ -n "$latest_report" ]]; then
+                    local mtime_after
+                    mtime_after="$(stat -c '%Y' "$latest_report" 2>/dev/null || echo "")"
+                    if [[ -n "$mtime_after" ]]; then
+                        local now2
+                        now2="$(date +%s)"
+                        report_age_seconds=$(( now2 - mtime_after ))
+                        local h=$(( report_age_seconds / 3600 ))
+                        local m=$(( (report_age_seconds % 3600) / 60 ))
+                        local s=$(( report_age_seconds % 60 ))
+                        report_age=$(printf "%dh %02dm %02ds" "$h" "$m" "$s")
+                    fi
+                fi
+            fi
+        else
+            echo "  Scan script not found or not executable: $scan_script"
+        fi
+    fi
+
+    if [[ -z "$latest_report" ]]; then
+        echo ""
+        echo "  ${LOG_YELLOW}No usable report found; cannot proceed with wipe.${LOG_NC}"
+        read -rp "  Press Enter to return: " _
+        return
+    fi
+
+    echo ""
+    echo "  Selected container: ${LOG_CYAN}${target_display:-$target}${LOG_NC}"
+    if [[ -n "$latest_report" ]]; then
+        if [[ -n "$report_age" ]]; then
+            echo "  Latest report: ${latest_report} (age: ${report_age})"
+        else
+            echo "  Latest report: ${latest_report}"
+        fi
+    else
+        echo "  ${LOG_YELLOW}Warning:${LOG_NC} No files-created-*.txt found for this container."
+    fi
+    echo ""
+    echo "  Planned actions:"
+    echo "    - Delete host files listed in latest report"
+    echo "    - Stop/remove container"
+    echo "    - Remove named volumes"
+    echo "    - Remove non-default networks"
+    echo "    - Remove report directory"
+    echo ""
+    echo "  Command:"
+    echo "    ${clean_script} --force --remove-docker --remove-networks --remove-report ${target}"
+    echo ""
+
+    read -rp "  Type '${target}' to confirm full wipe (or anything else to cancel): " confirm
+    if [[ "$confirm" != "$target" ]]; then
+        echo "  ${LOG_YELLOW}Cancelled${LOG_NC}"
+    else
+        echo ""
+        "${clean_script}" --force --remove-docker --remove-networks --remove-report "${target}"
+    fi
 
     echo ""
     read -rp "  Press Enter to continue: " _
@@ -2186,31 +2659,39 @@ menu_help() {
     _menu_header
     _menu_title "HELP"
     echo ""
-    echo "  OmniForge is a project initialization framework that sets up"
-    echo "  a Next.js + TypeScript + PostgreSQL + AI stack."
+    echo "  ${LOG_CYAN}CLI Help (omni.sh --help):${LOG_NC}"
+    echo "    COMMANDS:"
+    echo "      menu            Interactive menu (default)"
+    echo "      run             Execute bootstrap phases (omni.phases.sh)"
+    echo "      clean           Clean/reset an installation (levels 1-4)"
+    echo "      list            List all phases (read-only)"
+    echo "      status          Show completion status/config"
+    echo "      stack           Docker helpers: up/down/ps (host)"
+    echo "      docker-wipe     Full wipe using latest deploy scan (host files + docker resources + report)"
+    echo "      build           Build/verify project"
+    echo "      reset           Reset last deployment"
     echo ""
-    echo "  WORKFLOWS:"
-    echo "  ─────────────────────────────────────────────────────────────"
-    echo "  1. Bootstrap - Full project setup workflow"
-    echo "     • Select which features to install"
-    echo "     • Configure project variables"
-    echo "     • Run preflight checks"
-    echo "     • Install all components"
+    echo "    OPTIONS:"
+    echo "      -h, --help      Show CLI help"
+    echo "      -n, --dry-run   Preview bootstrap/build without executing"
+    echo "      -v, --verbose   Verbose output"
+    echo "      -p, --phase N   Run only phase N (0-5)"
+    echo "      -f, --force     Force re-run (ignore state)"
+    echo "      --path <dir>    Target path (clean)"
+    echo "      --level <1-4>   Clean level"
+    echo "      --yes           Skip confirmations (reset)"
+    echo "      --container <c> Container (docker-wipe)"
     echo ""
-    echo "  2. IDE Settings Manager - Copy IDE/tool configurations"
-    echo "     • VS Code, Cursor, GitHub workflows"
-    echo "     • Test configs (Playwright, Vitest)"
+    echo "    EXAMPLES:"
+    echo "      omni --run"
+    echo "      omni --run --dry-run"
+    echo "      omni run --phase 0"
+    echo "      omni clean --path ./test/install-1 --level 2"
+    echo "      omni docker-wipe --container bloom2_app --force"
     echo ""
-    echo "  3. Options - Customize defaults"
-    echo "     • Change logo style, log level"
-    echo "     • Set default profile"
-    echo ""
-    echo "  CLI USAGE:"
-    echo "  ─────────────────────────────────────────────────────────────"
-    echo "  omni              # Interactive menu (default)"
-    echo "  omni --init       # Direct bootstrap (skip menu)"
-    echo "  omni --settings   # Direct settings manager"
-    echo "  omni --help       # Show help"
+    echo "  Docs:"
+    echo "    - _build/omniforge/OMNIFORGE.md (entry point)"
+    echo "    - _build/omniforge/docs/ (feature docs)"
     echo ""
 
     _menu_line

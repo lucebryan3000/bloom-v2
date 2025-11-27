@@ -16,6 +16,14 @@
 #   - PNPM_FLAGS_OVERRIDE
 #   - PROJECT_ROOT
 #   - SCRIPTS_DIR
+# required_vars:
+#   - INSIDE_OMNI_DOCKER
+#   - INSTALL_DIR
+#   - NODE_OPTIONS
+#   - PNPM_FLAGS
+#   - PNPM_FLAGS_OVERRIDE
+#   - PROJECT_ROOT
+#   - SCRIPTS_DIR
 # top_flags:
 #   - --dry-run
 #   - --skip-install
@@ -57,6 +65,17 @@
 # Guard against double-sourcing
 [[ -n "${_LIB_PKG_INSTALL_LOADED:-}" ]] && return 0
 _LIB_PKG_INSTALL_LOADED=1
+
+# Allow standalone execution (rare) to honor flags and dry-run
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    if command -v parse_stack_flags >/dev/null 2>&1; then
+        parse_stack_flags "$@"
+    fi
+    if [[ "${DRY_RUN:-false}" == "true" ]]; then
+        echo "DRY_RUN: skipping pkg-install library invocation"
+        exit 0
+    fi
+fi
 
 # =============================================================================
 # CONFIGURATION

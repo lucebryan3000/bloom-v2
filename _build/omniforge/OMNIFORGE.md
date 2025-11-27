@@ -21,6 +21,7 @@ OmniForge bootstraps and verifies the bloom-v2 stack with an opinionated, Docker
 - Stack helpers (docker compose): `_build/omniforge/docs/OMNIFORGE-STACK.md`
 - Settings manager: `_build/omniforge/docs/OMNIFORGE-SETTINGS.md`
 - Reset & cleanup tools: `_build/omniforge/docs/OMNIFORGE-RESET-CLEANUP.md`
+- Docker deploy scan & wipe: `_build/omniforge/docs/OMNIFORGE-DOCKER-DEPLOY-CLEANUP.md`
 - Tech_stack script authoring: `_build/omniforge/docs/OMNIFORGE-SCRIPT-AUTHORING.md`
 - Optional services & flags: `_build/omniforge/docs/OMNIFORGE-FLAGS.md`
 - Testing & E2E harness: `_build/omniforge/docs/OMNIFORGE-TESTING.md`
@@ -61,6 +62,9 @@ Run `omni.sh --settings` (or use the menu) to copy recommended IDE/tool configs 
 
 ## Reset & Cleanup
 Use `omni.sh reset` to remove OmniForge system files/state, `omni.sh clean --path <dir> [--level]` for artifact cleanup, and `omni.sh --purge` to drop the download cache. See `_build/omniforge/docs/OMNIFORGE-RESET-CLEANUP.md` for commands and safety notes.
+
+## Docker Deploy Scan & Wipe
+Inventory host artifacts created during a container deploy with `_build/omniforge/scripts/docker-deploy-scan.sh`, then wipe them (plus container/volumes/networks/report) via `_build/scripts/docker-deploy-clean.sh`, the Omni CLI wrapper `omni.sh docker-wipe --container <name> [--force]`, or the Maintenance/Cleanup menu (“Wipe/Erase Docker Bootstrap”). Details: `_build/omniforge/docs/OMNIFORGE-DOCKER-DEPLOY-CLEANUP.md`.
 
 ## Tech_Stack Script Authoring
 Follow the script authoring guide to add/modify tech_stack scripts using the standard template, metadata, package install patterns, and idempotency rules. See `_build/omniforge/docs/OMNIFORGE-SCRIPT-AUTHORING.md`.

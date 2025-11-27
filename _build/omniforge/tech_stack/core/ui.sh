@@ -8,17 +8,16 @@
 #   - tech_stack
 #   - core
 # uses_from_omni_config:
+#   - ENABLE_SHADCN
 # uses_from_omni_settings:
-#   - GLOBALS_CSS
-#   - INSTALL_DIR
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - GLOBALS_CSS
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - GLOBALS_CSS
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
 #   packages:
 #     - autoprefixer
@@ -75,10 +74,18 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 source "${SCRIPT_DIR}/../_lib/pkg-install.sh"
 
 readonly SCRIPT_ID="core/ui"
 readonly SCRIPT_NAME="UI Framework (shadcn/ui + Tailwind)"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # =============================================================================
 # PREFLIGHT

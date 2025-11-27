@@ -29,7 +29,33 @@ _LIB_SETUP_WIZARD_LOADED=1
 # Configure project basics (APP_NAME, APP_DESCRIPTION)
 # Shows auto-detected values, prompts for essentials
 wizard_configure_project() {
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if ! declare -F autodetect_run_all >/dev/null 2>&1; then
+        # shellcheck source=/dev/null
+        . "${script_dir}/auto_detect.sh"
+    fi
+    if [[ -z "${AUTO_DETECTED_PROJECT_NAME:-}" || -z "${AUTO_DETECTED_GIT_REMOTE+x}" ]]; then
+        autodetect_run_all || true
+    fi
+
     local config_file="${BOOTSTRAP_CONF}"
+    [[ -f "$config_file" ]] || touch "$config_file"
+
+    _update_config_key() {
+        local key="$1"
+        local value="$2"
+        local file="$3"
+        local tmp
+        tmp="$(mktemp)"
+        if grep -q "^${key}=" "$file" 2>/dev/null; then
+            sed "s|^${key}=.*|${key}=\"${value}\"|" "$file" >"$tmp"
+        else
+            cat "$file" >"$tmp"
+            echo "${key}=\"${value}\"" >>"$tmp"
+        fi
+        mv "$tmp" "$file"
+    }
 
     _menu_header
     echo -e "  ${LOG_CYAN}OMNIFORGE SETUP WIZARD${LOG_NC}"
@@ -42,8 +68,8 @@ wizard_configure_project() {
     echo -e "  ${LOG_CYAN}Auto-Detected Settings:${LOG_NC}"
     echo "  ─────────────────────────────────────────"
     echo "  Project Name:  ${AUTO_DETECTED_PROJECT_NAME:-$(basename "$(pwd)")}"
-    echo "  Project Root:  $(pwd)"
-    if [[ -n "${AUTO_DETECTED_GIT_REMOTE}" ]]; then
+    echo "  Project Root:  ${PROJECT_ROOT:-$(pwd)}"
+    if [[ -n "${AUTO_DETECTED_GIT_REMOTE:-}" ]]; then
         echo "  Git Remote:    ${AUTO_DETECTED_GIT_REMOTE}"
     else
         echo "  Git Remote:    (none detected)"
@@ -55,43 +81,94 @@ wizard_configure_project() {
     echo "  ─────────────────────────────────────────"
     echo ""
 
-    local app_name app_description
+    local app_name app_description app_version app_owner app_email app_port app_domain app_image compose_name install_target install_dir
 
-    # APP_NAME
+    # Defaults pulled from existing config or sensible fallbacks
     local current_app_name="${APP_NAME:-${AUTO_DETECTED_PROJECT_NAME:-bloom2}}"
+    local current_desc="${APP_DESCRIPTION:-Built with OmniForge}"
+    local current_version="${APP_VERSION:-0.1.0-dev}"
+    local current_owner="${APP_OWNER:-}"
+    local current_email="${APP_OWNER_EMAIL:-}"
+    local current_port="${APP_PORT:-3000}"
+    local current_domain="${APP_DOMAIN:-}"
+    local current_image="${APP_IMAGE_NAME:-${APP_NAME:-bloom2}}"
+    local current_compose="${COMPOSE_PROJECT_NAME:-${APP_NAME:-bloom2}}"
+    local current_install_target="${INSTALL_TARGET:-test}"
+    local current_install_dir="${INSTALL_DIR:-./test/install-1}"
+
     read -rp "  Application name [$current_app_name]: " app_name
     app_name="${app_name:-$current_app_name}"
 
-    # APP_DESCRIPTION
-    local current_desc="${APP_DESCRIPTION:-Built with OmniForge}"
     read -rp "  Description [$current_desc]: " app_description
     app_description="${app_description:-$current_desc}"
+
+    read -rp "  Version [$current_version]: " app_version
+    app_version="${app_version:-$current_version}"
+
+    read -rp "  Owner (name/team) [${current_owner:-unset}]: " app_owner
+    app_owner="${app_owner:-$current_owner}"
+
+    read -rp "  Owner contact email [${current_email:-unset}]: " app_email
+    app_email="${app_email:-$current_email}"
+
+    read -rp "  App port (host) [$current_port]: " app_port
+    app_port="${app_port:-$current_port}"
+
+    read -rp "  App domain/base URL [${current_domain:-unset}]: " app_domain
+    app_domain="${app_domain:-$current_domain}"
+
+    read -rp "  Docker image name [${current_image}]: " app_image
+    app_image="${app_image:-$current_image}"
+
+    read -rp "  Compose project name [${current_compose}]: " compose_name
+    compose_name="${compose_name:-$current_compose}"
+
+    read -rp "  Install target (test/prod) [$current_install_target]: " install_target
+    install_target="${install_target:-$current_install_target}"
+
+    read -rp "  Install directory [$current_install_dir]: " install_dir
+    install_dir="${install_dir:-$current_install_dir}"
 
     # Show summary
     echo ""
     echo -e "  ${LOG_CYAN}Configuration Summary:${LOG_NC}"
     echo "  ─────────────────────────────────────────"
-    echo "  Name:         $app_name"
-    echo "  Description:  $app_description"
+    echo "  Name:          $app_name"
+    echo "  Description:   $app_description"
+    echo "  Version:       $app_version"
+    echo "  Owner:         ${app_owner:-<unset>}"
+    echo "  Owner Email:   ${app_email:-<unset>}"
+    echo "  App Port:      $app_port"
+    echo "  Base URL:      ${app_domain:-<unset>}"
+    echo "  Image:         $app_image"
+    echo "  Compose Name:  $compose_name"
+    echo "  Install Target: $install_target"
+    echo "  Install Dir:    $install_dir"
     echo ""
 
     # Confirm
-    echo "  [s] Save configuration"
-    echo "  [e] Edit omni.config file"
-    echo "  [c] Cancel"
+    echo "  [1] Save configuration"
+    echo "  [2] Edit omni.config file"
+    echo "  [0] Cancel/Back"
     echo ""
 
     local choice
-    read -rp "  Choice [s]: " choice
+    read -rp "  Choice [1]: " choice
 
-    case "${choice:-s}" in
-        s|S)
-            # Write to config file
-            local sed_cmd="sed -i"
-            [[ "$(uname)" == "Darwin" ]] && sed_cmd="sed -i ''"
-
-            $sed_cmd "s/^APP_NAME=.*/APP_NAME=\"$app_name\"/" "$config_file"
-            $sed_cmd "s/^APP_DESCRIPTION=.*/APP_DESCRIPTION=\"$app_description\"/" "$config_file"
+    case "${choice:-1}" in
+        1)
+            # Write to config file (portable, no in-place sed dependency)
+            _update_config_key "APP_NAME" "$app_name" "$config_file"
+            _update_config_key "APP_DESCRIPTION" "$app_description" "$config_file"
+            _update_config_key "APP_VERSION" "$app_version" "$config_file"
+            _update_config_key "APP_OWNER" "$app_owner" "$config_file"
+            _update_config_key "APP_OWNER_EMAIL" "$app_email" "$config_file"
+            _update_config_key "APP_PORT" "$app_port" "$config_file"
+            _update_config_key "APP_DOMAIN" "$app_domain" "$config_file"
+            _update_config_key "APP_IMAGE_NAME" "$app_image" "$config_file"
+            _update_config_key "COMPOSE_PROJECT_NAME" "$compose_name" "$config_file"
+            _update_config_key "INSTALL_TARGET" "$install_target" "$config_file"
+            _update_config_key "INSTALL_DIR" "$install_dir" "$config_file"
 
             log_success "Configuration saved to $config_file"
             echo ""
@@ -100,32 +177,29 @@ wizard_configure_project() {
             read -rp "  Edit full configuration file? [y/N]: " edit_choice
             if [[ "${edit_choice,,}" == "y" ]]; then
                 # Auto-detect an available editor for full config
-                local available_editors
+                local available_editors editor
                 available_editors=$(setup_detect_editors)
-                local editor="${available_editors%% *}"  # Get first available
-                if [[ -z "$editor" ]]; then
-                    editor="nano"
+                if [[ -n "$available_editors" ]]; then
+                    read -r editor <<<"$available_editors"
                 fi
+                : "${editor:=nano}"
                 setup_launch_editor "$editor" "$config_file"
             fi
 
             return 0
             ;;
-        e|E)
+        2)
             # Auto-detect an available editor for full config
-            local available_editors
+            local available_editors editor
             available_editors=$(setup_detect_editors)
-            local editor="${available_editors%% *}"  # Get first available
-            if [[ -z "$editor" ]]; then
-                editor="nano"
+            if [[ -n "$available_editors" ]]; then
+                read -r editor <<<"$available_editors"
             fi
+            : "${editor:=nano}"
             setup_launch_editor "$editor" "$config_file"
             return $?
             ;;
-        *)
-            log_warn "Configuration cancelled"
-            return 1
-            ;;
+        *) return 1 ;;
     esac
 }
 

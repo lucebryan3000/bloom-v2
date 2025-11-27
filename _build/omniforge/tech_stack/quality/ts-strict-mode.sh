@@ -1,27 +1,24 @@
 #!/usr/bin/env bash
 #!meta
 # id: quality/ts-strict-mode.sh
-# name: strict-mode.sh - TypeScript Strict Mode
+# name: ts strict mode
 # phase: 4
 # phase_name: Extensions & Quality
 # profile_tags:
 #   - tech_stack
 #   - quality
 # uses_from_omni_config:
+#   - ENABLE_CODE_QUALITY
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
+#   - INSTALL_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
-#   - --dry-run
-#   - --skip-install
-#   - --dev-only
-#   - --no-dev
-#   - --force
-#   - --no-verify
 # dependencies:
-#   packages:
-#     -
-#   dev_packages:
-#     -
+#   packages: []
+#   dev_packages: []
 #!endmeta
 
 # =============================================================================
@@ -43,9 +40,17 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/common.sh"
+if command -v parse_stack_flags >/dev/null 2>&1; then
+    parse_stack_flags "$@"
+fi
 
 readonly SCRIPT_ID="quality/ts-strict-mode"
 readonly SCRIPT_NAME="TypeScript Strict Mode"
+
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_skip "DRY_RUN: skipping ${SCRIPT_NAME}"
+    exit 0
+fi
 
 # Check if already completed
 if has_script_succeeded "${SCRIPT_ID}"; then
