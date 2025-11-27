@@ -1,41 +1,145 @@
 #!/usr/bin/env bash
 # =============================================================================
-# direnv-setup.sh - helper to install/configure direnv for this project
-# =============================================================================
-# Menu options:
-#   1) Install direnv (best-effort via common package managers)
-#   2) Create .envrc for this project with PATH export
-#   3) Help / usage tips
-#   4) Quit
-#
-# The generated .envrc will:
-#   - add a chosen PATH entry (validated to exist)
-#   - include clear comments on how to use direnv
+# direnv-setup.sh
+# Description: Helper to install direnv and create project-local env helpers.
+# Functions:
+#   - action_install_direnv: Install direnv via common package managers.
+#   - action_create_envrc: Create/overwrite .envrc with a validated PATH entry.
+#   - action_create_env_helper: Create/overwrite env.sh helper for PATH.
+# Author: Bryan Luce
+# Last modified: 2025-11-27
+# Contract: Simple Utility Menu v1.0
+# Menu Map:
+#   main_menu
+#     -> submenu_advanced
 # =============================================================================
 
-set -euo pipefail
+set -Eeuo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-${SCRIPT_DIR}/../..}"
+
 ENVRC_PATH="${PROJECT_ROOT}/.envrc"
 ENV_HELPER_PATH="${PROJECT_ROOT}/env.sh"
 
-confirm() {
-  local prompt="${1:-Proceed? [y/N]} "
-  read -r -p "$prompt" ans
-  [[ "${ans,,}" == "y" ]]
+on_error() {
+  local exit_code=$?
+  local line=${BASH_LINENO[0]:-unknown}
+  printf 'ERROR: %s failed at line %s (exit=%s)\n' "${SCRIPT_NAME}" "${line}" "${exit_code}" >&2
+  exit "${exit_code}"
 }
 
-install_direnv() {
+cleanup() { :; }
+
+trap cleanup EXIT
+trap on_error ERR
+
+# Color setup (tput if available, fallback to plain)
+if command -v tput >/dev/null 2>&1 && [[ -t 1 ]]; then
+  _NORM="$(tput sgr0 || true)"
+  _BOLD="$(tput bold || true)"
+  _FG_RED="$(tput setaf 1 || true)"
+  _FG_GREEN="$(tput setaf 2 || true)"
+  _FG_YELLOW="$(tput setaf 3 || true)"
+else
+  _NORM=""
+  _BOLD=""
+  _FG_RED=""
+  _FG_GREEN=""
+  _FG_YELLOW=""
+fi
+
+ui_clear() {
+  command -v clear >/dev/null 2>&1 && clear || printf '\n'
+  printf '\n'
+}
+
+ui_header() {
+  local title="${1:-Menu}"
+  local cols width inner_width border padded_title
+  cols="$(tput cols 2>/dev/null || echo 80)"
+  width=$(( cols > 40 ? cols : 80 ))
+  inner_width=$(( width - 4 ))
+
+  printf '\n'
+  printf -v border '%*s' "${inner_width}" ''
+  border=${border// /-}
+
+  printf '+-%s-+\n' "${border}"
+  printf -v padded_title '%*s' "${inner_width}" "${title}"
+  printf '|%s|\n' "${padded_title}"
+  printf '+-%s-+\n\n' "${border}"
+}
+
+ui_info() {
+  printf '%s%s%s\n' "${_BOLD}" "$*" "${_NORM}"
+}
+
+ui_warn() {
+  printf '%s[WARN]%s %s\n' "${_FG_YELLOW}" "${_NORM}" "$*" >&2
+}
+
+ui_error() {
+  printf '%s[ERROR]%s %s\n' "${_FG_RED}" "${_NORM}" "$*" >&2
+}
+
+ui_success() {
+  printf '%s[OK]%s %s\n' "${_FG_GREEN}" "${_NORM}" "$*"
+}
+
+ui_pause() {
+  printf '\nPress Enter to continue…'
+  local _dummy
+  read -r _dummy || true
+}
+
+print_help() {
+  cat <<EOF
+${SCRIPT_NAME} - direnv setup helper
+
+Usage:
+  ${SCRIPT_NAME} [--help]
+
+Description:
+  Installs direnv (best-effort) and creates project-local environment helpers so
+  you don't have to remember direnv CLI details for this project.
+
+Features:
+  - Check/install direnv via common package managers (if missing).
+  - Generate a .envrc with a validated PATH entry.
+  - Generate env.sh helper to manage PATH and project root.
+
+Menu options:
+  1) Install direnv
+  2) Create/overwrite .envrc (add PATH)
+  3) Create/overwrite env.sh helper (per-session PATH)
+  4) Advanced options
+  5) Help
+
+EOF
+}
+
+###############################################################################
+# Actions
+###############################################################################
+
+action_install_direnv() {
+  ui_info "Checking direnv installation…"
+
   if command -v direnv >/dev/null 2>&1; then
-    echo "direnv already installed: $(command -v direnv)"
+    ui_success "direnv already installed at: $(command -v direnv)"
     return 0
   fi
 
-  echo "direnv not found. Attempt install?"
-  if ! confirm "Install direnv now? [y/N] "; then
-    echo "Skipping install."
-    return 0
-  fi
+  ui_warn "direnv not found."
+  printf 'Install direnv now? [y/N] '
+  local ans
+  read -r ans || true
+  case "${ans,,}" in
+    y|yes) ;;
+    *) ui_info "Skipping install."; return 0 ;;
+  esac
 
   if command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update && sudo apt-get install -y direnv
@@ -44,20 +148,22 @@ install_direnv() {
   elif command -v pacman >/dev/null 2>&1; then
     sudo pacman -S --noconfirm direnv
   else
-    echo "No supported package manager detected. Install manually from https://direnv.net/#install"
+    ui_error "No supported package manager detected. Install manually from https://direnv.net/#install"
     return 1
   fi
 
-  echo "direnv install attempted. Ensure your shell is hooked:"
-  echo "  eval \"\$(direnv hook $(basename \"$SHELL\"))\""
+  ui_success "direnv install attempted. Ensure your shell is hooked:"
+  printf '  eval "$(direnv hook %s)"\n' "$(basename "${SHELL:-bash}")"
 }
 
-create_envrc() {
+action_create_envrc() {
+  ui_info "Creating .envrc in: ${ENVRC_PATH}"
+
   local add_path=""
-  while [[ -z "$add_path" ]]; do
-    read -r -p "Enter a PATH directory to add (must exist): " add_path
-    if [[ -z "$add_path" || ! -d "$add_path" ]]; then
-      echo "Path is empty or does not exist. Try again."
+  while [[ -z "${add_path}" ]]; do
+    read -r -p "Enter a PATH directory to add (must exist): " add_path || true
+    if [[ -z "${add_path}" || ! -d "${add_path}" ]]; then
+      ui_warn "Path is empty or does not exist. Try again."
       add_path=""
     fi
   done
@@ -72,14 +178,16 @@ export PATH=${add_path}:\$PATH
 # Notes:
 # - direnv will load this file when you 'cd' into the project root.
 # - Edit this file as needed, then run 'direnv allow' again.
-# - To hook your shell: eval "\$(direnv hook $(basename "$SHELL"))"
+# - To hook your shell: eval "\$(direnv hook $(basename "\$SHELL"))"
 EOF
 
-  echo ".envrc written to ${ENVRC_PATH}"
-  echo "Run 'direnv allow' in ${PROJECT_ROOT} to activate."
+  ui_success ".envrc written to ${ENVRC_PATH}"
+  ui_info "Run 'direnv allow' in ${PROJECT_ROOT} to activate."
 }
 
-create_env_helper() {
+action_create_env_helper() {
+  ui_info "Writing env.sh helper to: ${ENV_HELPER_PATH}"
+
   cat > "${ENV_HELPER_PATH}" <<'EOF'
 #!/usr/bin/env bash
 # Project-local environment helper
@@ -121,40 +229,119 @@ echo "${PATH}" | tr ':' '\n' | sed 's/^/    - /'
 EOF
 
   chmod +x "${ENV_HELPER_PATH}" || true
-  echo "env.sh helper written to ${ENV_HELPER_PATH}"
-  echo "Run 'source ./env.sh' in ${PROJECT_ROOT} to update PATH for the session."
+  ui_success "env.sh helper written to ${ENV_HELPER_PATH}"
+  ui_info "Run 'source ./env.sh' in ${PROJECT_ROOT} to update PATH for the session."
 }
 
-show_help() {
-  cat <<EOF
-direnv setup helper:
-1) Install direnv (best-effort) if missing.
-2) Create .envrc with a validated PATH entry; remember to run 'direnv allow'.
-3) Create env.sh helper to prepend project root to PATH (per-session, manual source).
-Hook your shell:
-  eval "\$(direnv hook $(basename "$SHELL"))"
-EOF
+action_show_help_menu() {
+  print_help
 }
 
-menu() {
+###############################################################################
+# Submenu: Advanced options
+###############################################################################
+
+submenu_advanced() {
   while true; do
-    echo "========================================"
-    echo "direnv setup for $(basename "${PROJECT_ROOT}")"
-    echo "1) Install direnv"
-    echo "2) Create/overwrite .envrc (add PATH)"
-    echo "3) Create/overwrite env.sh helper (per-session PATH)"
-    echo "4) Help"
-    echo "5) Quit"
-    read -r -p "Choose an option: " choice
-    case "$choice" in
-      1) install_direnv ;;
-      2) create_envrc ;;
-      3) create_env_helper ;;
-      4) show_help ;;
-      5) exit 0 ;;
-      *) echo "Invalid choice." ;;
+    ui_clear
+    ui_header "direnv setup - Advanced options"
+    ui_info "Type a number to run an action; any other key returns."
+
+    echo "1) Show current PATH entries"
+    echo "2) Show direnv version (if installed)"
+    echo
+
+    local choice
+    read -r -p "Choose an option: " choice || return 0
+
+    case "${choice}" in
+      1)
+        ui_info "Current PATH entries:"
+        echo "${PATH}" | tr ':' '\n' | sed 's/^/  - /'
+        ui_pause
+        ;;
+      2)
+        if command -v direnv >/dev/null 2>&1; then
+          direnv version
+        else
+          ui_warn "direnv is not installed."
+        fi
+        ui_pause
+        ;;
+      *)
+        return 0
+        ;;
     esac
   done
 }
 
-menu
+###############################################################################
+# Main menu
+###############################################################################
+
+main_menu() {
+  while true; do
+    ui_clear
+    ui_header "direnv setup for $(basename "${PROJECT_ROOT}")"
+    ui_info "Type a number to run an action; any other key exits."
+
+    echo "1) Install direnv"
+    echo "2) Create/overwrite .envrc (add PATH)"
+    echo "3) Create/overwrite env.sh helper (per-session PATH)"
+    echo "4) Advanced options"
+    echo "5) Help"
+    echo
+
+    local choice
+    read -r -p "Choose an option: " choice || break
+
+    case "${choice}" in
+      1)
+        action_install_direnv
+        ui_pause
+        ;;
+      2)
+        action_create_envrc
+        ui_pause
+        ;;
+      3)
+        action_create_env_helper
+        ui_pause
+        ;;
+      4)
+        submenu_advanced
+        ;;
+      5)
+        action_show_help_menu
+        ui_pause
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+}
+
+###############################################################################
+# Entry point
+###############################################################################
+
+main() {
+  if [[ $# -gt 0 ]]; then
+    case "$1" in
+      -h|--help)
+        print_help
+        exit 0
+        ;;
+      *)
+        ui_error "Unknown option: $1"
+        print_help
+        exit 1
+        ;;
+    esac
+  fi
+
+  main_menu
+}
+
+main "$@"
