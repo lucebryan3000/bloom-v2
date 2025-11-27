@@ -140,6 +140,10 @@ if [[ "$MODE" == "full" && "$KEEP_APP" != "true" ]]; then
     "postcss.config.mjs"
     "tailwind.config.ts"
     "components.json"
+    "docker-compose.yml"
+    "docker-compose.prod.yml"
+    "Dockerfile"
+    "Dockerfile.dev"
   )
   for p in "${APP_PATHS[@]}"; do
     remove_path "${PROJECT_ROOT}/${p}" "app artifact"
