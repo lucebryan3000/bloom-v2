@@ -12,6 +12,9 @@
 # uses_from_omni_settings:
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
 # top_flags:
 # dependencies:
 #   packages: []

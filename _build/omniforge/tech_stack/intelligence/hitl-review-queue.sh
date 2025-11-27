@@ -13,6 +13,11 @@
 #   - INSTALL_DIR
 #   - SCHEMAS_DIR
 #   - LIB_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - SCHEMAS_DIR
+#   - LIB_DIR
 # top_flags:
 # dependencies:
 #   packages:

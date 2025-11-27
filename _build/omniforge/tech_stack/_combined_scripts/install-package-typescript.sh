@@ -12,6 +12,10 @@
 #   - INSTALL_DIR
 #   - NODE_OPTIONS
 #   - PNPM_FLAGS
+# required_vars:
+#   - INSTALL_DIR
+#   - NODE_OPTIONS
+#   - PNPM_FLAGS
 # top_flags:
 #   - --dry-run
 #   - --skip-install

@@ -12,6 +12,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - SRC_LIB_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - SRC_LIB_DIR
 # top_flags:
 # dependencies:
 #   packages: []

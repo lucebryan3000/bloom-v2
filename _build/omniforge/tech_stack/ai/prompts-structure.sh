@@ -12,6 +12,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - PROMPTS_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - PROMPTS_DIR
 # top_flags:
 # dependencies:
 #   packages: []

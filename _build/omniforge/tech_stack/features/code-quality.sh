@@ -16,6 +16,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - TECH_STACK_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - TECH_STACK_DIR
 # top_flags:
 # dependencies:
 #   packages:

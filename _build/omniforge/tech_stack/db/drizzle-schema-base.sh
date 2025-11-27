@@ -17,6 +17,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - POSTGRES_VERSION
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - POSTGRES_VERSION
 # top_flags:
 # dependencies:
 #   packages:

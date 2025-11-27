@@ -14,6 +14,11 @@
 #   - INSTALL_DIR
 #   - SRC_TEST_DIR
 #   - E2E_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - SRC_TEST_DIR
+#   - E2E_DIR
 # top_flags:
 # dependencies:
 #   packages: []

@@ -13,6 +13,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - PGBOSS_PKG
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - PGBOSS_PKG
 # top_flags:
 # dependencies:
 #   packages:

@@ -13,6 +13,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - EXPORT_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - EXPORT_DIR
 # top_flags:
 # dependencies:
 #   packages: []

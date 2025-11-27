@@ -10,6 +10,8 @@
 # uses_from_omni_config:
 # uses_from_omni_settings:
 #   - INSIDE_OMNI_DOCKER
+# required_vars:
+#   - INSIDE_OMNI_DOCKER
 # top_flags:
 #   - --dry-run
 #   - --skip-install

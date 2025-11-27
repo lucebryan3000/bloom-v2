@@ -25,6 +25,17 @@
 #   - ENV_FILE_PATH
 #   - ENABLE_REDIS
 #   - PGVECTOR_IMAGE
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - APP_ENV_FILE
+#   - CONTAINER_PREFIX
+#   - NODE_VERSION
+#   - PNPM_VERSION
+#   - POSTGRES_VERSION
+#   - ENV_FILE_PATH
+#   - ENABLE_REDIS
+#   - PGVECTOR_IMAGE
 # top_flags:
 # dependencies:
 #   packages: []

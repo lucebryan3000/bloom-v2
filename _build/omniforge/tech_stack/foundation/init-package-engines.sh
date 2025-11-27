@@ -12,6 +12,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - NODE_VERSION
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - NODE_VERSION
 # top_flags:
 # dependencies:
 #   packages: []

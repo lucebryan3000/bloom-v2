@@ -12,6 +12,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - WORKERS_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - WORKERS_DIR
 # top_flags:
 # dependencies:
 #   packages: []

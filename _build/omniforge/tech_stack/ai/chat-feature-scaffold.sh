@@ -14,6 +14,12 @@
 #   - CHAT_API_DIR
 #   - CHAT_COMPONENTS_DIR
 #   - CHAT_PAGE_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - CHAT_API_DIR
+#   - CHAT_COMPONENTS_DIR
+#   - CHAT_PAGE_DIR
 # top_flags:
 # dependencies:
 #   packages: []

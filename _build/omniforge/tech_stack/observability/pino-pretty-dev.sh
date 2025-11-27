@@ -13,6 +13,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - PKG_PINO_PRETTY
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - PKG_PINO_PRETTY
 # top_flags:
 # dependencies:
 #   packages:

@@ -12,6 +12,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - PROJECT_DIRECTORIES
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - PROJECT_DIRECTORIES
 # top_flags:
 # dependencies:
 #   packages: []

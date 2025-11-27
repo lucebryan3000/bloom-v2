@@ -19,6 +19,12 @@
 #   - POSTGRES_VERSION
 #   - INSIDE_OMNI_DOCKER
 #   - TECH_STACK_DIR
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - POSTGRES_VERSION
+#   - INSIDE_OMNI_DOCKER
+#   - TECH_STACK_DIR
 # top_flags:
 # dependencies:
 #   packages:

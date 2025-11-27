@@ -10,6 +10,8 @@
 # uses_from_omni_config:
 # uses_from_omni_settings:
 #   - INSTALL_DIR
+# required_vars:
+#   - INSTALL_DIR
 # top_flags:
 #   - --dry-run
 #   - --skip-install

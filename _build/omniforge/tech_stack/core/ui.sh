@@ -13,6 +13,10 @@
 #   - PROJECT_ROOT
 #   - INSTALL_DIR
 #   - GLOBALS_CSS
+# required_vars:
+#   - PROJECT_ROOT
+#   - INSTALL_DIR
+#   - GLOBALS_CSS
 # top_flags:
 # dependencies:
 #   packages:

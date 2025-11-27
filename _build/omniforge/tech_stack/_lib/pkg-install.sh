@@ -16,6 +16,14 @@
 #   - PNPM_FLAGS_OVERRIDE
 #   - PROJECT_ROOT
 #   - SCRIPTS_DIR
+# required_vars:
+#   - INSIDE_OMNI_DOCKER
+#   - INSTALL_DIR
+#   - NODE_OPTIONS
+#   - PNPM_FLAGS
+#   - PNPM_FLAGS_OVERRIDE
+#   - PROJECT_ROOT
+#   - SCRIPTS_DIR
 # top_flags:
 #   - --dry-run
 #   - --skip-install
