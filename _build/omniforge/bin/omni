@@ -114,7 +114,10 @@ Environment Variables:
   VERBOSE=true       Same as --verbose
   ALLOW_DIRTY=true   Skip git clean check
   GIT_SAFETY=false   Disable git safety checks
-  STACK_PROFILE      Set stack profile (minimal, api-only, full)
+  STACK_PROFILE      Set stack profile (see omni.profiles.sh)
+  APP_AUTO_INSTALL   Install pnpm deps inside container if missing (default true)
+  STRICT_TESTS       Profile default for test strictness (from omni.profiles.sh)
+  WARN_POLICY        Profile warning policy (from omni.profiles.sh)
   NON_INTERACTIVE    Skip prompts (for CI/automation)
 
 Examples:
