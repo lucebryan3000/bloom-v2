@@ -9,6 +9,8 @@ type Manifest = {
   omniVersion?: string;
   generatedAt?: string;
   deploymentTimeSeconds?: number;
+  logPath?: string;
+  logLines?: string[];
   profile?: {
     key?: string;
     name?: string;
@@ -19,6 +21,7 @@ type Manifest = {
   devQuickStart?: {
     localUrl?: string;
     containerUrl?: string;
+    nextStepsUrl?: string;
     envFiles?: string[];
     commands?: string[];
     endpoints?: ManifestEndpoint[];
@@ -58,6 +61,26 @@ function loadManifest(): Manifest | null {
 function loadPackageInfo(): PackageInfo {
   const pkgPath = path.join(process.cwd(), 'package.json');
   return readJson<PackageInfo>(pkgPath) || {};
+}
+
+function loadLogLines(manifest: Manifest | null): string[] {
+  if (manifest?.logLines && manifest.logLines.length) {
+    return manifest.logLines;
+  }
+  if (manifest?.logPath) {
+    const logPath = path.join(process.cwd(), manifest.logPath);
+    const content = readJson<string[]>(logPath);
+    if (Array.isArray(content)) {
+      return content;
+    }
+    try {
+      const raw = fs.readFileSync(logPath, 'utf8');
+      return raw.split('\n').filter(Boolean);
+    } catch (_err) {
+      // fall through
+    }
+  }
+  return [];
 }
 
 function formatDate(iso?: string) {
@@ -133,9 +156,11 @@ export default function HomePage() {
   const features = normalizeFeatures(manifest?.features);
   const stack = manifest?.stack || {};
   const container = manifest?.container;
+  const hasContainer = container && Object.keys(container).length > 0;
+  const logLines = loadLogLines(manifest);
 
   const hasManifest = Boolean(manifest);
-  const hasContainer = Boolean(container);
+  const nextStepsUrl = manifest?.devQuickStart?.nextStepsUrl;
 
   return (
     <div className="w-full min-h-full bg-gradient-to-br from-slate-950 to-slate-900 p-8">
@@ -235,14 +260,16 @@ export default function HomePage() {
                   </span>
                 </div>
               </div>
-              <div className="flex justify-center mt-8 pt-4 border-t border-slate-800">
-                <a
-                  href="#"
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg"
-                >
-                  Next Steps Checklist
-                </a>
-              </div>
+              {nextStepsUrl ? (
+                <div className="flex justify-center mt-8 pt-4 border-t border-slate-800">
+                  <a
+                    href={nextStepsUrl}
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg"
+                  >
+                    Next Steps Checklist
+                  </a>
+                </div>
+              ) : null}
             </div>
 
             <div>

@@ -137,6 +137,25 @@ omni_write_manifest() {
     dev_local_url_json=$(_json_quote "${DEV_SERVER_URL:-http://localhost:3000}")
     dev_container_url_json=$(_json_quote "${CONTAINER_URL:-http://<container-ip>:3000}")
 
+    local log_lines_json="[]"
+    local log_path_json="\"\""
+    if [[ -n "${LOG_FILE:-}" && -f "${LOG_FILE}" ]]; then
+        local log_lines=()
+        mapfile -t log_lines < <(tail -n 200 "${LOG_FILE}")
+        if (( ${#log_lines[@]} > 0 )); then
+            local quoted_lines=()
+            for line in "${log_lines[@]}"; do
+                quoted_lines+=("$(_json_quote "${line}")")
+            done
+            log_lines_json="$(_json_array_raw "${quoted_lines[@]}")"
+        fi
+        if [[ "${LOG_FILE}" == ${root%/}/* ]]; then
+            log_path_json=$(_json_quote "${LOG_FILE#${root%/}/}")
+        else
+            log_path_json=$(_json_quote "${LOG_FILE}")
+        fi
+    fi
+
     local env_files_quoted=()
     env_files_quoted+=("$(_json_quote ".env")")
     env_files_quoted+=("$(_json_quote ".env.local")")
@@ -202,8 +221,11 @@ omni_write_manifest() {
     "containerUrl": ${dev_container_url_json},
     "envFiles": $(_json_array_raw "${env_files_quoted[@]}"),
     "commands": $(_json_array_raw "${commands_quoted[@]}"),
-    "endpoints": ${endpoints_json}
+    "endpoints": ${endpoints_json},
+    "nextStepsUrl": ""
   },
+  "logPath": ${log_path_json},
+  "logLines": ${log_lines_json},
   "container": {}
 }
 EOF

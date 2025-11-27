@@ -49,8 +49,11 @@ Single source of truth emitted after a successful `omni run`. Consumed by the br
       { "label": "Health", "path": "/api/monitoring/health" },
       { "label": "Metrics", "path": "/api/monitoring/metrics" },
       { "label": "Chat", "path": "/chat" }
-    ]
+    ],
+    "nextStepsUrl": ""
   },
+  "logPath": "_build/omniforge/logs/omniforge_20250101_123456.log",
+  "logLines": ["...deployment log lines..."],
   "container": {
     "id": "abc123",
     "name": "omniforge-dev",
@@ -71,7 +74,8 @@ Single source of truth emitted after a successful `omni run`. Consumed by the br
 - `profile.*`: `STACK_PROFILE` and metadata from `omni.profiles.sh` (`name`, `tagline`, `description`, `mode`, `PROFILE_DRY_RUN`, `PROFILE_RESOURCES`).
 - `features`: all `ENABLE_*` env vars after profile application.
 - `stack`: derived from config + flags (package versions, enabled components).
-- `devQuickStart`: URLs from settings (`DEV_SERVER_URL`), env files defaults (`.env`, `.env.local`), standard pnpm commands, endpoints from monitoring/export defaults.
+- `devQuickStart`: URLs from settings (`DEV_SERVER_URL`), env files defaults (`.env`, `.env.local`), standard pnpm commands, endpoints from monitoring/export defaults, optional `nextStepsUrl`.
+- `logPath`/`logLines`: deployment log location (if inside PROJECT_ROOT) and up to ~200 lines from the bootstrap log (when available).
 - `container`: optional; may be left empty if not available.
 
 ## Compatibility
