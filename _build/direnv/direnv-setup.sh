@@ -283,16 +283,20 @@ submenu_advanced() {
 main_menu() {
   while true; do
     ui_clear
-    ui_header "direnv setup for $(basename "${PROJECT_ROOT}")"
+    local now
+    now="$(date +'%B %d, %Y at %I:%M %p')"
+
+    ui_header "direnv setup – $(basename "${PROJECT_ROOT}")"
+    ui_info "Updated: ${now}"
     ui_info "Last modified: ${LAST_MODIFIED}"
     printf '\n'
-    ui_info "Type a number to run an action; any other key exits."
 
-    echo "1) Install direnv"
-    echo "2) Create/overwrite .envrc (add PATH)"
-    echo "3) Create/overwrite env.sh helper (per-session PATH)"
-    echo "4) Advanced options"
-    echo "5) Help"
+    ui_info "Type a number to run an action; any other key exits."
+    echo "  1) Install direnv"
+    echo "  2) Create/overwrite .envrc (add PATH)"
+    echo "  3) Create/overwrite env.sh helper (per-session PATH)"
+    echo "  4) Advanced options"
+    echo "  5) Help"
     echo
 
     local choice
