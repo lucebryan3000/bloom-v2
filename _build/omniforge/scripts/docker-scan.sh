@@ -183,7 +183,6 @@ echo "⑦ Project-local logs & data directories"
 echo "───────────────────────────────────────"
 LOG_DIRS=()
 DATA_DIRS=()
-if [ -d "$PROJECT_ROOT/_build/omniforge/logs" ]; then LOG_DIRS+=("$PROJECT_ROOT/_build/omniforge/logs"); fi
 if [ -d "$PROJECT_ROOT/logs" ]; then LOG_DIRS+=("$PROJECT_ROOT/logs"); fi
 for candidate in "data" "db_data" "meili_data" "redis_data" "postgres_data"; do
   if [ -d "$PROJECT_ROOT/$candidate" ]; then DATA_DIRS+=("$PROJECT_ROOT/$candidate"); fi
